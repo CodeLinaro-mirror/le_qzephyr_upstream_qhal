@@ -1,0 +1,105 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
+
+# QuRT Abstraction Layer configuration options
+
+menu "QuRT Abstraction Layer"
+
+config QURT_THREAD
+	bool
+	default n
+	prompt "QURT style thread APIs"
+	help
+	  Enables QuRT style thread APIs
+
+config QURT_ISR
+	bool
+	default n
+	select QURT_THREAD
+	prompt "QuRT Style ISR APIs"
+	help
+	  QuRT Style ISR APIs
+
+config QURT_ISR_IRQNUM_L1_START
+	int
+	default 0
+	depends on QURT_ISR
+	prompt "QuRT L1 irq number start"
+	help
+	  QuRT L1 irq number start, this number is included in the range
+
+config QURT_ISR_IRQNUM_L1_END
+	int
+	default 256
+	depends on QURT_ISR
+	prompt "QuRT L1 irq number end"
+	help
+	  QuRT L1 irq number end, this number is excluded in the range
+
+config QURT_ISR_IRQNUM_L2_START
+	int
+	default 0
+	depends on QURT_ISR && 2ND_LEVEL_INTERRUPTS
+	prompt "QuRT L2 irq number start"
+	help
+	  QuRT L2 irq number start, this number is included in the range
+
+config QURT_ISR_IRQNUM_L2_END
+	int
+	default 256
+	depends on QURT_ISR && 2ND_LEVEL_INTERRUPTS
+	prompt "QuRT L2 irq number end"
+	help
+	  QuRT L2 irq number end, this number is excluded in the range
+
+config QURT_MUTEX
+	bool
+	default n
+	prompt "QuRT Style mutex APIs"
+	help
+	  QuRT Style mutex APIs
+
+config QURT_SIGNAL
+	bool
+	default n
+	select EVENTS
+	prompt "QuRT Style signal APIs"
+	help
+	  QuRT Style signal APIs
+
+config QURT_SCLK
+	bool
+	default n 
+	prompt "QuRT Style SCLK APIs"
+	help
+	  QuRT Style SCLK APIs
+
+config QURT_SEMAPHORE
+	bool
+	default n
+	prompt "QuRT Semaphore APIs"
+	help
+	  QuRT Style Semaphore APIs
+
+config QURT_MEM
+	bool
+	default n
+	prompt "QURT style memory and cache operations APIs"
+	help
+	  Enables QuRT style memory and cache operation APIs
+
+config QURT_ABSTRACTION_LAYER
+	bool
+    default n
+	select QURT_SCLK
+	select QURT_SIGNAL
+	select QURT_MUTEX
+	select QURT_THREAD
+	select QURT_ISR
+	select QURT_SEMAPHORE
+	select QURT_MEM
+    prompt "QAL"
+	help
+	  When this option is true, QuRT abstraction layer API's will be included.
+
+endmenu

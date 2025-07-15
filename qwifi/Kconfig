@@ -1,0 +1,26 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
+
+
+config QWIFI
+	bool "QUALCOMM wifi HAL"
+	default n
+	select QURT_ABSTRACTION_LAYER
+	select QSYSTEM
+	select QHW_SUPPORT
+	select LIBWIFIQCC730_SRC if SOC_QCC730
+
+	select MBEDTLS
+	select MBEDTLS_CMAC
+	select MBEDTLS_CIPHER_AES_ENABLED
+	select MBEDTLS_CIPHER_DES_ENABLED
+	select MBEDTLS_PKCS5_C
+	select MBEDTLS_NIST_KW_C
+	select MBEDTLS_MD
+	select MBEDTLS_SHA1
+	select MBEDTLS_CIPHER
+
+	#select LIBSENSORQCC730_SRC if SOC_QCC730
+	#select LIBPOWERQCC730_SRC if SOC_QCC730
+	#select LIBCRYPTOQCC730_SRC if SOC_QCC730
+	

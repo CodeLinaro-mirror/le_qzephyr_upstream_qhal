@@ -1,0 +1,6 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
+
+config QLIB_EARLY_PRINTK
+	bool "Qualcomm early printk via UART"
+	default n

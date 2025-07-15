@@ -1,0 +1,457 @@
+/**
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * SPDX-License-Identifier: BSD-3-Clause
+*/
+
+#ifndef QURT_SIGNAL_H
+#define QURT_SIGNAL_H
+
+#include <zephyr/kernel.h>
+
+//It is default actions, just for compatibility, 
+#define QURT_SIGNAL_ATTR_CLEAR_MASK  0x00000004 /**< Clear the
+specified signals after a wait. */
+
+#define QURT_SIGNAL_ATTR_WAIT_ANY 0x00000000  /**< Wait any. */
+#define QURT_SIGNAL_ATTR_WAIT_ALL 0x00000001  /**< Wait all. */
+#define QURT_SIGNAL_MAX 32
+#define QAL_SIGNAL_FUTEX_EXP 0x005164A1
+/*=====================================================================
+ Typedefs
+ ======================================================================*/
+
+
+/** QuRT signal type.                                           
+ */
+typedef struct k_event qurt_signal_t;
+
+/*=====================================================================
+ Functions
+======================================================================*/
+ 
+/*======================================================================*/
+/**@ingroup func_qurt_signal_init
+  Initializes a signal object.
+  Signal returns the initialized object.
+  The signal object is initially cleared.
+
+  @note1hang   Each signal-based object has one or more kernel resources associated with it;
+               to prevent resource leaks, call qurt_signal_destroy()
+               when this object is not used anymore
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] *signal Pointer to the initialized object.
+
+  @return         
+  None.
+     
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+void qurt_signal_init(qurt_signal_t *signal);
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_destroy
+  Destroys the specified signal object.
+  
+  @note1hang Signal objects must be destroyed when they are no longer in use. Failure 
+  to do this causes resource leaks in the QuRT kernel.\n
+  @note1cont Signal objects must not be destroyed while they are still in use. If this
+  happens the behavior of QuRT is undefined.
+  
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] *signal  Pointer to the signal object to destroy.
+
+  @return
+  None.
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+void qurt_signal_destroy(qurt_signal_t *signal);
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_wait 
+  @xreflabel{hdr:qurt_signal_wait}
+  Suspends the current thread until the specified signals are set.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1 indicates 
+  waiting on a signal, and 0 indicates not waiting on the signal.
+
+  If a thread is waiting on a signal object for any of the specified set of signals to set, 
+  and one or more of those signals is set in the signal object, the thread is awakened.
+
+  If a thread is waiting on a signal object for all of the specified set of signals to be set, 
+  and all of those signals are set in the signal object, the thread is awakened.
+
+  The specified set of signals can be cleared once the signal is set.
+
+  @note1hang At most, one thread can wait on a signal object at any given time.
+
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] signal      Pointer to the signal object to wait on.
+  @param[in] mask        Mask value identifying the individual signals in the signal object to 
+                         wait on.
+  @param[in] attribute   Indicates whether the thread waits to set any of the signals, or to set all of 
+                         them. \n
+						 @note1hang The wait-any and wait-all types are mutually exclusive.\n Values:\n
+                         - #QURT_SIGNAL_ATTR_WAIT_ANY \n
+                         - #QURT_SIGNAL_ATTR_WAIT_ALL @tablebulletend
+
+  @return     	
+  A 32-bit word with current signals.
+ 
+  @dependencies
+  None.
+*/
+/* ======================================================================*/
+unsigned int qurt_signal_wait(qurt_signal_t *signal, unsigned int mask, 
+                unsigned int attribute);
+
+/**@ingroup func_qurt_signal_wait_timed
+  @xreflabel{hdr:qurt_signal_wait}
+  Suspends the current thread until the specified signals are set or until timeout.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1 indicates 
+  waiting on a signal, and 0 indicates not waiting.
+
+  If a thread is waiting on a signal object for any of the specified set of signals to be set, 
+  and one or more of those signals is set in the signal object, the thread is awakened.
+
+  If a thread is waiting on a signal object for all of the specified set of signals to be set, 
+  and all of those signals are set in the signal object, the thread is awakened.
+
+  The specified set of signals can be cleared once the signal is set.
+
+  @note1hang At most, one thread can wait on a signal object at any given time.
+
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] signal      Pointer to the signal object to wait on.
+  @param[in] mask        Mask value identifying the individual signals in the signal object to wait on.
+  @param[in] attribute   Indicates whether the thread must wait until any of the signals are set, or until all of 
+                         them are set. \n
+						 @note1hang The wait-any and wait-all types are mutually exclusive.\n Values:\n
+                         - #QURT_SIGNAL_ATTR_WAIT_ANY \n
+                         - #QURT_SIGNAL_ATTR_WAIT_ALL @tablebulletend
+  @param[out] signals    Bitmask of signals that are set 
+  @param[in] duration    Duration (microseconds) to wait. Must be in the range
+                         [#QURT_TIMER_MIN_DURATION ... #QURT_TIMER_MAX_DURATION]
+
+  @return 				
+  #QURT_EOK -- Success; one or more signals were set \n
+  #QURT_ETIMEDOUT -- Timed-out \n
+  #QURT_EINVALID -- Duration out of range
+  
+  @dependencies
+  Depends on timed-waiting support in the kernel.
+*/
+/* ======================================================================*/
+int qurt_signal_wait_timed(qurt_signal_t *signal, unsigned int mask, 
+                           unsigned int attribute, unsigned int *signals,
+                           unsigned long long int duration_in_us);
+
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_wait_any
+  Suspends the current thread until any of the specified signals are set.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1 indicates
+  to wait on a signal, and 0 indicates not to wait on the thread.
+
+  If a thread is waiting on a signal object for any of the specified set of signals to be set, 
+  and one or more of those signals is set in the signal object, the thread is awakened.
+
+  @note1hang At most, one thread can wait on a signal object at any given time.
+
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] signal      Pointer to the signal object to wait on.
+  @param[in] mask        Mask value identifying the individual signals in the signal object to  
+                         wait on.
+	
+  @return     	
+  A 32-bit word with current signals.
+ 
+  @dependencies
+  None.
+*/
+/* ======================================================================*/
+static inline unsigned int qurt_signal_wait_any(qurt_signal_t *signal, unsigned int mask)
+{
+  return qurt_signal_wait(signal, mask, QURT_SIGNAL_ATTR_WAIT_ANY);
+}
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_wait_all
+  Suspends the current thread until all of the specified signals are set.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1 indicates 
+  to wait on a signal, and 0 indicates not to wait on it.
+
+  If a thread is waiting on a signal object for all of the specified set of signals to be set, 
+  and all of those signals are set in the signal object, the thread is awakened.
+
+  @note1hang At most, one thread can wait on a signal object at any given time.
+
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] signal      Pointer to the signal object to wait on. 
+  @param[in] mask        Mask value identifying the individual signals in the signal object to  
+                         wait on.
+	
+  @return      	
+  A 32-bit word with current signals.
+ 
+  @dependencies
+  None.
+*/
+/* ======================================================================*/
+static inline unsigned int qurt_signal_wait_all(qurt_signal_t *signal, unsigned int mask)
+{
+  return qurt_signal_wait(signal, mask, QURT_SIGNAL_ATTR_WAIT_ALL);
+}
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_set
+  Sets signals in the specified signal object.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1 indicates 
+  to set the signal, and 0 indicates not to set it.
+  	
+  @datatypes
+  #qurt_signal_t
+
+  @param[in]    signal  Pointer to the signal object to modify.
+  @param[in]    mask    Mask value identifying the individual signals to set in the signal
+                        object.
+
+  @return 
+  None.
+  
+  @dependencies
+  None.
+*/
+/* ======================================================================*/
+void qurt_signal_set(qurt_signal_t *signal, unsigned int mask);
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_get
+   Gets a signal from a signal object.
+   
+   Returns the current signal values of the specified signal object.
+
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] *signal Pointer to the signal object to access.
+
+  @return         
+  A 32-bit word with current signals
+    
+  @dependencies
+  None.
+*/
+/* ======================================================================*/
+unsigned int qurt_signal_get(qurt_signal_t *signal);
+
+/*======================================================================*/
+/**@ingroup func_qurt_signal_clear
+  Clear signals in the specified signal object.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1 
+  indicates that a signal must be cleared, and 0 indicates not to clear it.
+
+  @note1hang Signals must be explicitly cleared by a thread when it is awakened -- the wait 
+           operations do not automatically clear them.
+
+  @datatypes
+  #qurt_signal_t
+
+  @param[in] signal   Pointer to the signal object to modify.
+  @param[in] mask     Mask value identifying the individual signals to clear in the signal object.
+
+  @return 		  
+  None.
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+void qurt_signal_clear(qurt_signal_t *signal, unsigned int mask);
+
+typedef qurt_signal_t qurt_anysignal_t;
+
+/*=====================================================================
+ Functions
+======================================================================*/
+ 
+/*======================================================================*/
+/**@ingroup func_qurt_anysignal_init
+  Initializes an any-signal object.\n
+  The any-signal object is initially cleared.
+
+  @datatypes
+  #qurt_anysignal_t
+
+  @param[out] signal	Pointer to the initialized any-signal object.  
+  
+  @return         
+  None.
+
+  @dependencies  
+  None.
+ */
+/* ======================================================================*/
+static inline void qurt_anysignal_init(qurt_anysignal_t *signal)
+{
+  qurt_signal_init(signal);
+}
+
+/*======================================================================*/
+/**@ingroup func_qurt_anysignal_destroy
+  Destroys the specified any-signal object. 
+
+  @note1hang Any-signal objects must be destroyed when they are no longer in use. Failure
+             to do this causes resource leaks in the QuRT kernel.\n
+  @note1cont Any-signal objects must not be destroyed while they are still in use. If this
+             happens the behavior of QuRT is undefined.
+
+  @datatypes
+  #qurt_anysignal_t
+  
+  @param[in] signal Pointer to the any-signal object to destroy.
+
+  @return
+  None.
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+static inline void qurt_anysignal_destroy(qurt_anysignal_t *signal)
+{
+  qurt_signal_destroy(signal);
+}
+
+/*======================================================================*/
+/**@ingroup func_qurt_anysignal_wait
+  Wait on the any-signal object. \n
+  Suspends the current thread until any one of the specified signals is set.
+
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1
+  indicates that a signal must be waited on, and 0 indicates not to wait on the signal.
+  If a signal is set in an any-signal object, and a thread is waiting on the any-signal object for
+  that signal, the thread is awakened. If the awakened thread has higher priority than
+  the current thread, a context switch can occur.
+
+  @note1hang At most, one thread can wait on an any-signal object at any given time.
+
+  @datatypes
+  #qurt_anysignal_t
+	
+  @param[in] signal Pointer to the any-signal object to wait on. 
+  @param[in] mask   Signal mask value, which specifies the individual signals in the any-signal
+                      object to wait on.
+
+  @return 				
+  Bitmask of current signal values.
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+static inline unsigned int qurt_anysignal_wait(qurt_anysignal_t *signal, unsigned int mask)
+{
+  return qurt_signal_wait(signal, mask, QURT_SIGNAL_ATTR_WAIT_ANY);
+}
+
+/*======================================================================*/
+/**@ingroup func_qurt_anysignal_set
+  Sets signals in the specified any-signal object. \n
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1
+  indicates that a signal must be set, and 0 indicates not to set the sigmal.
+
+  @datatypes
+  #qurt_anysignal_t
+	
+  @param[in] signal Pointer to the any-signal object to modify. 
+  @param[in]  mask  Signal mask value identifying the individual signals to  
+                       set in the any-signal object.
+
+  @return 				
+  Bitmask of old signal values (before set).
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+unsigned int qurt_anysignal_set(qurt_anysignal_t *signal, unsigned int mask);
+
+
+
+/*======================================================================*/
+/**@ingroup func_qurt_anysignal_get
+  Gets signal values from the any-signal object.\n
+  Returns the current signal values of the specified any-signal object.
+
+  @datatypes
+  #qurt_anysignal_t
+ 	
+  @param[in] signal Pointer to the any-signal object to access. 
+
+  @return 				
+  A bitmask with the current signal values of the specified any-signal object.
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+static inline unsigned int qurt_anysignal_get(qurt_anysignal_t *signal)
+{
+  return qurt_signal_get(signal);
+}
+
+
+/*======================================================================*/
+/**@ingroup func_qurt_anysignal_clear
+   @xreflabel{sec:anysignal_clear}
+  Clears signals in the specified any-signal object.\n
+  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1
+  indicates that a signal must be cleared, and 0 indicates not to clear the signal.
+
+  @datatypes
+  #qurt_anysignal_t
+	
+  @param[in] signal Pointer to the any-signal object, which specifies the any-signal object to modify. 
+  @param[in] mask   Signal mask value identifying the individual signals to  
+                    clear in the any-signal object.
+	
+  @return 				
+  Bitmask -- Old signal values (before clear). 
+
+  @dependencies
+  None.
+ */
+/* ======================================================================*/
+unsigned int qurt_anysignal_clear(qurt_anysignal_t *signal, unsigned int mask);
+
+int qurt_signal_create(qurt_signal_t *signal);
+
+#if 0
+void qurt_signal_delete(qurt_signal_t *signal)
+#else
+#define qurt_signal_delete qurt_signal_destroy
+#endif
+
+#endif /* QURT_SIGNAL_H */

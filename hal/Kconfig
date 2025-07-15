@@ -1,0 +1,11 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
+
+
+config UART_HAL
+	bool "Qualcomm UART HAL"
+	default n
+
+config UART_QCC730_LL
+	bool "UART QCC730 Low Level for HAL"
+	default n

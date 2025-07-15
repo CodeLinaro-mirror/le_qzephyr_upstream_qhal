@@ -1,0 +1,4 @@
+inc/nt_devcfg.h
+inc/nt_devcfg_data.h
+inc/nt_devcfg_from_master_xml.h
+inc/nt_devcfg_structure.h
