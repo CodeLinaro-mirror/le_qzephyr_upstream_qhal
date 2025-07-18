@@ -5,4 +5,4 @@
 config QSYSTEM
 	bool
 	default n
-
+	depends on QURT_ABSTRACTION_LAYER

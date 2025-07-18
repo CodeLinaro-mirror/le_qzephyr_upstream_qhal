@@ -144,7 +144,6 @@ typedef struct
 #endif
 
 /* Cortex M4 CPU registers*/
-#define NT_NVIC_ICTR ( 0xE000E004 )
 #define NT_NVIC_ISER0	0xE000E100    //Irq 0 to 31 Set Enable Register
 #define NT_NVIC_ISER1	0xE000E104	  //Irq 32 to 60 Set Enable Register
 #define NT_NVIC_ISER2	0xE000E108	  //Irq 32 to 60 Set Enable Register
@@ -161,9 +160,6 @@ typedef struct
 #define NT_CM4_NVIC_ISER1_CLEAR_PENDING_REG		 0xE000E284   //Clear Pending register (32-63)
 #define NT_CM4__NVIC_ISER2_CLEAR_PENDING_REG		 0xE000E288   //Clear Pending register (64-95)
 #define NT_CM4_NVIC_ISER3_CLEAR_PENDING_REG		 0xE000E28C   //Clear Pending register (96-108)
-
-//IP
-#define NT_NVIC_IPSR			0xE000E400    //Interrupt Control State Register
 
 #define NT_CM4_UART_INTERRUPT_BIT_MASK			 0x00000008
 #define NT_CM4_UART_INTERRUPT_BIT_OFFSET		 0x00000003

@@ -755,12 +755,12 @@
 		//#define NT_TST_CC_ADDITIONAL_CONFIG_FLAG
 			//enable foot switch
 			#ifdef NT_CC_DEBUG_FLAG
-			#define NT_CC_DEBUG_FLAG
+			//#define NT_CC_DEBUG_FLAG
 			#endif
 			//adjust tx power
 			#ifdef NT_CC_TX_PWR_ADJUST_FLAG
-			#define NT_CC_TX_PWR_ADJUST_FLAG
-	#endif
+			//#define NT_CC_TX_PWR_ADJUST_FLAG
+	        #endif
 	#endif
 
 #ifdef NT_FN_RA

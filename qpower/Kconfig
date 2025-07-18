@@ -1,0 +1,9 @@
+
+config QPOWER
+	bool
+	default n
+	select QURT_ABSTRACTION_LAYER
+	select QSYSTEM
+	select QHW_SUPPORT
+	select LIBWIFIQCC730_SRC if SOC_QCC730
+	select LIBPOWERQCC730_SRC if SOC_QCC730

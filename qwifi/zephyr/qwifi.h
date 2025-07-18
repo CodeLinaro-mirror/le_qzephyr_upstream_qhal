@@ -6,7 +6,6 @@
 
 #pragma once
 
-void pmu_init (void);
 void qwifi_init (void);
 
 typedef qapi_Status_t (*qwifi_drv_eth_rx_cb_t)(void *drv_intf_data, void *bufp, uint16_t len, void *hal_data);

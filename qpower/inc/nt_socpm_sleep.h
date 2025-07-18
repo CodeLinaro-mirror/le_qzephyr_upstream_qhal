@@ -762,5 +762,6 @@ nt_status_t nt_update_clk_latency(void *buffer);
 void nt_socpm_soc_sleep_processing(uint64_t slp_val);
 
 void _tst_sleep_enter(void);
+void _socpm_slpcfg_mcuslp(void);
 
 #endif /* _NT_SOCPM_SLEEP_H_ */

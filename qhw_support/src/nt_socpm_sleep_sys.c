@@ -3,11 +3,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
 */
 
-
-// -------------------------------------------------------------------
-#if QCCSDK
-#include "FreeRTOS.h"
-#endif
 #include "wifi_cmn.h"
 #include "fwconfig_cmn.h"
 #include "nt_flags.h"
@@ -15,7 +10,6 @@
 #include "nt_common.h"
 #include "nt_logger_api.h"
 #include "nt_devcfg.h"
-#include "nt_socpm_rtos_api.h"
 #include "nt_socpm_sleep.h"
 
 #include "nt_hw.h"
@@ -57,7 +51,7 @@
 
 #ifdef IMAGE_FERMION
 #ifdef FIRMWARE_APPS_INFORMED_WAKE
-#include "wifi_fw_internal_api.h"
+#include "wifi_fw_internal_api.h"
 #endif
 #if CONFIG_LIBWIFIQCC730_SRC
 #include "mlme_api.h"
@@ -108,7 +102,7 @@ extern GPIO_Config_t gpio_config;
 #endif
 
 #include "qcc730v2.h"
-
+
 #if CONFIG_LIBWIFIQCC730_SRC
 #include "nt_twt.h"
 #endif
@@ -179,9 +173,9 @@ extern GPIO_Config_t gpio_config;
 #define _SOCPM_MBANK_D_CHK 0x7FFF0 // Define CMEM BANK D Address
 #define _SOCPM_MBANK_C_CHK 0x5FFF0 // Define CMEM BANK C Address
 #define _SOCPM_MBANK_B_CHK 0x3FFF0 // Define CMEM BANK B Address
-#define _SOCPM_MBANK_A_CHK 0x1FFF0 // Define CMEM BANK A Addressâ€‹
+#define _SOCPM_MBANK_A_CHK 0x1FFF0 // Define CMEM BANK A Address?
 
-// Read And Set Bitsâ€‹
+// Read And Set Bits?
 #define _SOCPM_REG_RW(reg_addr, data) (*((volatile uint32_t *)(reg_addr))) = \
         ((*((volatile uint32_t *)(reg_addr))) | ((uint32_t)(data)))
 // Read And Clear Bits
@@ -246,7 +240,6 @@ extern GPIO_Config_t gpio_config;
 static void _socpm_slp_fn_process(sleep_mode mode);
 static void _socpm_list_search(void);
 static void _socpm_slpcfg_sby(void);
-static void _socpm_slpcfg_mcuslp(void);
 static void socpm_enter_deepsleep();
 
 #if defined(PLATFORM_FERMION)
@@ -1784,49 +1777,6 @@ void vPreSleepProcessing(
 uint64_t vPostSleepProcessing(void) { return 0; }
 /*-----------------------------------------------------------*/
 
-void zephyr_mcu_sleep_pre (uint64_t slp_val_us)
-{
-    volatile uint32_t value;
-
-    //test_sleep_cb
-    HAL_REG_WR(QWLAN_PMU_CFG_WIFI_SS_STATE_REG, NT_PMU_CFG_WIFI_SLEEP_OFFSET);
-
-    early_printk("To set sleep timer=%llu us\r\n", slp_val_us);
-    nt_socpm_slp_tmr_set(slp_val_us);
-    _socpm_slp_mode = mcu_sleep;
-
-    /* This function performs sleep recipe as per the sleep mode specified */
-    //vPreSleepProcessing(_socpm_slp_mode);
-#ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
-    socpm_slp_clk_cal_presleep_activites(slp_val_us*1000);
-#endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
-
-    _socpm_slpcfg_mcuslp();
-}
-
-//_socpm_ctxt_save();
-
-void zephyr_mcu_sleep_post (void)
-{
-#ifdef GPIO_RETENTION_IN_SLP
-    /* Disable the GPIO retension */
-    NT_REG_WR(QWLAN_PMU_CFG_IO_RET_CNTL_REG, QWLAN_PMU_CFG_IO_RET_CNTL_DEFAULT);
-#endif /* GPIO_RETENTION_IN_SLP */
-
-    /* Stop Sleep timer.  Give Control Back to SYSTICK Handler*/
-    _socpm_slptmr_off();
-    /*set expiry to large value so that AON timer armed for this doesnt expire*/
-    NT_REG_WR(QWLAN_PMU_WLAN_SLP_TMR_EXP_LSB_REG, 0XFFFFFFFF);
-    __asm volatile("nop");
-    NT_REG_WR(QWLAN_PMU_WLAN_SLP_TMR_EXP_MSB_REG, 0xFFFFFF);
-    __asm volatile("nop");
-
-#ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
-    socpm_slp_clk_cal_postawake_activities();
-#endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
-    early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
-}
-
 void nt_socpm_slp_enter(
     uint64_t slp_us)
 {
@@ -2117,7 +2067,7 @@ _socpm_mem_wr_drv(
     case Off:
         // Read Control And Status Register GDSCR of Selected CMEM Bank
         Read_Value = NT_REG_RD(Status_Reg);
-        // Check Whether The CMEMBANK Is turned On Using Power Satus Bit 31 bitâ€‹
+        // Check Whether The CMEMBANK Is turned On Using Power Satus Bit 31 bit?
         if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK))
         {
             // Turn ON The Mem BANK In Resource Table
@@ -2183,9 +2133,9 @@ _socpm_mem_wr_drv(
             while (!((NT_REG_RD(Status_Reg)) & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK))
                 ;
         }
-        // Put Mem Bank In Retentionâ€‹
+        // Put Mem Bank In Retention?
         _SOCPM_REG_RW(Control_Reg,
-                      QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_PERIPH_OFF_MASK | QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_CORE_ON_MASK); // The MAsk Bit Same For all The Individual Banksâ€‹
+                      QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_PERIPH_OFF_MASK | QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_CORE_ON_MASK); // The MAsk Bit Same For all The Individual Banks?
         break;
     }
 }
@@ -2974,7 +2924,7 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     slp_ctrl_enable_sleep(mcu_sleep);
 }
 
-static void _socpm_slpcfg_mcuslp(void)
+void _socpm_slpcfg_mcuslp(void)
 {
     volatile uint32_t value;
     volatile uint32_t wifi_ss_state;
@@ -5124,10 +5074,10 @@ void nt_add_dummy_slp_list_node(void)
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
 
 /*
-* @brief Â : update clk latency(in us).it could be 3ms or 32us. default clk_latency is 3ms.
-* Â  Â  Â  Â  : When WiFi is connected with handset/home AP and active audio streaming is about to start:clk_latency = 32us
-* Â  Â  Â  Â  : Rest all cases: clk_latency = 3ms
-* @param Â : buffer - pointer which contains information related to WMI_CLK_LATENCY_CMD command
+* @brief  : update clk latency(in us).it could be 3ms or 32us. default clk_latency is 3ms.
+*         : When WiFi is connected with handset/home AP and active audio streaming is about to start:clk_latency = 32us
+*         : Rest all cases: clk_latency = 3ms
+* @param  : buffer - pointer which contains information related to WMI_CLK_LATENCY_CMD command
 * @return : nt_status_t
 */
 nt_status_t nt_update_clk_latency(void *buffer)

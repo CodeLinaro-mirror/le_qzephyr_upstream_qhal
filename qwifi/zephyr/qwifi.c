@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  * SPDX-License-Identifier: BSD-3-Clause*/
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+*/
 
 #include <qwifi_api.h>
 #include "qwifi_internal.h"
@@ -10,29 +11,6 @@
 
 #include <zephyr/logging/log.h>
 #include "printfext.h"
-
-#include "nt_devcfg_structure.h"
-#ifdef NT_NEUTRINO_1_0_SYS_MAC
-#include "nt_pmic_driver.h"
-#endif
-#include "wifi_fw_pmic_driver.h"
-#include "nt_socpm_sleep.h"
-#include "unpa.h"
-#include "nt_wifi_driver.h"
-#ifdef NT_FN_CPR
-#include "nt_cpr_driver.h"
-#endif
-#include "nt_sys_monitoring.h"
-#include "wifi_fw_cpr_driver.h"
-
-#ifdef NT_GPIO_FLAG
-#include "nt_gpio_api.h"
-#include "wifi_fw_internal_api.h"
-#endif
-
-#ifdef FIRMWARE_APPS_INFORMED_WAKE
-#include "wifi_fw_ext_intr.h"
-#endif
 
 LOG_MODULE_DECLARE(soc, CONFIG_SOC_LOG_LEVEL);
 
@@ -126,138 +104,6 @@ static void libwifi_kconfig_install(void)
 #endif
 }
 #endif
-
-void pmu_init (void)
-{
-    PRINT_LOG_FUNC_LINE_ENTRY;
-
-    /* dev cfg should be the first to get initialized */
-    nt_devcfg_parse();      // devcfg parser function call to fill the common devcfg structure
-    //nt_devcfg_byte_seq_parse(); // byte_sequence :: devcfg parser function call to fill the common devcfg structure
-    PRINT_LOG_FUNC_LINE;
-
-#ifdef FEATURE_FDI
-    fdi_init();
-    fdi_reg_all_nodes();
-    PRINT_LOG_FUNC_LINE;
-#endif /* FEATURE_FDI */
-
-#if FPCI_DEBUG
-    fpci_register_test_cb();
-    PRINT_LOG_FUNC_LINE;
-#endif /* FPCI_DEBUG */
-
-    nt_socpm_init_soc_cfg();
-    PRINT_LOG_FUNC_LINE;
-
-#ifdef NT_NEUTRINO_1_0_SYS_MAC
-    nt_pmic_init();
-    PRINT_LOG_FUNC_LINE;
-#endif
-
-    wifi_fw_pmic_init(cpr_openloop);
-    PRINT_LOG_FUNC_LINE;
-
-#ifndef CBC_CX_VOLTAGE_WAR
-    wifi_fw_cpr_init();
-    PRINT_LOG_FUNC_LINE;
-#endif /*CBC_CX_VOLTAGE_WAR */
-#ifdef QPOWER
-    nt_socpm_init();
-    PRINT_LOG_FUNC_LINE;
-#endif
-
-#if defined(SUPPORT_HIGH_RES_TIMER)
-    hres_timer_init_setup();
-    PRINT_LOG_FUNC_LINE;
-#if defined(HRES_TIMER_UNIT_TEST)
-    //TO-DO: should be moved to POST_KERNEL due to task creation
-    hres_timer_test_create_task();
-    PRINT_LOG_FUNC_LINE;
-#endif
-#endif
-
-    nt_socpm_secondary_init();
-    PRINT_LOG_FUNC_LINE;
-
-#ifdef NT_SOPCM_CHANGE
-    enum error_no reason=wifi_pdc_init();
-    if(reason != pdc_init_success ) {
-        WLAN_DBG0_PRINT("WIFI Resource Creation failed");
-    }
-    PRINT_LOG_FUNC_LINE;
-#else
-    unpa_init();
-    PRINT_LOG_FUNC_LINE;
-    nt_pdc_driver_init();
-    PRINT_LOG_FUNC_LINE;
-#ifdef NT_FN_PDC_
-    nt_pdc_init();
-    PRINT_LOG_FUNC_LINE;
-#endif
-#endif
-
-#ifdef NT_FN_CC_MGMT
-    nt_cc_battery_mgmt_init();
-    PRINT_LOG_FUNC_LINE;
-#endif
-
-#ifdef NT_FN_CPR
-    if((uint8_t) nt_socpm_cpr_flag_state_get(CPR_EN)) {
-        nt_cpr_init();
-        PRINT_LOG_FUNC_LINE;
-    }
-#endif //NT_FN_CPR
-
-#ifdef NT_FN_SYSMON
-    nt_sysmon_threshold_init();// initializing the thresholds for voltage and temperature
-    PRINT_LOG_FUNC_LINE;
-#endif
-
-#ifdef NT_GPIO_FLAG
-    nt_gpio_init();
-    PRINT_LOG_FUNC_LINE;
-#endif
-
-    wifi_fw_pmic_init(cpr_closeloop);
-    PRINT_LOG_FUNC_LINE;
-
-#ifdef CBC_CX_VOLTAGE_WAR
-    wifi_fw_cpr_init();
-    PRINT_LOG_FUNC_LINE;
-#endif // CBC_CX_VOLTAGE_WAR
-
-#ifdef NT_GPIO_FLAG
-    wifi_fw_gpio_init(FALSE);
-
-    PRINT_LOG_FUNC_LINE;
-#endif
-
-#ifdef FIRMWARE_APPS_INFORMED_WAKE
-    /* Initialize A2F interrupt */
-    init_aon_ext_wakeup_int();
-    PRINT_LOG_FUNC_LINE;
-
-#ifdef SUPPORT_RING_IF
-    /* F2A signal on cold boot */
-    wifi_fw_ext_cold_boot_f2a_signal();
-    PRINT_LOG_FUNC_LINE;
-#endif
-#else
-    /** Disable the external wakeup interrupt when the feature is not enabled
-    * as it prevents SOC from entering sleep state.
-    */
-    disable_aon_ext_wakeup_int();
-    PRINT_LOG_FUNC_LINE;
-
-#ifdef SUPPORT_RING_IF
-    wifi_fw_f2a_interrupt();
-    PRINT_LOG_FUNC_LINE;
-#endif
-#endif /* FIRMWARE_APPS_INFORMED_WAKE */
-
-    PRINT_LOG_FUNC_LINE_EXIT;
-}
 
 void qwifi_init (void)
 {
