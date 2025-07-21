@@ -266,7 +266,7 @@ void __enter_suspend2ram (void)
     mcu_sleep_wakeup();
     early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
     __enable_irq();
-}
+}
 
 void qapi_enter_suspend2ram(void)
 {
