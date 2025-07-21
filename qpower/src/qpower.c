@@ -280,7 +280,7 @@ void qapi_enter_suspend2ram(void)
         __enter_suspend2ram();
     } else if (IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
         log_printf("%s only wakeup by gpio\n", __FUNCTION__);
-        log_printf("%s WARNING: not supported yet. Please use <qpm s2ram 50000> which supports both timer & gpio wakeup\n", __FUNCTION__);
+        __enter_suspend2ram();
         return;
     }
 }
