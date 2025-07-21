@@ -165,13 +165,42 @@ enum  nt_slp_dbg_unit_test_type {
 #define LIGHT_SLEEP_CPU_BOOT_TO_MIN_CB_US          (340)
 #endif /*(SUPPORT_LIGHT_SLEEP_FOR_TWT) || defined (SUPPORT_SOC_SLEEP_SOLVER)*/
 
-extern uint8_t xo_settle_time;
-extern uint8_t pmic_slp_exit_time;
-extern uint32_t slp_exit_hw_delay_fixed;
 extern uint8_t ignore_bcmc_in_bmps;
-extern volatile uint64_t nt_socpm_slp_time_total;
-extern volatile uint32_t nt_socpm_m4_regs[15];;
+
+extern uint8_t _socpm_slp_exit;
+extern int _socpm_last_slp_count;
+
+extern uint8_t _socpm_mcu_sleep_wake;
+
 extern uint8_t _socpm_slp_clk_src;
+extern uint8_t _socpm_slp_time_supp_min_ms;
+
+// variables  for Silent app
+extern uint8_t _socpm_rram_ctl_f;
+
+extern volatile int nt_socpm_resume_f;
+// Variable to store stack pointer of current task
+extern volatile uint32_t nt_socpm_m4_regs[15];
+extern volatile uint64_t nt_socpm_slp_time_total;
+extern uint32_t nt_socpm_slp_time_min;
+extern uint32_t nt_socpm_slp_time_sby;
+extern int nt_socpm_sby_force;
+
+// xo settle timeout
+extern uint8_t xo_settle_time;
+extern uint8_t xo_trim_time;
+extern uint8_t son_en_wait_mcu;
+extern uint8_t son_en_wait_light;
+extern uint8_t son_en_wait_sby;
+// aon sm delay
+extern uint8_t mx_settle_time;
+extern uint8_t p8v_smps_settle_time;
+extern uint8_t pmic_slp_exit_time;
+extern uint8_t pmic_slp_entry_time;
+
+// Sleep HW delay, fixed part
+extern uint32_t slp_exit_hw_delay_fixed;
+extern uint32_t cpu_boot_bcn_rx_delay;
 
 #define NT_CHECK_BIT_STATE(_value , _pos) ( _value & (1 << _pos))
 
@@ -197,6 +226,8 @@ typedef enum sleep_types {
     clk_gtd_sleep = 1, mcu_sleep, Standby,Active
 } sleep_mode;
 #endif /* PLATFORM_FERMION */
+
+extern sleep_mode _socpm_slp_mode;
 
 typedef enum cpr_types {
     cpr_openloop = 0, cpr_closeloop = 1
@@ -241,6 +272,10 @@ typedef enum reason_to_wkup {
 #endif /* SUPPORT_SWTMR_TO_WKUP_FROM_BMPS */
 
 typedef struct {
+    uint32_t woken_src;
+    uint32_t slept_time_ms;
+    uint32_t aon_cmnss_wlan_slp_tmr_int_cnt;
+    uint8_t aon_cmnss_wlan_slp_tmr_int_processed;
     bool in_warm_boot;
 #ifdef NT_SOCPM_SW_MTUSR
     nt_mtusr_time_save_t mtusr_time_data;

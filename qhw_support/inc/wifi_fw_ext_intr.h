@@ -51,6 +51,9 @@ typedef enum f2a_short_reason
     F2A_SHORT_REASON_TWT_SP_START,                          //>> F2A Short because of TWT SP START
 } f2a_short_reason_t;
 
+extern uint32_t aon_ext_interrupt_wake_up_cnt;
+extern uint32_t aon_ext_interrupt_wake_up_processed;
+
 /*-------------------------------------------------------------------------
  * Function Declarations and Documentation
  * ----------------------------------------------------------------------*/

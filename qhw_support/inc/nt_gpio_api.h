@@ -121,6 +121,8 @@ typedef struct
     uint32_t int_en;
 }GPIO_Config_t;
 
+extern GPIO_Config_t gpio_config;
+
 /**
  * @Function: nt_gpio_init
  * @Description: root clock enabled in Init API.

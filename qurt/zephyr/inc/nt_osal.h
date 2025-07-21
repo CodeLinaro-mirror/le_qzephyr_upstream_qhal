@@ -69,14 +69,6 @@ typedef TickType_t nt_osal_tick_type_t;
 #define nt_osal_semaphore_create_binary(sem)	\
     qurt_sem_create(&sem)
 
-/*Wait until a Semaphore token becomes available*/
-#define nt_osal_semaphore_take(sem, block_time)	\
-			qurt_sem_down_timed(sem, block_time)
-
-/*Release a Semaphore token*/
-#define nt_osal_semaphore_give(sem)	\
-			qurt_sem_up(sem)
-
 #define nt_osal_semaphore_delete(sem) \
                qurt_sem_destroy(sem)
 
@@ -128,7 +120,7 @@ typedef TickType_t nt_osal_tick_type_t;
 
 /* expr == 0, trigger assert action*/
 #define configASSERT(expr) 		\
-    __ASSERT(expr == 0, "")
+    __ASSERT(expr, "")
 
 /**
  * <!-- nt_normal_delay -->

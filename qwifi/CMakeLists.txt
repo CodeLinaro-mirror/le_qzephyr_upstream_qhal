@@ -9,14 +9,6 @@ zephyr_include_directories(zephyr)
 #zephyr_library()
 zephyr_library_named(qwifi)
 
-set(QWIFI_STUB_ENABLE OFF)
-
-if(QWIFI_STUB_ENABLE)
-	zephyr_library_sources(zephyr/qwifi_stub.c)
-	message("QWIFI_STUB_ENABLE enable in debug mode")
-	return()
-endif()
-
 zephyr_library_sources(zephyr/qwifi.c)
 zephyr_library_sources(src/wlan_drv/qapi_wlan_base.c)
 zephyr_library_sources(src/wlan_drv/qapi_wlan_param_group.c)

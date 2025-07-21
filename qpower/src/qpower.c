@@ -244,33 +244,44 @@ void qapi_enter_softoff(void)
     PRINT_LOG_FUNC_LINE_ENTRY;
     nt_socpm_enable(1);
     PRINT_LOG_FUNC_LINE;
-    if (p_qpower_param->softoff_duration_ms && IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_AON_TIMER)) {
-        log_printf("%s only wakeup by timer\n");
+    if (p_qpower_param->softoff_duration_ms
+            && IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_AON_TIMER)
+            && IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_EXT_PIN)) {
+        log_printf("%s wakeup by timer %d ms or gpio\n", __FUNCTION__, p_qpower_param->softoff_duration_ms);
         nt_enable_standby(((uint64_t)(p_qpower_param->softoff_duration_ms))*1000);
     } else if (IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_EXT_PIN)) {
-        log_printf("%s only wakeup by ext gpio\n");
-        nt_socpm_en_indef_deep_sleep(TRUE);
+        log_printf("%s only wakeup by gpio\n", __FUNCTION__);
         nt_enable_indef_deepsleep();
     }
     PRINT_LOG_FUNC_LINE_EXIT;
 }
+
+void __enter_suspend2ram (void)
+{
+    __disable_irq();
+    early_printk("%s %d entry\r\n", __FUNCTION__, __LINE__);
+    arch_pm_s2ram_suspend(mcu_sleep_enter);
+    /* On resuming or error we return exactly *HERE* */
+    ram_minimum_code();
+    mcu_sleep_wakeup();
+    early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
+    __enable_irq();
+}
 
 void qapi_enter_suspend2ram(void)
 {
     qpower_param_t *p_qpower_param = &gs_qpower_param;
 
     PRINT_LOG_FUNC_LINE_ENTRY;
-    if (p_qpower_param->s2ram_duration_ms && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_AON_TIMER)) {
-        log_printf("%s only wakeup by timer\n");
-        __disable_irq();
-        arch_pm_s2ram_suspend(mcu_sleep_enter);
-        /* On resuming or error we return exactly *HERE* */
-        ram_minimum_code_init();
-        mcu_sleep_wakeup();
-        early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
-        __enable_irq();
-    } else {
-        log_printf("%s not support wakeup by ext gpio yet\n");
+    if (p_qpower_param->s2ram_duration_ms
+            && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_AON_TIMER)
+            && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
+        log_printf("%s wakeup by timer %d ms or gpio\n", __FUNCTION__, p_qpower_param->s2ram_duration_ms);
+        __enter_suspend2ram();
+    } else if (IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
+        log_printf("%s only wakeup by gpio\n", __FUNCTION__);
+        log_printf("%s WARNING: not supported yet. Please use <qpm s2ram 50000> which supports both timer & gpio wakeup\n", __FUNCTION__);
+        return;
     }
 }
 

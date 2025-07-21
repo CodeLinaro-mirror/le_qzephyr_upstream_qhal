@@ -229,11 +229,13 @@ void aon_ext_wakeup_set_lvl_trigger(void)
 }
 
 uint32_t aon_ext_interrupt_wake_up_cnt = 0;
+uint32_t aon_ext_interrupt_wake_up_processed;
 
 //ext assert
 void aon_ext_interrupt_wake_up(void)
 {
     aon_ext_interrupt_wake_up_cnt++;
+    aon_ext_interrupt_wake_up_processed = 1;
 
     // Clear the interrupt
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
