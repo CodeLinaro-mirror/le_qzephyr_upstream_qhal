@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #include "wifi_cmn.h"
 #include "fwconfig_cmn.h"
@@ -22,9 +22,9 @@
 #include "nt_imps.h"
 #endif
 
-//#include "nt_wfm_wmi_interface.h"
-//#include "wifi_app.h"
-#if defined (SUPPORT_HIGH_RES_TIMER)
+// #include "nt_wfm_wmi_interface.h"
+// #include "wifi_app.h"
+#if defined(SUPPORT_HIGH_RES_TIMER)
 #include "timer.h"
 #endif
 #ifdef FIRMWARE_APPS_INFORMED_WAKE
@@ -176,11 +176,11 @@ extern GPIO_Config_t gpio_config;
 #define _SOCPM_MBANK_A_CHK 0x1FFF0 // Define CMEM BANK A Address?
 
 // Read And Set Bits?
-#define _SOCPM_REG_RW(reg_addr, data) (*((volatile uint32_t *)(reg_addr))) = \
-        ((*((volatile uint32_t *)(reg_addr))) | ((uint32_t)(data)))
+#define _SOCPM_REG_RW(reg_addr, data)                                                                                  \
+    (*((volatile uint32_t *)(reg_addr))) = ((*((volatile uint32_t *)(reg_addr))) | ((uint32_t)(data)))
 // Read And Clear Bits
-#define _SOCPM_REG_RW_CLR(reg_addr, data) (*((volatile uint32_t *)(reg_addr))) = \
-        ((*((volatile uint32_t *)(reg_addr))) & (~((uint32_t)(data))))
+#define _SOCPM_REG_RW_CLR(reg_addr, data)                                                                              \
+    (*((volatile uint32_t *)(reg_addr))) = ((*((volatile uint32_t *)(reg_addr))) & (~((uint32_t)(data))))
 
 // MEM BAnk Types
 #define _SOCPM_MBANK_A 1
@@ -247,7 +247,8 @@ static void _socpm_slpcfg_light(void);
 #endif /*PLATFORM_FERMION*/
 
 static void _socpm_ctxt_save(void) __attribute__((naked));
-static void _socpm_mem_wr_drv(uint32_t Control_Reg, uint32_t Status_Reg, uint32_t Resource_Reg, uint32_t Resource_Value, Mem_Control type);
+static void _socpm_mem_wr_drv(uint32_t Control_Reg, uint32_t Status_Reg, uint32_t Resource_Reg, uint32_t Resource_Value,
+                              Mem_Control type);
 
 #if defined(SUPPORT_SOC_SLEEP_SOLVER) || defined(SUPPORT_SLEEP_LIST_IMPROVEMENTS)
 static sleep_mode nt_socpm_sleep_solver(uint64_t sleep_time);
@@ -264,8 +265,7 @@ static uint64_t nt_socpm_slp_tmr_get(void);
 extern uint8_t get_warmboot_status(void);
 extern uint32_t get_rmc_system_status(void);
 #ifdef _SOCPM_INC_FN_TIMESYNC
-struct _socpm_glob_s
-{
+struct _socpm_glob_s {
     uint32_t mtu_glob_tmr;
     uint64_t tsf_us;
     uint64_t aon_slp_tmr_us;
@@ -275,8 +275,7 @@ struct _socpm_glob_s
 /*****************************************/
 
 // SOCPM STATIC LIST
-typedef struct _socpm_wkup_inp_list_s
-{
+typedef struct _socpm_wkup_inp_list_s {
     nt_socpm_sleep_t slp_info;
     struct _socpm_wkup_inp_list_s *next;
 } _socpm_slp_lst_wkup_item_t;
@@ -292,14 +291,13 @@ static void _socpm_slp_dflt_cb(void);
 static void _socpm_wkup_dflt_cb(soc_wkup_reason wkup_reason);
 
 // Sleep Register List for freertos timers
-static nt_socpm_sleep_t _socpm_os_tmr = {
-    .slp_cb_fn = _socpm_slp_dflt_cb,
-    .wkup_cb_fn = _socpm_wkup_dflt_cb,
-    .min_cb_fn = socpm_imps_min_cb,
-    .slp_mode = clk_gtd_sleep,
-    .slp_time = 0x7FFFFFFF,
-    .list_no = -1,
-    .start_time_us = 0};
+static nt_socpm_sleep_t _socpm_os_tmr = {.slp_cb_fn = _socpm_slp_dflt_cb,
+                                         .wkup_cb_fn = _socpm_wkup_dflt_cb,
+                                         .min_cb_fn = socpm_imps_min_cb,
+                                         .slp_mode = clk_gtd_sleep,
+                                         .slp_time = 0x7FFFFFFF,
+                                         .list_no = -1,
+                                         .start_time_us = 0};
 
 //@TO-DO need to cross check the lock mechanism
 // static int sleep_lock =0;
@@ -404,8 +402,8 @@ static wapp_msg_struct_t networkConf;
 #endif // NT_FN_WPS
 #endif // ifndef PLATFORM_FERMION
 
-//extern uint32_t *cli_msg_id_temp;
-//extern uint32_t *bss_addr;
+// extern uint32_t *cli_msg_id_temp;
+// extern uint32_t *bss_addr;
 int process_routine;
 
 #ifdef SOCPM_SLEEP_DEBUG
@@ -425,8 +423,7 @@ uint8_t get_slp_lst_cnt()
     if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD)
         return 0;
 
-    while (p_next != NULL)
-    {
+    while (p_next != NULL) {
         p_curr = p_next;
         p_next = p_curr->next;
         cnt++;
@@ -435,7 +432,7 @@ uint8_t get_slp_lst_cnt()
     return cnt;
 }
 
-void socpm_log_timestamp(SOCPM_DBG_TIMING proc, uint32_t d1, uint32_t d2,uint32_t d3)
+void socpm_log_timestamp(SOCPM_DBG_TIMING proc, uint32_t d1, uint32_t d2, uint32_t d3)
 {
     socpm_dbg_log[socpm_dbg_log_idx].proc = proc;
     socpm_dbg_log[socpm_dbg_log_idx].ts = hres_timer_curr_time_us();
@@ -444,16 +441,14 @@ void socpm_log_timestamp(SOCPM_DBG_TIMING proc, uint32_t d1, uint32_t d2,uint32_
     socpm_dbg_log[socpm_dbg_log_idx].d2 = d2;
     socpm_dbg_log[socpm_dbg_log_idx].d3 = d3;
 
-    socpm_dbg_log[socpm_dbg_log_idx].ms = (_socpm_slp_lst_head&0xf)|((get_slp_lst_cnt()<<4)&0xf0)|
-                    ((_socpm_slp_mode<<8)&0xf00);
+    socpm_dbg_log[socpm_dbg_log_idx].ms =
+        (_socpm_slp_lst_head & 0xf) | ((get_slp_lst_cnt() << 4) & 0xf0) | ((_socpm_slp_mode << 8) & 0xf00);
     if (_socpm_slp_lst_head != _INVALID_SLP_LST_HD)
-        socpm_dbg_log[socpm_dbg_log_idx].slp_1 =
-            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time);
-    if (get_slp_lst_cnt()>1)
-        socpm_dbg_log[socpm_dbg_log_idx].slp_2 =
-        _socpm_slp_lst[_socpm_slp_lst_head].next->slp_info.slp_time;
+        socpm_dbg_log[socpm_dbg_log_idx].slp_1 = (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time);
+    if (get_slp_lst_cnt() > 1)
+        socpm_dbg_log[socpm_dbg_log_idx].slp_2 = _socpm_slp_lst[_socpm_slp_lst_head].next->slp_info.slp_time;
 
-    socpm_dbg_log_idx = (socpm_dbg_log_idx+1)%MAX_LOG_ENTRY_PM;
+    socpm_dbg_log_idx = (socpm_dbg_log_idx + 1) % MAX_LOG_ENTRY_PM;
 }
 #endif
 
@@ -462,18 +457,20 @@ uint32_t get_son_en_wait_ticks(uint32_t son_en_wait)
     uint32_t wait_ticks = 0, chip_ver = 2, otp_ver_high = 1;
     son_en_wait = son_en_wait & 0xF;
 
-#if (FERMION_CHIP_VERSION==1)
+#if (FERMION_CHIP_VERSION == 1)
     chip_ver = 1;
-#elif(FERMION_CHIP_VERSION == 2)
+#elif (FERMION_CHIP_VERSION == 2)
     chip_ver = 2;
-    otp_ver_high = HWIO_INXF(SEQ_WCSS_OTP_OFFSET, FERMION_V2_0_QFPROM_RAW_FUSE_MAP_SECURITY_CONTROL_CORE_RAW_R_QFPROM_RAW_PTE_REGION_1_W3, TRIM_TAG_HIGH);
+    otp_ver_high = HWIO_INXF(SEQ_WCSS_OTP_OFFSET,
+                             FERMION_V2_0_QFPROM_RAW_FUSE_MAP_SECURITY_CONTROL_CORE_RAW_R_QFPROM_RAW_PTE_REGION_1_W3,
+                             TRIM_TAG_HIGH);
 #endif
 
     if (chip_ver == 2 && otp_ver_high >= 1) {
         if (son_en_wait <= 4)
             wait_ticks = 0;
         else if (son_en_wait <= 9)
-            wait_ticks = 1 + (son_en_wait >= 7)?(son_en_wait - 7):0;
+            wait_ticks = 1 + (son_en_wait >= 7) ? (son_en_wait - 7) : 0;
         else if (son_en_wait == 10)
             wait_ticks = 7;
         else
@@ -496,12 +493,13 @@ uint32_t get_sleep_exit_hw_delay(sleep_mode slp_mode)
 
     if (slp_mode == mcu_sleep) {
         son_en_wait = get_son_en_wait_ticks(son_en_wait_mcu);
-        delay = ((slp_exit_hw_delay_fixed*2 + xo_settle_time*4 + pmic_slp_exit_time + son_en_wait*2)*15625)/1024;
+        delay =
+            ((slp_exit_hw_delay_fixed * 2 + xo_settle_time * 4 + pmic_slp_exit_time + son_en_wait * 2) * 15625) / 1024;
     }
 
 #ifdef APPLY_SLEEP_CLK_CORRECTION
     if (g_socpm_struct.slp_clk_cal_params.slp_clk_cal_enabled_mode == ACTIVE_MODE)
-        delay = delay * g_socpm_struct.slp_clk_cal_params.xocnt/g_socpm_struct.slp_clk_cal_params.refxocnt;
+        delay = delay * g_socpm_struct.slp_clk_cal_params.xocnt / g_socpm_struct.slp_clk_cal_params.refxocnt;
 #endif
 
     delay += cpu_boot_bcn_rx_delay;
@@ -518,19 +516,20 @@ uint32_t get_sleep_exit_hw_delay(sleep_mode slp_mode)
  * @param option 0 = RC from PMIC, 1 = XO from RFA, 2 = External XO from PMIC
  * @return none
  */
-void nt_sleep_clock_configuration(
-    uint8_t option)
+void nt_sleep_clock_configuration(uint8_t option)
 {
-    switch (option)
-    {
+    switch (option) {
     case 0:
-        NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG, QWLAN_PMU_AON_TOP_CFG_DEFAULT); // Configuring with a value of 0 to choose RC from PMIC
+        NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG,
+                  QWLAN_PMU_AON_TOP_CFG_DEFAULT); // Configuring with a value of 0 to choose RC from PMIC
         break;
     case 1:
-        NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG, QWLAN_PMU_AON_TOP_CFG_CFG_XO_SLP_CLK_SEL_EN_MASK); // Configuring to choose XO from RFA
+        NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG,
+                  QWLAN_PMU_AON_TOP_CFG_CFG_XO_SLP_CLK_SEL_EN_MASK); // Configuring to choose XO from RFA
         break;
     case 2:
-        NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG, QWLAN_PMU_AON_TOP_CFG_CFG_XO_SLP_CLK_SEL_EN_MASK); // Configuring to choose XO from PMIC
+        NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG,
+                  QWLAN_PMU_AON_TOP_CFG_CFG_XO_SLP_CLK_SEL_EN_MASK); // Configuring to choose XO from PMIC
         break;
     }
 }
@@ -546,16 +545,12 @@ void nt_configure_socpm_state(void)
     uint8_t socpm_enable = 0;
 
     devcfg_val = ((uint8_t *)(nt_devcfg_get_config(NT_DEVCFG_SOCPM_ENABLE)));
-    if (devcfg_val == NULL)
-    {
+    if (devcfg_val == NULL) {
         NT_LOG_SME_ERR("Failed to read NT_DEVCFG_SOCPM_ENABLE", 0, 0, 0);
-    }
-    else
-    {
+    } else {
         socpm_enable = *devcfg_val;
     }
-    if (socpm_enable || is_wlan_power_save_enabled())
-    {
+    if (socpm_enable || is_wlan_power_save_enabled()) {
         nt_socpm_enable(1);
     }
 }
@@ -569,8 +564,7 @@ void nt_configure_socpm_state(void)
  */
 // AON External Interrupt
 
-void aon_clr_external_int(
-    void)
+void aon_clr_external_int(void)
 {
     BaseType_t xHigherPriorityTaskWoken = FALSE;
     uint32_t clr_ext_int = NT_REG_RD(QWLAN_PMU_AON_LIC_INT_CLR_REG);
@@ -599,15 +593,12 @@ void aon_ext_interrupt_check(void)
 {
     static uint32_t wps_timeout = 0;
     static uint32_t nor_timeout = 0;
-    if (_SOCPM_IS_BIT_SET(active_ext_int, 31))
-    {
+    if (_SOCPM_IS_BIT_SET(active_ext_int, 31)) {
         active_ext_int = 0;
 
-        if (wps_timeout++ > 50)
-        {
+        if (wps_timeout++ > 50) {
             WLAN_DBG0_PRINT("wps button pressed\r\n");
-            if (pg_wps->wps_init_flag == 1)
-            {
+            if (pg_wps->wps_init_flag == 1) {
                 WLAN_DBG0_PRINT("wps\r\n");
                 wps_timeout = 0;
                 nor_timeout = 0;
@@ -617,8 +608,7 @@ void aon_ext_interrupt_check(void)
 
                 wapp_cntx_h *p_wps_conf = NULL;
                 p_wps_conf = (wapp_cntx_h *)nt_osal_allocate_memory(sizeof(wapp_cntx_h));
-                if (p_wps_conf)
-                {
+                if (p_wps_conf) {
                     memset(&networkConf, 0x0, sizeof(wapp_msg_struct_t));
                     // static wapp_msg_struct_t networkConf;
                     networkConf.device_action = wps_pbc_hndlr;
@@ -629,13 +619,11 @@ void aon_ext_interrupt_check(void)
 
                     aon_clr_external_int();
 
-                    if (NT_QUEUE_FAIL == qurt_pipe_send_timed(wifiapp_queue_handle, (void *)&networkConf, portMAX_DELAY))
-                    {
+                    if (NT_QUEUE_FAIL ==
+                        qurt_pipe_send_timed(wifiapp_queue_handle, (void *)&networkConf, portMAX_DELAY)) {
                         NT_LOG_SME_ERR("Queue send failed", 0, 0, 0);
                     }
-                }
-                else
-                {
+                } else {
                     WLAN_DBG0_PRINT("Failed to allocate memory\r\n");
                 }
             }
@@ -644,11 +632,8 @@ void aon_ext_interrupt_check(void)
             _socpm_tmr_flag = 0;
             // break the loop
         }
-    }
-    else
-    {
-        if (nor_timeout++ > 10)
-        {
+    } else {
+        if (nor_timeout++ > 10) {
             WLAN_DBG0_PRINT("ext int\r\n");
             nor_timeout = 0;
             wps_timeout = 0;
@@ -665,8 +650,7 @@ void aon_ext_interrupt_check(void)
 #endif // NT_FN_WPS
 
 // Enable External Wake-up interrupt (63)
-void enable_aon_ext_wakeup_int(
-    void)
+void enable_aon_ext_wakeup_int(void)
 {
     uint32_t en_ext_int = NT_REG_RD(NVIC_ISER1);
 
@@ -676,8 +660,7 @@ void enable_aon_ext_wakeup_int(
 
     WLAN_DBG0_PRINT("ext\r\n");
 
-    if (ext_int_timer == NULL)
-    {
+    if (ext_int_timer == NULL) {
         WLAN_DBG0_PRINT("ext err\r\n");
         return; // timer creation failed
     }
@@ -689,10 +672,9 @@ void enable_aon_ext_wakeup_int(
 }
 
 // External interrupt ISR
-void __attribute__((section(".after_ram_vectors")))
-aon_ext_interrupt_wake_up(void)
+void __attribute__((section(".after_ram_vectors"))) aon_ext_interrupt_wake_up(void)
 {
-	PROF_IRQ_ENTER();
+    PROF_IRQ_ENTER();
 
 #ifdef NT_FN_WPS
     int status = 0;
@@ -703,13 +685,10 @@ aon_ext_interrupt_wake_up(void)
 
 #ifdef NT_FN_WPS
     // active_ext_int = NT_REG_RD(0xE000E304);
-    if (_socpm_tmr_flag == 0)
-    {
-        if (ext_int_timer != NULL)
-        {
+    if (_socpm_tmr_flag == 0) {
+        if (ext_int_timer != NULL) {
             status = qurt_timer_start_frm_isr(ext_int_timer, FALSE);
-            if (status != 0)
-            {
+            if (status != 0) {
                 uart_hal_poll_out_str_ext("isr timer err\r\n");
             }
             uart_hal_poll_out_str_ext("TS\r\n");
@@ -718,15 +697,14 @@ aon_ext_interrupt_wake_up(void)
     }
 #endif
 
-	PROF_IRQ_EXIT();
+    PROF_IRQ_EXIT();
 }
 #endif // ifndef PLATFORM_FERMION
 
 /*-----------------------------------------------------------*/
 
 #if !defined(IMAGE_FERMION)
-void nt_socpm_glob_restore(
-    void)
+void nt_socpm_glob_restore(void)
 {
 /*
     #ifdef _SOCPM_INC_FN_TIMESYNC
@@ -746,9 +724,7 @@ void nt_socpm_glob_restore(
 #endif
 }
 
-static void
-_socpm_glob_save(
-    uint64_t aon_tmr_us)
+static void _socpm_glob_save(uint64_t aon_tmr_us)
 {
     (void)aon_tmr_us;
 
@@ -768,25 +744,13 @@ _socpm_glob_save(
 }
 #endif // !defined(IMAGE_FERMION)
 
-uint64_t nt_socpm_min_slp_time_us()
-{
-    return MS_TO_US(_socpm_slp_time_supp_min_ms);
-}
+uint64_t nt_socpm_min_slp_time_us() { return MS_TO_US(_socpm_slp_time_supp_min_ms); }
 
-sleep_mode nt_socpm_curr_slp_mode()
-{
-    return _socpm_slp_mode;
-}
+sleep_mode nt_socpm_curr_slp_mode() { return _socpm_slp_mode; }
 
-uint8_t nt_socpm_wake_from_mcuss_sleep(void)
-{
-    return _socpm_mcu_sleep_wake;
-}
+uint8_t nt_socpm_wake_from_mcuss_sleep(void) { return _socpm_mcu_sleep_wake; }
 
-int nt_get_socpm_slp_lst_head(void)
-{
-    return _socpm_slp_lst_head;
-}
+int nt_get_socpm_slp_lst_head(void) { return _socpm_slp_lst_head; }
 
 #if defined(SUPPORT_SWTMR_TO_WKUP_FROM_BMPS) && defined(SUPPORT_SLEEP_LIST_IMPROVEMENTS)
 /*
@@ -795,15 +759,13 @@ int nt_get_socpm_slp_lst_head(void)
  * @return :updated slp_val: depending on the qtimer expiry the sleep value will be updated
  * @note: This function should not be called out of Idle task context, due to scheduler suspension state
  */
-static uint64_t
-nt_socpm_get_sleep_time(uint64_t cur_slp_val)
+static uint64_t nt_socpm_get_sleep_time(uint64_t cur_slp_val)
 {
     g_socpm_struct.info.ms_time = cur_slp_val;
     bool is_timer_task_handle = false;
     TaskHandle_t delayed_list_head_owner = xGetDelayedListHeadOwner();
 
-    if (NULL != delayed_list_head_owner)
-    {
+    if (NULL != delayed_list_head_owner) {
         is_timer_task_handle = xIsTimertaskHandle(delayed_list_head_owner);
     }
 
@@ -812,31 +774,22 @@ nt_socpm_get_sleep_time(uint64_t cur_slp_val)
      */
     g_socpm_struct.info.ms_time = hres_timer_pre_sleep(&g_socpm_struct.info, /* task_scheduler_state */ false);
 
-    if (g_socpm_struct.info.ms_time <= cur_slp_val)
-    {
+    if (g_socpm_struct.info.ms_time <= cur_slp_val) {
         g_socpm_struct.wkup_reason = REASON_TO_WKUP_Q_TIMER;
-    }
-    else
-    {
-        if (is_timer_task_handle && !nt_ignore_timer_wakeup(_socpm_slp_lst_head))
-        {
+    } else {
+        if (is_timer_task_handle && !nt_ignore_timer_wakeup(_socpm_slp_lst_head)) {
             g_socpm_struct.wkup_reason = REASON_TO_WKUP_NT_TIMER;
             g_socpm_struct.info.nt_timer_callback = xGetHeadTimerCallback();
             g_socpm_struct.info.ms_time = cur_slp_val;
-        }
-        else
-        {
+        } else {
             g_socpm_struct.wkup_reason = REASON_TO_WKUP_NT_TASK;
-            if (is_timer_task_handle)
-            {
+            if (is_timer_task_handle) {
                 g_socpm_struct.info.ms_time = xGetNextSleepTime();
-            }
-            else
-            {
+            } else {
                 g_socpm_struct.info.ms_time = cur_slp_val;
             }
-            memscpy(g_socpm_struct.info.pcTaskName, configMAX_TASK_NAME_LEN,
-                    pcTaskGetName(delayed_list_head_owner), configMAX_TASK_NAME_LEN);
+            memscpy(g_socpm_struct.info.pcTaskName, configMAX_TASK_NAME_LEN, pcTaskGetName(delayed_list_head_owner),
+                    configMAX_TASK_NAME_LEN);
         }
     }
     return g_socpm_struct.info.ms_time;
@@ -850,8 +803,7 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
     uint64_t slp_exp = 0;
 
 #ifdef FIRMWARE_APPS_INFORMED_WAKE
-    if ((TRUE == g_socpm_struct.a2f_asserted) || (TRUE == g_socpm_struct.f2a_asserted))
-    {
+    if ((TRUE == g_socpm_struct.a2f_asserted) || (TRUE == g_socpm_struct.f2a_asserted)) {
         /** Check if A2F or F2A are asserted and abort sleep.
          * This check is performed after IRQ disable to avoid the scenario of
          * the A2F IRQ status being cleared and erroneously allowing the system
@@ -867,53 +819,47 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
         /* Re-enable interrupts */
         NT_SOCPM_IRQ_ENABLE();
     }
-#else /*FIRMWARE_APPS_INFORMED_WAKE*/
-    if(0) {
+#else  /*FIRMWARE_APPS_INFORMED_WAKE*/
+    if (0) {
         /* For legacy code compilation */
     }
 #endif /*FIRMWARE_APPS_INFORMED_WAKE*/
 #ifdef SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD
     /* To exercise datapath flush during BMPS need to avoid the soc going to sleep */
-    else if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_ON_DURING_BMPS))
-    {
+    else if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_ON_DURING_BMPS)) {
         /* Restart tick. */
-		_socpm_systick_on();
-		/* Re-enable interrupts */
-		NT_SOCPM_IRQ_ENABLE();
+        _socpm_systick_on();
+        /* Re-enable interrupts */
+        NT_SOCPM_IRQ_ENABLE();
 
     }
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
 
-    else
-    {
+    else {
         /*Decide on which sleep type to enter
          * limited now on sleep time need to add battery and voting inputs to it
          */
         nt_socpm_resume_f = 1;
 #ifdef SUPPORT_IMPS_IMPROVEMENTS
-        if((g_ppm_common_struct.imps_struct_ctx.imps_registered == TRUE) && g_ppm_common_struct.imps_struct_ctx.imps_enabled && g_ppm_common_struct.imps_struct_ctx.policy == Standby)
-        {
+        if ((g_ppm_common_struct.imps_struct_ctx.imps_registered == TRUE) &&
+            g_ppm_common_struct.imps_struct_ctx.imps_enabled && g_ppm_common_struct.imps_struct_ctx.policy == Standby) {
             nt_wpm_register_imps_standby();
         }
 #endif /* SUPPORT_IMPS_IMPROVEMENTS */
 #if defined(SUPPORT_SLEEP_LIST_IMPROVEMENTS)
         if (_INVALID_SLP_LST_HD != _socpm_slp_lst_head &&
-            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time != 0))
-        {
+            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time != 0)) {
             uint64_t updated_slp_val = 0;
 #if defined(SUPPORT_SWTMR_TO_WKUP_FROM_BMPS)
             updated_slp_val = nt_socpm_get_sleep_time(slp_val);
 #else
             updated_slp_val = slp_val;
 #endif /* SUPPORT_SWTMR_TO_WKUP_FROM_BMPS */
-            if (updated_slp_val != portMAX_DELAY)
-            {
-                if (updated_slp_val != slp_val && updated_slp_val > xMaximumPossibleSuppressedTicks)
-                {
+            if (updated_slp_val != portMAX_DELAY) {
+                if (updated_slp_val != slp_val && updated_slp_val > xMaximumPossibleSuppressedTicks) {
                     updated_slp_val = xMaximumPossibleSuppressedTicks;
                 }
-                if (updated_slp_val != slp_val && updated_slp_val > _SOCPM_STOP_TMR_COMP)
-                {
+                if (updated_slp_val != slp_val && updated_slp_val > _SOCPM_STOP_TMR_COMP) {
                     /* Compensate for the fact that the Sleep timer is going to be stopped
                      * momentarily. */
                     updated_slp_val -= _SOCPM_STOP_TMR_COMP;
@@ -924,35 +870,32 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
                      *  @brief: Check for a better sleep only if the protocol has already registered for mcu/light sleep
                      *          else the RRI save would not have happened and there is no pint going to better sleep.
                      */
-                    && _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_mode != clk_gtd_sleep)
-                {
+                    && _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_mode != clk_gtd_sleep) {
                     _socpm_os_tmr.slp_mode = nt_socpm_sleep_solver(_socpm_os_tmr.slp_time);
                     NT_LOG_PRINT(SOCPM, INFO, "nt_socpm_sleep_solver");
-                }
-                else
-                {
+                } else {
                     _socpm_os_tmr.slp_mode = clk_gtd_sleep;
                 }
 
-                NT_LOG_PRINT(SOCPM, INFO, " _socpm_slp_lst_head %d slp_time: %d _socpm_last_slp_count:%d updated_slp_val: %d slp_mode: %d ", _socpm_slp_lst_head, (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time/1000, _socpm_last_slp_count, (uint32_t)updated_slp_val,_socpm_os_tmr.slp_mode);
-
+                NT_LOG_PRINT(
+                    SOCPM, INFO,
+                    " _socpm_slp_lst_head %d slp_time: %d _socpm_last_slp_count:%d updated_slp_val: %d slp_mode: %d ",
+                    _socpm_slp_lst_head, (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time / 1000,
+                    _socpm_last_slp_count, (uint32_t)updated_slp_val, _socpm_os_tmr.slp_mode);
             }
-        }
-        else
+        } else
 #endif
         {
             _socpm_os_tmr.slp_time = (slp_val * 1000); // ticks to converting to us
             _socpm_os_tmr.slp_mode = clk_gtd_sleep;
         }
-        if (!(_socpm_os_tmr.slp_mode != clk_gtd_sleep && _socpm_os_tmr.slp_time == portMAX_DELAY))
-        {
+        if (!(_socpm_os_tmr.slp_mode != clk_gtd_sleep && _socpm_os_tmr.slp_time == portMAX_DELAY)) {
             _socpm_slp_exit = 0;
             _socpm_slp_list_idx_rtos = nt_socpm_sleep_register(&_socpm_os_tmr, _socpm_slp_list_idx_rtos);
         }
 #ifdef SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD
         /* Adding pending dummy sleep nodes to sleep list to exercise the sleep list functionality and handling*/
-        if (g_socpm_struct.add_dummy_slp_list_node)
-        {
+        if (g_socpm_struct.add_dummy_slp_list_node) {
             nt_add_dummy_slp_list_node();
         }
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
@@ -961,11 +904,11 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
 #ifdef SOCPM_SLEEP_DEBUG
         if (_socpm_slp_mode == mcu_sleep) {
             uint32_t d1 = _SOCPM_RC_OR_EXT_CLK_AON_TICK_TO_US(
-                (((uint64_t)(NT_REG_RD(QWLAN_PMU_WLAN_SLP_TMR_EXP_MSB_REG)))<<32) |
+                (((uint64_t)(NT_REG_RD(QWLAN_PMU_WLAN_SLP_TMR_EXP_MSB_REG))) << 32) |
                 (NT_REG_RD(QWLAN_PMU_WLAN_SLP_TMR_EXP_LSB_REG)));
             uint32_t d2 = nt_socpm_get_slp_tmr_us();
             uint32_t d3 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_cb_fn;
-            socpm_log_timestamp(__PREV_SLP,d1,d2,d3);
+            socpm_log_timestamp(__PREV_SLP, d1, d2, d3);
         }
 #endif
 
@@ -988,8 +931,7 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
         }
 #endif /* IDLE_DISABLED */
         FDI_NODE_START_NULL(FDI_DBG_PWR_S2W_IDLE_RESTORE_CONTEXT);
-        if (_socpm_slp_mode != clk_gtd_sleep)
-        {
+        if (_socpm_slp_mode != clk_gtd_sleep) {
 #if defined(PLATFORM_NT)
             /* Reset the PSS */
             nt_gpio_init();
@@ -1004,7 +946,7 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
         }
 
 #ifdef NT_GPIO_FLAG
-        //nt_gpio_pin_write(NT_GPIOA, GPIO_PIN_5, NT_GPIO_HIGH);
+        // nt_gpio_pin_write(NT_GPIOA, GPIO_PIN_5, NT_GPIO_HIGH);
 #endif
         /* Stop Sleep timer.  Give Control Back to SYSTICK Handler*/
         _socpm_slptmr_off();
@@ -1017,9 +959,8 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
 #ifdef COMPENSATE_AON_PROG_DELAY
         /* Apply correction post clock gated sleep */
         /* Total sleep time = AON measured sleep time + AON programming time + US2MS error carried forward */
-        uint64_t slp_exp_us = (nt_socpm_get_slp_tmr_us() +
-                               g_socpm_struct.aon_program_time_us +
-                               g_socpm_struct.unapplied_err_us);
+        uint64_t slp_exp_us =
+            (nt_socpm_get_slp_tmr_us() + g_socpm_struct.aon_program_time_us + g_socpm_struct.unapplied_err_us);
         slp_exp = US_TO_MS(slp_exp_us);
         g_socpm_struct.unapplied_err_us = (slp_exp_us - 1000 * slp_exp);
         g_socpm_struct.systick_off_time_us = 0;
@@ -1027,32 +968,27 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
         slp_exp = US_TO_MS(nt_socpm_get_slp_tmr_us());
 #endif /* COMPENSATE_AON_PROG_DELAY */
 
-        if (nt_socpm_slp_time_total > 0)
-        {
+        if (nt_socpm_slp_time_total > 0) {
 #if QCCSDK
             vTaskStepTick(nt_socpm_slp_time_total);
 #endif
 #if ZEPHYR
-            //TODO
+            // TODO
 #endif
-        }
-        else if (nt_socpm_resume_f == 2)
-        {
+        } else if (nt_socpm_resume_f == 2) {
 #if QCCSDK
             vTaskStepTick(slp_exp);
 #endif
 #if ZEPHYR
-            //TODO
+            // TODO
             (void)slp_exp;
 #endif
-        }
-        else
-        {
+        } else {
 #if QCCSDK
             vTaskStepTick(slp_exp);
 #endif
 #if ZEPHYR
-            //TODO
+            // TODO
             (void)slp_exp;
 #endif
         }
@@ -1061,9 +997,9 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
         socpm_slp_clk_cal_postawake_activities();
 #endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
 
-// #ifdef SUPPORT_SW_NON_POLLED_RRI
-//             nt_pm_sync_non_polled_rri_completion(gdevp);
-// #endif /* SUPPORT_SW_NON_POLLED_RRI */
+        // #ifdef SUPPORT_SW_NON_POLLED_RRI
+        //             nt_pm_sync_non_polled_rri_completion(gdevp);
+        // #endif /* SUPPORT_SW_NON_POLLED_RRI */
 
         // Reenable systick
         _socpm_systick_on();
@@ -1080,13 +1016,11 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
         nt_socpm_resume_f = 1;
         nt_socpm_slp_time_total = 0;
         // Check whether Sleep exited because of sleep timer or other interrupt
-        if (_socpm_slp_exit == 0)
-        {
+        if (_socpm_slp_exit == 0) {
             /*It makes sense to remove the clock gated sleep so that idle thread would register for
              * new clockgated sleep if needed, the thread/timer which requested this may not need it anymore*/
             nt_socpm_sleep_lst_delete(0);
-            if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD)
-            {
+            if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD) {
                 /*set expiry to large value so that AON timer armed for this doesnt expire*/
                 NT_REG_WR(QWLAN_PMU_WLAN_SLP_TMR_EXP_LSB_REG, 0XFFFFFFFF);
                 __asm volatile("nop");
@@ -1094,8 +1028,7 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
                 __asm volatile("nop");
             }
         }
-        if (_socpm_mcu_sleep_wake == 1)
-        {
+        if (_socpm_mcu_sleep_wake == 1) {
             _socpm_mcu_sleep_wake = 0;
             uart_hal_poll_out_str_ext("H\r\n");
 #ifdef SOCPM_SLEEP_DEBUG
@@ -1107,21 +1040,21 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
                 d2 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].next->slp_info.slp_cb_fn;
             if (lst_cnt >= 3)
                 d2 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].next->next->slp_info.slp_cb_fn;
-            socpm_log_timestamp(_POST_WAKE,d1,d2,d3);
+            socpm_log_timestamp(_POST_WAKE, d1, d2, d3);
 #endif
             FDI_NODE_STOP_NULL(FDI_DBG_PWR_S2W_IDLE_RESTORE_CONTEXT);
 
 #if defined(FEATURE_FDI_RMC)
-            for (uint32_t rmc_logs = 0; rmc_logs < fdi_rmc_get_index(); rmc_logs++)
-            {
+            for (uint32_t rmc_logs = 0; rmc_logs < fdi_rmc_get_index(); rmc_logs++) {
                 FDI_NODE2LOG((g_fdi_rmc_node_ins_list[rmc_logs].attr & FDI_NODE_ATTR_ID_MASK),
                              &(g_fdi_rmc_node_ins_list[rmc_logs]));
             }
             fdi_rmc_reset_index();
 #endif
             // *bss_addr = (uint32_t)cli_msg_id_temp; // restoring the wfm queue value after existing from sleep.
-                                                   /*portNVIC_SYSTICK_LOAD_REG = ( configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ ) - 1UL;
-                                                   portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT | portNVIC_SYSTICK_ENABLE_BIT );*/
+            /*portNVIC_SYSTICK_LOAD_REG = ( configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ ) - 1UL;
+            portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT |
+            portNVIC_SYSTICK_ENABLE_BIT );*/
 
 #ifdef NT_FN_CPR
             nt_cpr_init();
@@ -1132,31 +1065,30 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
             hres_timer_post_sleep();
 #endif
 #endif
-            __asm volatile(
-                " ldr r1, =store_init_context \n"
-                " ldr r0, [r1] \n"
-                " msr psp, r0 \n"
+            __asm volatile(" ldr r1, =store_init_context \n"
+                           " ldr r0, [r1] \n"
+                           " msr psp, r0 \n"
 
-                " add r1, #68 \n"
-                " ldr r0, [r1] \n"
-                " mov lr, r0 \n"
+                           " add r1, #68 \n"
+                           " ldr r0, [r1] \n"
+                           " mov lr, r0 \n"
 
-                " mov r2, #2 \n"
-                " msr control, r2 \n"
+                           " mov r2, #2 \n"
+                           " msr control, r2 \n"
 
-                " mov r0, #0    \n"
-                " msr basepri, r0 \n"
-                " nop \n"
+                           " mov r0, #0    \n"
+                           " msr basepri, r0 \n"
+                           " nop \n"
 
-                //                 " add r1, #8 \n"
-                //                 " ldr r0, [r1] \n"
-                //                 " msr psr, r0 \n"
+                           //                 " add r1, #8 \n"
+                           //                 " ldr r0, [r1] \n"
+                           //                 " msr psr, r0 \n"
 
-                "cpsie f \n"
+                           "cpsie f \n"
 
-                " add r1, #4 \n"
-                " ldr r0, [r1] \n"
-                " mov pc, r0 \n");
+                           " add r1, #4 \n"
+                           " ldr r0, [r1] \n"
+                           " mov pc, r0 \n");
         }
         // GC:TODO
         // else
@@ -1169,10 +1101,7 @@ void nt_socpm_soc_sleep_processing(uint64_t slp_val)
 
 #ifdef NT_TST_HEAP_COMP_CODE
 
-void __copy_from_rram_to_ram_min(
-    unsigned int *source_address,
-    unsigned int *dest_address,
-    unsigned int *block_size)
+void __copy_from_rram_to_ram_min(unsigned int *source_address, unsigned int *dest_address, unsigned int *block_size)
 {
     // Iterate and copy word by word.
     unsigned int *src = source_address;
@@ -1180,8 +1109,7 @@ void __copy_from_rram_to_ram_min(
     unsigned int size = (unsigned int)block_size;
     unsigned int copy_count = 0;
 
-    for (copy_count = 0; copy_count < size; copy_count = copy_count + 4)
-    {
+    for (copy_count = 0; copy_count < size; copy_count = copy_count + 4) {
         *dst++ = *src++;
     }
 }
@@ -1193,14 +1121,18 @@ void nt_do_heap_decompression(void)
     unsigned int size_to_copy = (unsigned int)0x80000 - (unsigned int)(&_ln_RAM_addr_heap_start__);
     unsigned int *src = (unsigned int *)(&_ln_RAM_addr_heap_start__);
 
-    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_app_txt__, &_ln_RAM_start_addr_app_txt__, &_ln_app_txt_size__);       // copying apps txt
-    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_app_data__, &_ln_RAM_start_addr_app_data__, &_ln_app_data_size__);    // copying apps data
-    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_perf_txt__, &_ln_RAM_start_addr_perf_txt__, &_ln_perf_txt_size__);    // copying perf text
-    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_perf_data__, &_ln_RAM_start_addr_perf_data__, &_ln_perf_data_size__); // copying perf data
-    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_data__, &_ln_RAM_start_addr_data__, &_ln_data_size__);                // copying data section
+    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_app_txt__, &_ln_RAM_start_addr_app_txt__,
+                                &_ln_app_txt_size__); // copying apps txt
+    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_app_data__, &_ln_RAM_start_addr_app_data__,
+                                &_ln_app_data_size__); // copying apps data
+    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_perf_txt__, &_ln_RAM_start_addr_perf_txt__,
+                                &_ln_perf_txt_size__); // copying perf text
+    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_perf_data__, &_ln_RAM_start_addr_perf_data__,
+                                &_ln_perf_data_size__); // copying perf data
+    __copy_from_rram_to_ram_min(&_ln_RF_start_addr_data__, &_ln_RAM_start_addr_data__,
+                                &_ln_data_size__); // copying data section
 
-    for (loop_count = 0; loop_count < size_to_copy; loop_count = loop_count + 4)
-    {
+    for (loop_count = 0; loop_count < size_to_copy; loop_count = loop_count + 4) {
         *src++ = *bss_end_add_4++;
     }
 }
@@ -1212,8 +1144,7 @@ void nt_do_heap_compression(void)
     unsigned int size_to_copy = (unsigned int)0x80000 - (unsigned int)(&_ln_RAM_addr_heap_start__);
     unsigned int *src = (unsigned int *)(&_ln_RAM_addr_heap_start__);
 
-    for (loop_count = 0; loop_count < size_to_copy; loop_count = loop_count + 4)
-    {
+    for (loop_count = 0; loop_count < size_to_copy; loop_count = loop_count + 4) {
         *bss_end_add_4++ = *src++;
     }
 }
@@ -1231,13 +1162,11 @@ static sleep_mode nt_socpm_sleep_solver(uint64_t sleep_time)
 {
     sleep_mode slp_mode = clk_gtd_sleep;
 
-    if ((sleep_time > get_sleep_exit_hw_delay(mcu_sleep)) && (sleep_time >= (_socpm_slp_time_supp_min_ms * 1000)))
-    {
+    if ((sleep_time > get_sleep_exit_hw_delay(mcu_sleep)) && (sleep_time >= (_socpm_slp_time_supp_min_ms * 1000))) {
         slp_mode = mcu_sleep;
     }
 #if defined(SUPPORT_SOC_SLEEP_SOLVER)
-    else if (sleep_time > LIGHT_SLEEP_HW_SLEEP_TRANSITION_TIME_US)
-    {
+    else if (sleep_time > LIGHT_SLEEP_HW_SLEEP_TRANSITION_TIME_US) {
         slp_mode = Lightsleep;
     }
 #endif /*SUPPORT_SOC_SLEEP_SOLVER*/
@@ -1245,8 +1174,7 @@ static sleep_mode nt_socpm_sleep_solver(uint64_t sleep_time)
 }
 #endif /* SUPPORT_SOC_SLEEP_SOLVER || SUPPORT_SLEEP_LIST_IMPROVEMENTS */
 
-void vPreSleepProcessing(
-    sleep_mode mode)
+void vPreSleepProcessing(sleep_mode mode)
 {
     /* Called by the kernel before it places the MCU into a sleep mode because
      configPRE_SLEEP_PROCESSING() is #defined to vPreSleepProcessing().
@@ -1256,56 +1184,45 @@ void vPreSleepProcessing(
      on again in the post sleep processing function.  For maximum power saving
      ensure all unused pins are in their lowest power state. */
 
-    if (_socpm_slp_lst_head != _SOCPM_SLP_LST_IDX_INVALID)
-    {
+    if (_socpm_slp_lst_head != _SOCPM_SLP_LST_IDX_INVALID) {
 #if (defined(SUPPORT_SOC_SLEEP_SOLVER) || defined(SLEEP_CLK_CAL_IN_SLEEP_MODE))
         uint64_t curr_time = hres_timer_curr_time_us();
         uint64_t leftover_sleep_time = (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time -
-            (curr_time - _socpm_slp_lst[_socpm_slp_lst_head].slp_info.start_time_us));
+                                        (curr_time - _socpm_slp_lst[_socpm_slp_lst_head].slp_info.start_time_us));
 #endif
 #if defined(SUPPORT_SOC_SLEEP_SOLVER)
         /*its already past expiry time*/
-        if (curr_time >=
-            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.start_time_us +
-                _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time))
-        {
+        if (curr_time >= (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.start_time_us +
+                          _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time)) {
             mode = _socpm_slp_mode = clk_gtd_sleep;
-        }
-        else
-        {
+        } else {
             /*Downgrade to lower sleep modes if there is no time to do the originally requested
              *sleep*/
             /* if TWT forces light sleep, dont run sleep solver, as it might upgrade to mcu sleep
                RRI tables would not be saved for mcu sleep when light sleep is forced*/
-            if ((mode != clk_gtd_sleep) && ((nt_twt_get_forced_sleep_mode() != Lightsleep)))
-            {
+            if ((mode != clk_gtd_sleep) && ((nt_twt_get_forced_sleep_mode() != Lightsleep))) {
                 sleep_mode old_mode = mode;
                 mode = _socpm_slp_mode = nt_socpm_sleep_solver(leftover_sleep_time);
-                if (old_mode != mode)
-                {
-                    NT_LOG_PRINT(SOCPM, INFO, "sleep solver old_mode (%d), new_mode (%d) sleep_time(%d)",
-                        old_mode, mode, leftover_sleep_time);
+                if (old_mode != mode) {
+                    NT_LOG_PRINT(SOCPM, INFO, "sleep solver old_mode (%d), new_mode (%d) sleep_time(%d)", old_mode,
+                                 mode, leftover_sleep_time);
                 }
             }
         }
 #endif /*SUPPORT_SOC_SLEEP_SOLVER*/
 #ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
         // Activities for sleep clock cal
-        if (((mcu_sleep == mode) || (Lightsleep == mode)) && (leftover_sleep_time > MIN_SLP_DURATION_FOR_SLP_CLK_CAL))
-        {
+        if (((mcu_sleep == mode) || (Lightsleep == mode)) && (leftover_sleep_time > MIN_SLP_DURATION_FOR_SLP_CLK_CAL)) {
             socpm_slp_clk_cal_presleep_activites(leftover_sleep_time);
         }
 #endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
     }
 
-    if (mode == clk_gtd_sleep)
-    {
+    if (mode == clk_gtd_sleep) {
         uint32_t value = NT_REG_RD(QWLAN_PMU_DIG_TOP_CFG_REG);
 #if defined(PLATFORM_FERMION)
-        value |= (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK);
+        value |= (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
+                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK);
         value |= QWLAN_PMU_DIG_TOP_CFG_RRAM_PD_MODE_DEFAULT;
 #ifdef PMU_REG_RETENTION_STATUS_FOR_SOC_SLP
         /* In clk gated sleep all the DTOP REG are retained, no need to explicitly write it to register.
@@ -1316,17 +1233,13 @@ void vPreSleepProcessing(
 #else
 #if defined(PLATFORM_NT) && defined(RRAM_PD_WAR)
         value = value & (~QWLAN_PMU_DIG_TOP_CFG_RRAM_PD_MODE_MASK);
-        value |= (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK);
+        value |= (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
+                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK);
         value |= NT_PMU_DIG_TOP_CFG_RRAM_PD_MODE_NAP_MASK;
         NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, value); // WMAC and Membank retention, NAP PD mode
 #else
-        value |= (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK);
+        value |= (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
+                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK);
         value |= QWLAN_PMU_DIG_TOP_CFG_RRAM_PD_MODE_DEFAULT;
         NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, value); // WMAC and Membank retention
 #endif
@@ -1359,39 +1272,37 @@ void vPreSleepProcessing(
         NT_REG_WR(QWLAN_PMU_CFG_AON_CNTL_MCU_ACTIVE_STATE_RESOURCE_REQ_REG, value);
 
 #ifdef PLATFORM_FERMION
-#if defined (TWT_WAR)
-         /* we see some HW hung issues when WIFI PDs are not enabled until mcu is active.
-         this is a temporary workaround and will be removed after a proper fix is found*/
-        if(nt_twt_is_negotiated())
-        {
+#if defined(TWT_WAR)
+        /* we see some HW hung issues when WIFI PDs are not enabled until mcu is active.
+        this is a temporary workaround and will be removed after a proper fix is found*/
+        if (nt_twt_is_negotiated()) {
             value = (QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMNSS_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_A_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_B_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_C_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_D_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_E_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_XIP_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_MAC_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_PHY_TX_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_PHY_RXA_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_PHY_RXTOP_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CXC_CNTL_BIT_MASK);
-        }
-        else
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_A_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_B_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_C_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_D_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_E_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_XIP_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_MAC_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_PHY_TX_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_PHY_RXA_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_WLAN_PHY_RXTOP_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CXC_CNTL_BIT_MASK);
+        } else
 #endif /*TWT_WAR*/
         {
             value = (QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMNSS_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_A_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_B_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_C_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_D_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_E_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_QSPI_CNTL_BIT_MASK |
-                    QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_XIP_CNTL_BIT_MASK);
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_A_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_B_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_C_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_D_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_CMEM_BANK_E_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_QSPI_CNTL_BIT_MASK |
+                     QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_XIP_CNTL_BIT_MASK);
         }
 
 #ifndef EMULATION_WAR
-         value |= QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_PSS_CNTL_BIT_MASK;
+        value |= QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_PD_PSS_CNTL_BIT_MASK;
 #endif
         NT_REG_WR(QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_REG, value);
 #else  /* PLATFORM_FERMION */
@@ -1408,26 +1319,22 @@ void vPreSleepProcessing(
 
         // KEEP MCU Active Resumes after WFI instruction
         NT_REG_WR(QWLAN_PMU_CFG_MCU_SS_STATE_REG, NT_PMU_CFG_MCU_ACTIVE_OFFSET); // Mcu active state
-    }
-    else if (mode == mcu_sleep)
-    {
+    } else if (mode == mcu_sleep) {
 #ifdef NT_TST_HEAP_COMP_CODE
         nt_do_heap_compression();
 #endif
         _socpm_slpcfg_mcuslp();
 
 #ifdef NT_GPIO_FLAG
-        //nt_gpio_pin_write(NT_GPIOA, GPIO_PIN_5, NT_GPIO_LOW);
+        // nt_gpio_pin_write(NT_GPIOA, GPIO_PIN_5, NT_GPIO_LOW);
 #endif
     }
 #if defined(PLATFORM_FERMION)
-    else if (mode == Lightsleep)
-    {
+    else if (mode == Lightsleep) {
         _socpm_slpcfg_light();
     }
 #endif /*PLATFORM_FERMION*/
-    else if (mode == Standby)
-    {
+    else if (mode == Standby) {
         _socpm_slpcfg_sby();
     }
 }
@@ -1436,8 +1343,7 @@ void vPreSleepProcessing(
 uint64_t vPostSleepProcessing(void) { return 0; }
 /*-----------------------------------------------------------*/
 
-void nt_socpm_slp_enter(
-    uint64_t slp_us)
+void nt_socpm_slp_enter(uint64_t slp_us)
 {
     nt_socpm_slp_tmr_set(slp_us);
 #ifdef FEATURE_FDI_RMC
@@ -1456,8 +1362,7 @@ void nt_socpm_slp_enter(
     vPreSleepProcessing(_socpm_slp_mode);
 #endif // NT_FN_CPR
 
-    __asm volatile("dsb" ::
-                       : "memory");
+    __asm volatile("dsb" ::: "memory");
     __asm volatile("wfi");
     // nops added to avoid issue due to cortex prefetch
     __asm volatile(" nop \n");
@@ -1523,90 +1428,79 @@ _socpm_slpmode_get(
 
 // Idle Task Stack Store
 
-__attribute__((naked)) void
-_socpm_ctxt_save(
-    void)
+__attribute__((naked)) void _socpm_ctxt_save(void)
 {
 
-    __asm volatile(
-        " isb \n"
-        // " ldr r3, pxCurrentTCBConst1 \n" /* Get the location of the current TCB. */
-        // " ldr r2, [r3] \n"
-        // " ldr r0, [r2] \n"
-       /** The previous logic which has been disabled was loading the idle task TCB's pxTopOfStack
-        * into r0 and uses it as stack pointer for save/restore. But this is incorrect as pxTopOfStack
-        * does not reflect the actual stack pointer at the time of this function call.
-        * This logic has been updated now to read the stack pointer value directly into r0 and use the
-        * same for storing other core register values as well as on context restore.
-        */
-        "mov r0, sp \n"
-        // @TO-DO For FPU Register save " \n"
-        // " tst r14, #0x10 \n" /* Is the task using the FPU context?  If so, push high vfp registers. */
-        // " it eq \n"
-        // " vstmdbeq r0!, {s16-s31} \n"
-        " \n"
-       /** The following stmdb operation results in r0 being decremented by 36 to store the 9 core regs.
-        * As a result, the value stored in nt_socpm_m4_regs[0] is 36 less than the actual stack pointer.
-        * To compensate for this, 36 is added to that value before copying the same to psp in ctxt_restore.
-        */
-        " stmdb r0!, {r4-r11, r14} \n" /* Save the core registers. */
-                                       //          " str r0, [r2] \n" /* Save the new top of stack into the first member of the TCB. */
-        " \n"
-        " ldr r1,=nt_socpm_m4_regs             \n"
-        //          " mrs r0, msp \n"
-        " str r0, [r1] \n"
-        " add r1, 4 \n"
-        " add r1, 36 \n"
-        " stmdb r1!, {r4-r11, r14} \n" /* Save the core registers. */
-        " isb \n "
-        " wfi \n "
-        " nop \n "
-        " nop \n "
-        " nop \n "
-        " bx r14 \n"
-        " .align 4 \n"
-        "pxCurrentTCBConst1: .word pxCurrentTCB \n");
+    __asm volatile(" isb \n"
+                   // " ldr r3, pxCurrentTCBConst1 \n" /* Get the location of the current TCB. */
+                   // " ldr r2, [r3] \n"
+                   // " ldr r0, [r2] \n"
+                   /** The previous logic which has been disabled was loading the idle task TCB's pxTopOfStack
+                    * into r0 and uses it as stack pointer for save/restore. But this is incorrect as pxTopOfStack
+                    * does not reflect the actual stack pointer at the time of this function call.
+                    * This logic has been updated now to read the stack pointer value directly into r0 and use the
+                    * same for storing other core register values as well as on context restore.
+                    */
+                   "mov r0, sp \n"
+                   // @TO-DO For FPU Register save " \n"
+                   // " tst r14, #0x10 \n" /* Is the task using the FPU context?  If so, push high vfp registers. */
+                   // " it eq \n"
+                   // " vstmdbeq r0!, {s16-s31} \n"
+                   " \n"
+                   /** The following stmdb operation results in r0 being decremented by 36 to store the 9 core regs.
+                    * As a result, the value stored in nt_socpm_m4_regs[0] is 36 less than the actual stack pointer.
+                    * To compensate for this, 36 is added to that value before copying the same to psp in ctxt_restore.
+                    */
+                   " stmdb r0!, {r4-r11, r14} \n" /* Save the core registers. */
+                   //          " str r0, [r2] \n" /* Save the new top of stack into the first member of the TCB. */
+                   " \n"
+                   " ldr r1,=nt_socpm_m4_regs             \n"
+                   //          " mrs r0, msp \n"
+                   " str r0, [r1] \n"
+                   " add r1, 4 \n"
+                   " add r1, 36 \n"
+                   " stmdb r1!, {r4-r11, r14} \n" /* Save the core registers. */
+                   " isb \n "
+                   " wfi \n "
+                   " nop \n "
+                   " nop \n "
+                   " nop \n "
+                   " bx r14 \n"
+                   " .align 4 \n"
+                   "pxCurrentTCBConst1: .word pxCurrentTCB \n");
 }
 
-__attribute__((naked)) void
-nt_socpm_ctxt_restore(
-    void)
+__attribute__((naked)) void nt_socpm_ctxt_restore(void)
 {
     _socpm_mcu_sleep_wake = 1;
 #ifdef SOCPM_RMC_DBG
     g_socpm_struct.nt_socpm_ctxt_restore_ctr++;
 #endif /* SOCPM_RMC_DBG */
-    __asm volatile(
-        " ldr r1,=nt_socpm_m4_regs            \n"
-        " ldr r0, [r1] \n"
-        /* Add 36 to nt_socpm_m4_regs[0] to compensate for the decrement during stmdb in ctxt_save */
-        " add r0, 36 \n"
-        " add r1, 40 \n"
-        " \n"
-        " ldmdb r1!, {r4-r11, r14} \n" /* Pop the core registers. */
-        " \n"
-        " \n"
-        " msr psp, r0 \n"
-        " mov r0, #2 \n"
-        " msr control, r0 \n"
-        " dsb                   \n"
-        " isb                   \n"
-        " bx r14 \n");
+    __asm volatile(" ldr r1,=nt_socpm_m4_regs            \n"
+                   " ldr r0, [r1] \n"
+                   /* Add 36 to nt_socpm_m4_regs[0] to compensate for the decrement during stmdb in ctxt_save */
+                   " add r0, 36 \n"
+                   " add r1, 40 \n"
+                   " \n"
+                   " ldmdb r1!, {r4-r11, r14} \n" /* Pop the core registers. */
+                   " \n"
+                   " \n"
+                   " msr psp, r0 \n"
+                   " mov r0, #2 \n"
+                   " msr control, r0 \n"
+                   " dsb                   \n"
+                   " isb                   \n"
+                   " bx r14 \n");
 }
 
-uint8_t
-mem_bank_check(
-    uint32_t bank,
-    Mem_Control type,
-    sleep_mode mode)
+uint8_t mem_bank_check(uint32_t bank, Mem_Control type, sleep_mode mode)
 {
     uint32_t Read_value;
     uint32_t Resorce_Reg = QWLAN_PMU_CFG_MCU_SLEEP_STATE_RESOURCE_REQ_REG;
     uint8_t Status = NT_OK;
 
     // Select Which Resource Register To program
-    switch (mode)
-    {
+    switch (mode) {
     case mcu_sleep:
 #ifdef PLATFORM_FERMION
     case Lightsleep:
@@ -1624,14 +1518,13 @@ mem_bank_check(
         Resorce_Reg = QWLAN_PMU_CFG_MCU_ACTIVE_STATE_RESOURCE_REQ_REG;
         break;
     }
-    switch (bank)
-    {
+    switch (bank) {
     case _SOCPM_MBANK_A:
         // Write The Data
         NT_REG_WR(_SOCPM_MBANK_A_CHK, 0xAAAA5555);
         // Force BANK A User passed Memory State
-        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_REG,
-                          QWLAN_PMU_CMEM_BANK_A_GDSCR_REG, Resorce_Reg, _SOCPM_MBANK_A, type);
+        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_REG, QWLAN_PMU_CMEM_BANK_A_GDSCR_REG, Resorce_Reg,
+                          _SOCPM_MBANK_A, type);
         // Read The Data
         Read_value = NT_REG_RD(_SOCPM_MBANK_A_CHK);
         if (Read_value != 0xAAAA5555)
@@ -1641,8 +1534,8 @@ mem_bank_check(
         // Write The Data
         NT_REG_WR(_SOCPM_MBANK_B_CHK, 0xAAAA5555);
         // Force BANK B User passed Memeory State
-        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_B_CBCR_REG,
-                          QWLAN_PMU_CMEM_BANK_B_GDSCR_REG, Resorce_Reg, _SOCPM_MBANK_B, type);
+        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_B_CBCR_REG, QWLAN_PMU_CMEM_BANK_B_GDSCR_REG, Resorce_Reg,
+                          _SOCPM_MBANK_B, type);
         // Read The Data
         Read_value = NT_REG_RD(_SOCPM_MBANK_B_CHK);
         if (Read_value != 0xAAAA5555)
@@ -1652,8 +1545,8 @@ mem_bank_check(
         // Write The Data
         NT_REG_WR(_SOCPM_MBANK_C_CHK, 0xAAAA5555);
         // Force BANK C User passed Memeory State
-        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_C_CBCR_REG,
-                          QWLAN_PMU_CMEM_BANK_C_GDSCR_REG, Resorce_Reg, _SOCPM_MBANK_C, type);
+        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_C_CBCR_REG, QWLAN_PMU_CMEM_BANK_C_GDSCR_REG, Resorce_Reg,
+                          _SOCPM_MBANK_C, type);
         // Read The Data
         Read_value = NT_REG_RD(_SOCPM_MBANK_C_CHK);
         if (Read_value != 0xAAAA5555)
@@ -1663,8 +1556,8 @@ mem_bank_check(
         // Write The Data
         NT_REG_WR(_SOCPM_MBANK_D_CHK, 0xAAAA5555);
         // Force BANK D User passed Memeory State
-        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_D_CBCR_REG,
-                          QWLAN_PMU_CMEM_BANK_D_GDSCR_REG, Resorce_Reg, _SOCPM_MBANK_D, type);
+        _socpm_mem_wr_drv(QWLAN_PMU_COMMON_CMEM_BANK_D_CBCR_REG, QWLAN_PMU_CMEM_BANK_D_GDSCR_REG, Resorce_Reg,
+                          _SOCPM_MBANK_D, type);
         // Read The Data
         Read_value = NT_REG_RD(_SOCPM_MBANK_D_CHK);
         if (Read_value != 0xAAAA5555)
@@ -1674,30 +1567,23 @@ mem_bank_check(
     return Status;
 }
 
-static void
-_socpm_mem_wr_drv(
-    uint32_t Control_Reg,
-    uint32_t Status_Reg,
-    uint32_t Resource_Reg,
-    uint32_t Resource_Value,
-    Mem_Control type)
+static void _socpm_mem_wr_drv(uint32_t Control_Reg, uint32_t Status_Reg, uint32_t Resource_Reg, uint32_t Resource_Value,
+                              Mem_Control type)
 {
     uint32_t Read_Value;
 
-    switch (type)
-    {
+    switch (type) {
     case Off:
         // Read Control And Status Register GDSCR of Selected CMEM Bank
         Read_Value = NT_REG_RD(Status_Reg);
         // Check Whether The CMEMBANK Is turned On Using Power Satus Bit 31 bit?
-        if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK))
-        {
+        if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK)) {
             // Turn ON The Mem BANK In Resource Table
             _SOCPM_REG_RW(Resource_Reg, Resource_Value);
             // OR
             // Clear HW Ctrl
-            _SOCPM_REG_RW_CLR(Status_Reg,
-                              (QWLAN_PMU_CMEM_BANK_D_GDSCR_HW_CONTROL_MASK | QWLAN_PMU_CMEM_BANK_D_GDSCR_COLLAPSE_EN_SW_MASK));
+            _SOCPM_REG_RW_CLR(Status_Reg, (QWLAN_PMU_CMEM_BANK_D_GDSCR_HW_CONTROL_MASK |
+                                           QWLAN_PMU_CMEM_BANK_D_GDSCR_COLLAPSE_EN_SW_MASK));
             // Set SWA Ctrl
             //_SOCPM_REG_RW(Status_Reg,QWLAN_PMU_CMEM_BANK_D_GDSCR_SW_OVERRIDE_MASK);
             // Wait For The Power ON Status
@@ -1721,13 +1607,12 @@ _socpm_mem_wr_drv(
         // Read Control And Status Register GDSCR of Guven CMEM Bank
         Read_Value = NT_REG_RD(Status_Reg);
         // Check Whether The CMEMBANK Is turned On Using Power Satus Bit 31 bit
-        if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK))
-        {
+        if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK)) {
             // Turn ON The Mem BANK In Resource Table
             _SOCPM_REG_RW(Resource_Reg, Resource_Value);
             // Clear HW Ctrl
-            _SOCPM_REG_RW_CLR(Status_Reg,
-                              (QWLAN_PMU_CMEM_BANK_D_GDSCR_HW_CONTROL_MASK | QWLAN_PMU_CMEM_BANK_D_GDSCR_COLLAPSE_EN_SW_MASK));
+            _SOCPM_REG_RW_CLR(Status_Reg, (QWLAN_PMU_CMEM_BANK_D_GDSCR_HW_CONTROL_MASK |
+                                           QWLAN_PMU_CMEM_BANK_D_GDSCR_COLLAPSE_EN_SW_MASK));
             // Set SWA Ctrl
             //_SOCPM_REG_RW(Status_Reg,(QWLAN_PMU_CMEM_BANK_D_GDSCR_SW_OVERRIDE_MASK));
             // Wait For The Power ON Status
@@ -1736,19 +1621,19 @@ _socpm_mem_wr_drv(
         }
         // Put Mem Bank In Active By Turning OFF Retention
         _SOCPM_REG_RW_CLR(Control_Reg,
-                          QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_PERIPH_OFF_MASK); // The MAsk Bit Same For all The Individual Banks
+                          QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_PERIPH_OFF_MASK); // The MAsk Bit Same For all The
+                                                                                        // Individual Banks
         break;
     case Retention:
         // Read Control And Status Register GDSCR of Guven CMEM Bank
         Read_Value = NT_REG_RD(Status_Reg);
         // Check Whether The CMEMBANK Is turned On Using Power Satus Bit 31 bit
-        if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK))
-        {
+        if (!(Read_Value & QWLAN_PMU_CMEM_BANK_A_GDSCR_GDS_CTL_PWR_STATUS_MASK)) {
             // Turn ON The Mem BANK In Resource Table
             _SOCPM_REG_RW(Resource_Reg, Resource_Value);
             // Clear HW Ctrl
-            _SOCPM_REG_RW_CLR(Status_Reg,
-                              (QWLAN_PMU_CMEM_BANK_D_GDSCR_HW_CONTROL_MASK | QWLAN_PMU_CMEM_BANK_D_GDSCR_COLLAPSE_EN_SW_MASK));
+            _SOCPM_REG_RW_CLR(Status_Reg, (QWLAN_PMU_CMEM_BANK_D_GDSCR_HW_CONTROL_MASK |
+                                           QWLAN_PMU_CMEM_BANK_D_GDSCR_COLLAPSE_EN_SW_MASK));
             // Set SWA Ctrl
             //(Status_Reg,(QWLAN_PMU_CMEM_BANK_D_GDSCR_SW_OVERRIDE_MASK));
             // Wait For The Power ON Status
@@ -1757,7 +1642,9 @@ _socpm_mem_wr_drv(
         }
         // Put Mem Bank In Retention?
         _SOCPM_REG_RW(Control_Reg,
-                      QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_PERIPH_OFF_MASK | QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_CORE_ON_MASK); // The MAsk Bit Same For all The Individual Banks?
+                      QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_PERIPH_OFF_MASK |
+                          QWLAN_PMU_COMMON_CMEM_BANK_A_CBCR_FORCE_MEM_CORE_ON_MASK); // The MAsk Bit Same For all The
+                                                                                     // Individual Banks?
         break;
     }
 }
@@ -1767,8 +1654,7 @@ _socpm_mem_wr_drv(
  * @param  : sleep_time_us -> Sleep time requested in microseconds
  * @return : Adjusted sleep time in microseconds
  */
-static uint64_t
-_socpm_get_sleep_slop_adjusted_sleep_time(uint64_t sleep_time_us)
+static uint64_t _socpm_get_sleep_slop_adjusted_sleep_time(uint64_t sleep_time_us)
 {
     /* Sleep slop offset is the offset time which accounts for clock drifts
      * between the AP and STA, to ensure that protocol wakeups occur on time.
@@ -1776,52 +1662,40 @@ _socpm_get_sleep_slop_adjusted_sleep_time(uint64_t sleep_time_us)
 
     uint64_t sleep_slop_offset_us = 0;
     uint64_t sleep_time_ms = US_TO_MS(sleep_time_us);
-    if(gdevp)
-    {
-        PM_STRUCT *pPmStruct = (PM_STRUCT*)gdevp->pPmStruct;
+    if (gdevp) {
+        PM_STRUCT *pPmStruct = (PM_STRUCT *)gdevp->pPmStruct;
         // Fixed pre sleep time accounting for HW delays and base early rx
-        uint32_t bmps_s2w_compensation = bmps_compute_s2w_compensation_time(pPmStruct)
-            + SLP_TIME_CALC_TO_AON_PRGM_US;
+        uint32_t bmps_s2w_compensation = bmps_compute_s2w_compensation_time(pPmStruct) + SLP_TIME_CALC_TO_AON_PRGM_US;
         // _minprintf("s2w", bmps_s2w_compensation , (unsigned int) bmps_s2w_compensation);
-        uint64_t bcn_pre_wake = bmps_s2w_compensation  + nt_pm_get_bmps_beacon_early_rx(gdevp);
-        if(sleep_time_ms < g_socpm_struct.slop_interval_ms )
-        {
+        uint64_t bcn_pre_wake = bmps_s2w_compensation + nt_pm_get_bmps_beacon_early_rx(gdevp);
+        if (sleep_time_ms < g_socpm_struct.slop_interval_ms) {
             sleep_slop_offset_us = 100;
-        }
-        else
-        {
-            sleep_slop_offset_us =
-                (((sleep_time_ms+ US_TO_MS(bcn_pre_wake))/g_socpm_struct.slop_interval_ms))
-                * g_socpm_struct.slop_step_us;
+        } else {
+            sleep_slop_offset_us = (((sleep_time_ms + US_TO_MS(bcn_pre_wake)) / g_socpm_struct.slop_interval_ms)) *
+                                   g_socpm_struct.slop_step_us;
         }
 
         /* Cap sleep slop offset to upper limit */
-        if(sleep_slop_offset_us > SLEEP_SLOP_OFFSET_UPPER_LIMIT_US)
-        {
-            sleep_slop_offset_us = SLEEP_SLOP_OFFSET_UPPER_LIMIT_US; 
+        if (sleep_slop_offset_us > SLEEP_SLOP_OFFSET_UPPER_LIMIT_US) {
+            sleep_slop_offset_us = SLEEP_SLOP_OFFSET_UPPER_LIMIT_US;
         }
     }
 
-    return ((sleep_time_us > sleep_slop_offset_us)?(sleep_time_us - sleep_slop_offset_us ):sleep_time_us);
+    return ((sleep_time_us > sleep_slop_offset_us) ? (sleep_time_us - sleep_slop_offset_us) : sleep_time_us);
 }
 
-static void
-_socpm_slp_fn_process(
-    sleep_mode mode)
+static void _socpm_slp_fn_process(sleep_mode mode)
 {
-    if (mode != 0)
-    {
+    if (mode != 0) {
         int list_no = _socpm_slp_lst_head;
-        if (list_no == _INVALID_SLP_LST_HD)
-        {
+        if (list_no == _INVALID_SLP_LST_HD) {
             /** Empty list. This can occur when AON timer was armed for a sleep
              * list entry but then the entry was deleted from the list, causing
              * the list to get empty.
              */
             return;
         }
-        if (_socpm_slp_lst[list_no].slp_info.wkup_cb_fn != NULL)
-        {
+        if (_socpm_slp_lst[list_no].slp_info.wkup_cb_fn != NULL) {
             uint64_t head_sleep_back = 0;
             bool other_entries_need_wakeup = FALSE;
             uint64_t slept_time = 0;
@@ -1830,15 +1704,13 @@ _socpm_slp_fn_process(
 
             slept_time = _socpm_slp_lst[list_no].slp_info.slp_time;
             delta_time_us = nt_socpm_get_slp_tmr_us();
-            if (delta_time_us > slept_time)
-            {
+            if (delta_time_us > slept_time) {
                 wkup_delay_us = delta_time_us - slept_time;
             }
 
             // head_sleep_back = _socpm_slp_lst[list_no].slp_info.min_cb_fn(wkup_delay_us);
-      
-            _socpm_slp_lst[list_no].slp_info.slp_time =
-                _socpm_get_sleep_slop_adjusted_sleep_time(head_sleep_back);
+
+            _socpm_slp_lst[list_no].slp_info.slp_time = _socpm_get_sleep_slop_adjusted_sleep_time(head_sleep_back);
 
 #if defined(SUPPORT_SLEEP_LIST_IMPROVEMENTS)
             _socpm_slp_lst[_socpm_slp_lst_head].slp_info.start_time_us = hres_timer_curr_time_us();
@@ -1849,12 +1721,11 @@ _socpm_slp_fn_process(
 
 #ifdef SOCPM_SLEEP_DEBUG
             if (_socpm_slp_mode == mcu_sleep) {
-                socpm_log_timestamp(AON_PROC_1,head_sleep_back,delta_time_us,slept_time);
+                socpm_log_timestamp(AON_PROC_1, head_sleep_back, delta_time_us, slept_time);
             }
 #endif
 
-            if ((head_sleep_back <= 0) || (other_entries_need_wakeup == TRUE))
-            {
+            if ((head_sleep_back <= 0) || (other_entries_need_wakeup == TRUE)) {
                 _socpm_slp_lst_wkup_item_t *p_next, *p_curr;
                 sleep_mode hd_slp_mode = _socpm_slp_lst[list_no].slp_info.slp_mode;
                 p_next = _socpm_slp_lst[list_no].next;
@@ -1879,38 +1750,31 @@ _socpm_slp_fn_process(
 
 #ifdef SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD
                 /* Track the list index to maintain the dummy sleep nodes in the sleep list */
-                if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_ADD))
-                {
+                if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_ADD)) {
                     g_socpm_struct.socpm_dbg_curr_lst_idx = list_no;
                 }
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
                 _socpm_slp_lst[list_no].slp_info.wkup_cb_fn(SOC_WKUP_COMPLETE);
 #ifdef SOCPM_SLEEP_DEBUG
                 if (hd_slp_mode != clk_gtd_sleep) {
-                    socpm_log_timestamp(AON_PROC_2,other_entries_need_wakeup,0,0);
+                    socpm_log_timestamp(AON_PROC_2, other_entries_need_wakeup, 0, 0);
                 }
 #endif
-                if (((hd_slp_mode != clk_gtd_sleep) ||
-                     (_socpm_mcu_sleep_wake == 1)) ||
-                     (list_no != _socpm_slp_list_idx_rtos))
-                {
-                    while (p_next != NULL)
-                    {
+                if (((hd_slp_mode != clk_gtd_sleep) || (_socpm_mcu_sleep_wake == 1)) ||
+                    (list_no != _socpm_slp_list_idx_rtos)) {
+                    while (p_next != NULL) {
                         p_curr = p_next;
                         p_next = p_curr->next;
 #ifdef SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD
                         /* Track the list index to maintain the dummy sleep nodes in the sleep list */
-                        if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_ADD))
-                        {
+                        if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_ADD)) {
                             g_socpm_struct.socpm_dbg_curr_lst_idx = p_curr->slp_info.list_no;
                         }
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
                         p_curr->slp_info.wkup_cb_fn(SOC_WKUP_ABORT);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 _socpm_slp_lst[list_no].slp_info.slp_cb_fn();
                 nt_socpm_sleep_lst_reorder(_socpm_slp_lst_head, slept_time);
             }
@@ -1922,15 +1786,14 @@ _socpm_slp_fn_process(
                     d1 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_cb_fn;
                 if (lst_cnt >= 2)
                     d2 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].next->slp_info.slp_cb_fn;
-                socpm_log_timestamp(AON_PROC_3,other_entries_need_wakeup,d1,d2);
+                socpm_log_timestamp(AON_PROC_3, other_entries_need_wakeup, d1, d2);
             }
 #endif
         }
     }
 }
 
-bool nt_socpm_sleep_lst_update(
-    uint64_t sleep_time, bool serve_multi_node_wkup)
+bool nt_socpm_sleep_lst_update(uint64_t sleep_time, bool serve_multi_node_wkup)
 {
     (void)sleep_time;
     static _socpm_slp_lst_wkup_item_t *slp_lst_node;
@@ -1942,44 +1805,37 @@ bool nt_socpm_sleep_lst_update(
      */
     uint64_t current_time_us = hres_timer_curr_time_us();
 
-    while (slp_lst_node != NULL && (current_time_us >= slp_lst_node->slp_info.start_time_us))
-    {
+    while (slp_lst_node != NULL && (current_time_us >= slp_lst_node->slp_info.start_time_us)) {
         uint64_t delta_time_us = current_time_us - slp_lst_node->slp_info.start_time_us;
-        if (delta_time_us < slp_lst_node->slp_info.slp_time && slp_lst_node->slp_info.slp_time > 0)
-        {
+        if (delta_time_us < slp_lst_node->slp_info.slp_time && slp_lst_node->slp_info.slp_time > 0) {
 #ifdef SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD
             /* Logging to understand the sleep list compensation, while handling two or more nodes in the sleep list */
-            if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_COMP_LOG))
-            {
-                NT_LOG_PRINT(SOCPM, ERR,"Compensating existing slp lst node(idx: %d), start_time (%u), current time (%u), elapsed time (%u)",
+            if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_COMP_LOG)) {
+                NT_LOG_PRINT(SOCPM, ERR,
+                             "Compensating existing slp lst node(idx: %d), start_time (%u), current time (%u), elapsed "
+                             "time (%u)",
                              slp_lst_node->slp_info.list_no, (unsigned int)slp_lst_node->slp_info.start_time_us,
                              (unsigned int)current_time_us, (unsigned int)delta_time_us);
             }
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
             slp_lst_node->slp_info.slp_time = slp_lst_node->slp_info.slp_time - delta_time_us;
             slp_lst_node->slp_info.start_time_us = hres_timer_curr_time_us();
-        }
-        else
-        {
-            if (slp_lst_node != &_socpm_slp_lst[_socpm_slp_lst_head] && serve_multi_node_wkup)
-            {
+        } else {
+            if (slp_lst_node != &_socpm_slp_lst[_socpm_slp_lst_head] && serve_multi_node_wkup) {
                 uint32_t wkup_delay_us = 0;
                 uint64_t sleep_back = 0;
-                if (delta_time_us > slp_lst_node->slp_info.slp_time)
-                {
+                if (delta_time_us > slp_lst_node->slp_info.slp_time) {
                     wkup_delay_us = delta_time_us - slp_lst_node->slp_info.slp_time;
                 }
                 /* Handling the multiple entry of the sleep list with wkup delay */
                 sleep_back = slp_lst_node->slp_info.min_cb_fn(wkup_delay_us);
 
-                if (sleep_back <= 0)
-                {
+                if (sleep_back <= 0) {
                     slp_lst_node->slp_info.slp_time = 0;
                     other_entries_need_wakeup = TRUE;
 #ifdef SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD
                     /* Track the list index to maintain the dummy sleep nodes in the sleep list */
-                    if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_ADD))
-                    {
+                    if (g_socpm_struct.socpm_dbg_unit_test_value & (1 << SLP_DBG_SOCPM_SLP_LIST_ADD)) {
                         g_socpm_struct.socpm_dbg_curr_lst_idx = slp_lst_node->slp_info.list_no;
                     }
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
@@ -1991,8 +1847,7 @@ bool nt_socpm_sleep_lst_update(
     }
 #else
     (void)serve_multi_node_wkup;
-    while (slp_lst_node->next != NULL)
-    {
+    while (slp_lst_node->next != NULL) {
         if (slp_lst_node->next->slp_info.slp_time >= sleep_time)
             slp_lst_node->next->slp_info.slp_time -= sleep_time;
         else
@@ -2005,25 +1860,21 @@ bool nt_socpm_sleep_lst_update(
 }
 
 // remove the first sleep entry and point the head to the next in the list
-static void
-_socpm_list_search(
-    void)
+static void _socpm_list_search(void)
 {
     int count = 0;
     int old_hd_idx = _socpm_slp_lst_head;
 
     // nothing else in the list
-    if (_socpm_slp_lst[old_hd_idx].next == NULL)
-    {
+    if (_socpm_slp_lst[old_hd_idx].next == NULL) {
         // Set to _INVALID_SLP_LST_HD to indicate that list is empty
         _socpm_slp_lst_head = _INVALID_SLP_LST_HD;
         return;
     }
 
-    for (count = 0; count < _SOCPM_SLP_LST_SZ; count++)
-    {
-        if (_socpm_slp_lst[old_hd_idx].next == &_socpm_slp_lst[count])
-        { // remove the first entry and move the head to the next item
+    for (count = 0; count < _SOCPM_SLP_LST_SZ; count++) {
+        if (_socpm_slp_lst[old_hd_idx].next ==
+            &_socpm_slp_lst[count]) { // remove the first entry and move the head to the next item
             _socpm_slp_lst_head = count;
             _socpm_slp_lst[old_hd_idx].next = NULL;
             break;
@@ -2031,41 +1882,32 @@ _socpm_list_search(
     }
 }
 
-void nt_socpm_sleep_lst_reorder(
-    int list_idx, uint64_t head_prev_sleep_time)
+void nt_socpm_sleep_lst_reorder(int list_idx, uint64_t head_prev_sleep_time)
 {
     _socpm_slp_lst_wkup_item_t *ptmp;
     int old_sleep_list_head = _socpm_slp_lst_head;
 
-    if (_socpm_slp_lst_head == list_idx)
-    {
+    if (_socpm_slp_lst_head == list_idx) {
         _socpm_list_search();
     }
 
-    if (_socpm_slp_lst_head != _INVALID_SLP_LST_HD)
-    {
+    if (_socpm_slp_lst_head != _INVALID_SLP_LST_HD) {
         ptmp = &_socpm_slp_lst[_socpm_slp_lst_head];
     }
 
-    if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD)
-    {
+    if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD) {
         // List is empty. So place entry at head of the list
         _socpm_slp_lst_head = list_idx;
-    }
-    else if (((_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time < 1) && (_socpm_slp_lst_head != list_idx)) ||
-             ((_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time > _socpm_slp_lst[list_idx].slp_info.slp_time) && (_socpm_slp_lst[list_idx].slp_info.slp_time > 0)))
-    {
+    } else if (((_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time < 1) && (_socpm_slp_lst_head != list_idx)) ||
+               ((_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time > _socpm_slp_lst[list_idx].slp_info.slp_time) &&
+                (_socpm_slp_lst[list_idx].slp_info.slp_time > 0))) {
         if (_socpm_slp_lst[_socpm_slp_lst_head].next == &_socpm_slp_lst[list_idx])
             _socpm_slp_lst[_socpm_slp_lst_head].next = NULL;
         _socpm_slp_lst[list_idx].next = &_socpm_slp_lst[_socpm_slp_lst_head];
         _socpm_slp_lst_head = list_idx;
-    }
-    else if (ptmp->next != NULL)
-    {
-        while (ptmp->next != NULL)
-        {
-            if (ptmp->next->slp_info.slp_time > _socpm_slp_lst[list_idx].slp_info.slp_time)
-            {
+    } else if (ptmp->next != NULL) {
+        while (ptmp->next != NULL) {
+            if (ptmp->next->slp_info.slp_time > _socpm_slp_lst[list_idx].slp_info.slp_time) {
                 _socpm_slp_lst_wkup_item_t *pswap;
                 pswap = ptmp->next;
                 // memcpy(&tempexchange, ptmp->next, sizeof(_socpm_slp_lst_wkup_item_t));
@@ -2073,72 +1915,57 @@ void nt_socpm_sleep_lst_reorder(
                 ptmp->next = &_socpm_slp_lst[list_idx];
                 _socpm_slp_lst[list_idx].next = pswap;
                 return;
-            }
-            else
-            {
+            } else {
                 ptmp = ptmp->next;
             }
         }
         /* Add the node at the end of the list, which is having higher sleep time
          * after sleep list traverse completion
          */
-        if ((_socpm_slp_lst[list_idx].slp_info.slp_time > 0) && (ptmp != &_socpm_slp_lst[list_idx]))
-        {
+        if ((_socpm_slp_lst[list_idx].slp_info.slp_time > 0) && (ptmp != &_socpm_slp_lst[list_idx])) {
             ptmp->next = &_socpm_slp_lst[list_idx];
         }
-    }
-    else if ((_socpm_slp_lst[list_idx].slp_info.slp_time > 0) && (ptmp != &_socpm_slp_lst[list_idx]))
-    {
+    } else if ((_socpm_slp_lst[list_idx].slp_info.slp_time > 0) && (ptmp != &_socpm_slp_lst[list_idx])) {
         ptmp->next = &_socpm_slp_lst[list_idx];
     }
 
     _socpm_slp_mode = _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_mode;
 
-    if (process_routine == 0)
-    {
+    if (process_routine == 0) {
         if (((old_sleep_list_head != _socpm_slp_lst_head) ||
              (head_prev_sleep_time != _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time)) &&
-            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time > 0))
-        {
-                nt_socpm_slp_tmr_set(_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time);
-            
+            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time > 0)) {
+            nt_socpm_slp_tmr_set(_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time);
         }
     }
 }
 
-int nt_socpm_sleep_register(
-    nt_socpm_sleep_t *slp_info,
-    int list_idx)
+int nt_socpm_sleep_register(nt_socpm_sleep_t *slp_info, int list_idx)
 {
     int retval = _SOCPM_SLP_LST_IDX_INVALID;
     int current_slp_count = _socpm_last_slp_count;
     uint64_t old_sleep_head_sleep_time = 0;
-    if (_socpm_last_slp_count >= 0 && list_idx < 0)
-    {
+    if (_socpm_last_slp_count >= 0 && list_idx < 0) {
         list_idx = _socpm_slp_lst[_socpm_last_slp_count].slp_info.list_no + 1;
         current_slp_count = _socpm_last_slp_count + 1;
     }
-    if (_socpm_slp_lst_head != _INVALID_SLP_LST_HD)
-    {
+    if (_socpm_slp_lst_head != _INVALID_SLP_LST_HD) {
         old_sleep_head_sleep_time = _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time;
-    }
-    else
-    {
+    } else {
         old_sleep_head_sleep_time = 0;
     }
 
-    if (!slp_info)
-    {
+    if (!slp_info) {
         retval = _SOCPM_SLP_LST_IDX_INVALID;
-    }
-    else if (list_idx < 0)                                   // auto assign
+    } else if (list_idx < 0)                                 // auto assign
     {                                                        // adding a new entry
         if (_socpm_last_slp_count < (_SOCPM_SLP_LST_SZ - 1)) // room to add an entry?
         {
             _socpm_last_slp_count++;
             current_slp_count = _socpm_last_slp_count;
             _socpm_slp_lst[_socpm_last_slp_count].slp_info = *slp_info;
-            _socpm_slp_lst[_socpm_last_slp_count].slp_info.slp_time = _socpm_get_sleep_slop_adjusted_sleep_time(slp_info->slp_time);
+            _socpm_slp_lst[_socpm_last_slp_count].slp_info.slp_time =
+                _socpm_get_sleep_slop_adjusted_sleep_time(slp_info->slp_time);
             _socpm_slp_lst[_socpm_last_slp_count].next = NULL;
             _socpm_slp_lst[_socpm_last_slp_count].slp_info.list_no = _socpm_last_slp_count;
 #if defined(SUPPORT_SLEEP_LIST_IMPROVEMENTS)
@@ -2148,15 +1975,12 @@ int nt_socpm_sleep_register(
 #endif /* SUPPORT_SLEEP_LIST_IMPROVEMENTS */
 
             nt_socpm_sleep_lst_reorder(_socpm_last_slp_count, old_sleep_head_sleep_time);
-            if (_socpm_slp_lst[_socpm_last_slp_count].slp_info.slp_cb_fn)
-            {
+            if (_socpm_slp_lst[_socpm_last_slp_count].slp_info.slp_cb_fn) {
                 _socpm_slp_lst[_socpm_last_slp_count].slp_info.slp_cb_fn();
             }
             retval = _socpm_last_slp_count;
         }
-    }
-    else if (list_idx < _SOCPM_SLP_LST_SZ)
-    { // update an existing entry
+    } else if (list_idx < _SOCPM_SLP_LST_SZ) { // update an existing entry
         _socpm_slp_lst[list_idx].slp_info = *slp_info;
         _socpm_slp_lst[list_idx].slp_info.slp_time = _socpm_get_sleep_slop_adjusted_sleep_time(slp_info->slp_time);
         _socpm_slp_lst[list_idx].slp_info.slp_mode = slp_info->slp_mode;
@@ -2168,16 +1992,13 @@ int nt_socpm_sleep_register(
             nt_socpm_sleep_lst_update(old_sleep_head_sleep_time, false);
 #endif /* SUPPORT_SLEEP_LIST_IMPROVEMENTS */
 
-        if (_socpm_slp_lst[list_idx].slp_info.slp_cb_fn)
-        {
+        if (_socpm_slp_lst[list_idx].slp_info.slp_cb_fn) {
             _socpm_slp_lst[list_idx].slp_info.slp_cb_fn();
         }
         nt_socpm_sleep_lst_reorder(list_idx, old_sleep_head_sleep_time);
 
         retval = list_idx;
-    }
-    else
-    {
+    } else {
         // invalid list number
         retval = _SOCPM_SLP_LST_IDX_INVALID;
     }
@@ -2187,28 +2008,24 @@ int nt_socpm_sleep_register(
     return retval;
 }
 
-void nt_socpm_sleep_deregister(
-    int list_idx)
+void nt_socpm_sleep_deregister(int list_idx)
 {
     _socpm_slptmr_off();
     nt_socpm_sleep_lst_delete(list_idx);
 }
 
-int nt_socpm_sleep_lst_delete(
-    int list_idx)
+int nt_socpm_sleep_lst_delete(int list_idx)
 {
     int result = 0;
     _socpm_slp_lst_wkup_item_t *ptmp; //=&;first_entry
 
-    if ((list_idx < 0) || (list_idx >= _SOCPM_SLP_LST_SZ))
-    {
+    if ((list_idx < 0) || (list_idx >= _SOCPM_SLP_LST_SZ)) {
         return _SOCPM_SLP_LST_IDX_INVALID;
     }
 
     _socpm_slptmr_off();
 
-    if (_INVALID_SLP_LST_HD == _socpm_slp_lst_head)
-    {
+    if (_INVALID_SLP_LST_HD == _socpm_slp_lst_head) {
         // List empty. So entry had already been deleted earlier
         return _SOCPM_SLP_LST_IDX_INVALID;
     }
@@ -2218,8 +2035,7 @@ int nt_socpm_sleep_lst_delete(
     // configASSERT(list_idx);
     _socpm_slp_lst[list_idx].slp_info.slp_time = 0;
     // Check Whether First node needs to be deleted
-    if (_socpm_slp_lst_head == list_idx)
-    {
+    if (_socpm_slp_lst_head == list_idx) {
         _socpm_list_search();
         /** This is needed when an entry is being deleted to enable AON timer expiry
          *  for the next entry in the list. For example if AON timer was programmed
@@ -2229,17 +2045,12 @@ int nt_socpm_sleep_lst_delete(
          *  by the following slp_tmr_set call.
          */
         if ((_socpm_slp_lst_head != _INVALID_SLP_LST_HD) &&
-            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time > 0))
-        {
+            (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time > 0)) {
             nt_socpm_slp_tmr_set(_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time);
         }
-    }
-    else
-    {
-        while (ptmp->next != NULL)
-        {
-            if (&_socpm_slp_lst[list_idx] == ptmp->next)
-            {
+    } else {
+        while (ptmp->next != NULL) {
+            if (&_socpm_slp_lst[list_idx] == ptmp->next) {
                 ptmp->next = _socpm_slp_lst[list_idx].next;
                 _socpm_slp_lst[list_idx].next = NULL;
                 _socpm_slp_lst[list_idx].slp_info.slp_time = 0;
@@ -2261,10 +2072,8 @@ static void _socpm_wkup_dflt_cb(soc_wkup_reason wkup_reason)
     (void)wkup_reason;
 
 #ifdef SUPPORT_SWTMR_TO_WKUP_FROM_BMPS
-    if ((g_socpm_struct.in_warm_boot == TRUE || _socpm_mcu_sleep_wake == 1) &&
-        (PM_STRUCT *)gdevp->pPmStruct != NULL &&
-        ((PM_STRUCT *)(gdevp->pPmStruct))->pm_type == PM_MODE_BMPS)
-    {
+    if ((g_socpm_struct.in_warm_boot == TRUE || _socpm_mcu_sleep_wake == 1) && (PM_STRUCT *)gdevp->pPmStruct != NULL &&
+        ((PM_STRUCT *)(gdevp->pPmStruct))->pm_type == PM_MODE_BMPS) {
         nt_socpm_log_wkup_reason_after_sleep();
     }
 #endif /* SUPPORT_SWTMR_TO_WKUP_FROM_BMPS */
@@ -2280,17 +2089,14 @@ static void _socpm_slp_dflt_cb(void) {}
 
 #endif //_SOCPM_INC_TST_SLEEP
 
-#if defined (IO_DEBUG)
+#if defined(IO_DEBUG)
 /*****************************************************************
  * @brief Funtion to reset the io debug count
  * @param none
  * @return none
  ****************************************************************/
 
-void socpm_reset_io_debug_count()
-{
-    g_socpm_struct.io_dbg_count = 0;
-}
+void socpm_reset_io_debug_count() { g_socpm_struct.io_dbg_count = 0; }
 #endif /*IO_DEBUG*/
 
 #if defined(PLATFORM_FERMION)
@@ -2302,8 +2108,7 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     pPmStruct->slp_clk_sel = _socpm_slp_clk_src;
     volatile uint32_t wifi_ss_state;
 
-    if (FALSE == g_socpm_struct.in_warm_boot)
-    {
+    if (FALSE == g_socpm_struct.in_warm_boot) {
         value = NT_REG_RD(NT_NVIC_ISER0);
         nt_socpm_m4_regs[11] = value;
 
@@ -2321,7 +2126,7 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     NT_REG_WR(QWLAN_PMU_CFG_IO_RET_CNTL_REG, QWLAN_PMU_CFG_IO_RET_CNTL_AON_IORET_CNTL_MASK);
 #endif
 
-    NT_REG_WR(QWLAN_PMU_CFG_ACAL_VBAT_MON_EN_REG,  0);
+    NT_REG_WR(QWLAN_PMU_CFG_ACAL_VBAT_MON_EN_REG, 0);
     value = NT_REG_RD(QWLAN_PMU_CFG_AON_CNTL_MCU_SYSTEM_BOOT_COMPLETE_STATE_RESOURCE_REQ_REG);
     value &= ~QWLAN_PMU_CFG_AON_CNTL_MCU_SYSTEM_BOOT_COMPLETE_STATE_RESOURCE_REQ_PD_XIP_CNTL_BIT_MASK;
     NT_REG_WR(QWLAN_PMU_CFG_AON_CNTL_MCU_SYSTEM_BOOT_COMPLETE_STATE_RESOURCE_REQ_REG, value);
@@ -2333,10 +2138,8 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     value &= ~QWLAN_PMU_DIG_TOP_CFG_FORCE_WMAC_CORE_ON_MASK;
     value |= (QWLAN_PMU_DIG_TOP_CFG_PHY_RXTOP_REG_RET_EN_NON_SLEEP_MASK |
               QWLAN_PMU_DIG_TOP_CFG_PHY_RXA_REG_RET_EN_NON_SLEEP_MASK |
-              QWLAN_PMU_DIG_TOP_CFG_PHY_TX_REG_RET_EN_NON_SLEEP_MASK |
-              QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
-              QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-              QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK |
+              QWLAN_PMU_DIG_TOP_CFG_PHY_TX_REG_RET_EN_NON_SLEEP_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
+              QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK |
               QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK);
     value &= ~QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_RX_CORE_ON_MASK;
     value &= ~QWLAN_PMU_DIG_TOP_CFG_WMAC_REG_RET_EN_MASK;
@@ -2354,8 +2157,9 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     value &= ~QWLAN_PMU_AON_TOP_CFG_CFG_INDEFINITE_DEEPSLEEP_EN_MASK;
     value &= ~QWLAN_PMU_AON_TOP_CFG_CFG_LIGHTSLEEP_EN_MASK;
     value &= ~QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_MASK;
-    value |= ((1 << QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_OFFSET) & QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_MASK);
-    NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG,value);
+    value |= ((1 << QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_OFFSET) &
+              QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_MASK);
+    NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG, value);
 
     value = NT_REG_RD(QWLAN_PMU_CFG_HW_DTIM_MODE_REG);
     value &= ~QWLAN_PMU_CFG_HW_DTIM_MODE_WMAC_HW_DTIM_MODE_MASK;
@@ -2379,13 +2183,13 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     _socpm_slp_timing_tuning();
 
     value = NT_REG_RD(QWLAN_PMU_RFA_DTOP_GDSCR_REG);
-	NT_REG_WR( QWLAN_PMU_RFA_DTOP_GDSCR_REG, value | QWLAN_PMU_RFA_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
+    NT_REG_WR(QWLAN_PMU_RFA_DTOP_GDSCR_REG, value | QWLAN_PMU_RFA_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
 
-	value = NT_REG_RD(QWLAN_PMU_XO_GDSCR_REG);
-	NT_REG_WR(QWLAN_PMU_XO_GDSCR_REG,value|QWLAN_PMU_XO_GDSCR_RETAIN_FF_ENABLE_MASK);
+    value = NT_REG_RD(QWLAN_PMU_XO_GDSCR_REG);
+    NT_REG_WR(QWLAN_PMU_XO_GDSCR_REG, value | QWLAN_PMU_XO_GDSCR_RETAIN_FF_ENABLE_MASK);
 
-	value = NT_REG_RD(QWLAN_PMU_PMIC_DTOP_GDSCR_REG);
-	NT_REG_WR(QWLAN_PMU_PMIC_DTOP_GDSCR_REG,value|QWLAN_PMU_PMIC_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
+    value = NT_REG_RD(QWLAN_PMU_PMIC_DTOP_GDSCR_REG);
+    NT_REG_WR(QWLAN_PMU_PMIC_DTOP_GDSCR_REG, value | QWLAN_PMU_PMIC_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
 
     // WIFI SLEEP RRT
     value = QWLAN_PMU_CFG_AON_CNTL_WIFI_SLEEP_STATE_RESOURCE_REQ_DEFAULT;
@@ -2397,13 +2201,12 @@ static void __attribute__((used)) socpm_enter_mcusleep()
     value = QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_DEFAULT;
     NT_REG_WR(QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_REG, value);
 
-    wifi_ss_state = HWIO_INXF(SEQ_WCSS_PMU_OFFSET,
-                     NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE, WIFI_SS_CURR_STATE);
+    wifi_ss_state =
+        HWIO_INXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE, WIFI_SS_CURR_STATE);
 
-    if (wifi_ss_state != NT_PMU_CFG_WIFI_SLEEP_OFFSET)
-    {
-        HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE,
-                     CFG_WIFI_SS_NEXT_STATE, NT_PMU_CFG_WIFI_SLEEP_OFFSET);
+    if (wifi_ss_state != NT_PMU_CFG_WIFI_SLEEP_OFFSET) {
+        HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE, CFG_WIFI_SS_NEXT_STATE,
+                   NT_PMU_CFG_WIFI_SLEEP_OFFSET);
     }
 
     PM_SET_RRI_STATE(pPmStruct, PM_RRI_MAC_DOWN_MCUSLP);
@@ -2414,9 +2217,7 @@ static void __attribute__((used)) socpm_enter_mcusleep()
 }
 
 #else
-static void
-_socpm_slpcfg_mcuslp(
-    void)
+static void _socpm_slpcfg_mcuslp(void)
 {
     static uint16_t ncount = 0;
     uint32_t value;
@@ -2439,8 +2240,7 @@ _socpm_slpcfg_mcuslp(
      * This scenario can occur when MCU sleep recipe is executed while in warm
      * boot state, such as for SWDTIM sleep.
      */
-    if (FALSE == g_socpm_struct.in_warm_boot)
-    {
+    if (FALSE == g_socpm_struct.in_warm_boot) {
         value = NT_REG_RD(NT_NVIC_ISER0);
         nt_socpm_m4_regs[11] = value;
 
@@ -2457,8 +2257,7 @@ _socpm_slpcfg_mcuslp(
     ncount++;
 #endif
 
-    if (ncount > _SOCPM_REGWR_MAX)
-    {
+    if (ncount > _SOCPM_REGWR_MAX) {
         wr_all_f = 0;
         if (ncount > _SOCPM_REGWR_RESET_LIMIT)
             ncount = 0;
@@ -2472,22 +2271,19 @@ _socpm_slpcfg_mcuslp(
     NT_REG_WR(QWLAN_RXP_CONFIG_REG, QWLAN_RXP_CONFIG_CFG_RXP_EN_DEFAULT);
 #endif
 
-    if (wr_all_f)
-    {
+    if (wr_all_f) {
 #ifdef NT_FN_PDC_
         value = NT_REG_RD(QWLAN_PMU_DIG_TOP_CFG_REG);
         NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK |
                                                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
                                                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-                                                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK |
-                                                 value);
+                                                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK | value);
 #else
         NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, (0x100F)); // WMAC and Membank retention.
 #endif // NT_FN_PDC_
     }
 
-    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO)
-    {
+    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO) {
 // TODO: Temp keep RFA DTOP ON in addition to PMIC and XO
 // Note: RFA DTOP should be turned off - not needed for RFA/XO ops
 #ifdef NT_FN_PDC_
@@ -2498,11 +2294,9 @@ _socpm_slpcfg_mcuslp(
                       QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_PD_XO_DTOP_CNTL_BIT_MASK |
                       QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_PD_PMIC_DTOP_CNTL_BIT_MASK);
 #endif // NT_FN_PDC_
-    }
-    else // PMIC XO or RC
+    } else // PMIC XO or RC
     {
-        if (wr_all_f)
-        {
+        if (wr_all_f) {
 #ifdef NT_FN_PDC_
             value = NT_REG_RD(QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_REG);
             NT_REG_WR(QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_REG,
@@ -2511,8 +2305,7 @@ _socpm_slpcfg_mcuslp(
         }
     }
 
-    if (wr_all_f)
-    {
+    if (wr_all_f) {
 #ifdef NT_FN_PDC_
         value = NT_REG_RD(QWLAN_PMU_CFG_MCU_SLEEP_STATE_RESOURCE_REQ_REG);
         NT_REG_WR(QWLAN_PMU_CFG_MCU_SLEEP_STATE_RESOURCE_REQ_REG,
@@ -2539,16 +2332,13 @@ _socpm_slpcfg_mcuslp(
     fpci_evt_dispatch(PWR_EVT_WMAC_POST_SLEEP);
 #endif /* FEATURE_FPCI */
 
-    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO)
-    {
+    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO) {
         // to use RFA XO as sleep, keep PMIC in active mode
         NT_REG_WR(QWLAN_PMU_CFG_PMIC_SLEEP_MODE_CNTL_REG,
-            QWLAN_PMU_CFG_PMIC_SLEEP_MODE_CNTL_CFG_DISABLE_PMIC_SLEEP_MODE_MASK);
-    }
-    else // PMIC XO or RC
+                  QWLAN_PMU_CFG_PMIC_SLEEP_MODE_CNTL_CFG_DISABLE_PMIC_SLEEP_MODE_MASK);
+    } else // PMIC XO or RC
     {
-        if (wr_all_f)
-        {
+        if (wr_all_f) {
             value = NT_REG_RD(QWLAN_PMU_RFA_DTOP_GDSCR_REG);
             NT_REG_WR(QWLAN_PMU_RFA_DTOP_GDSCR_REG, value | QWLAN_PMU_RFA_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
         }
@@ -2574,9 +2364,7 @@ static void _socpm_slpcfg_light(void)
     uint32_t value;
     PM_STRUCT *pPmStruct = (PM_STRUCT *)gdevp->pPmStruct;
 
-
-    if (FALSE == g_socpm_struct.in_warm_boot)
-    {
+    if (FALSE == g_socpm_struct.in_warm_boot) {
         value = NT_REG_RD(NT_NVIC_ISER0);
         nt_socpm_m4_regs[11] = value;
 
@@ -2605,22 +2393,20 @@ static void _socpm_slpcfg_light(void)
     socpm_clear_bbpll_toggle();
 
     value = QWLAN_PMU_DIG_TOP_CFG_DEFAULT;
-    value |= QWLAN_PMU_DIG_TOP_CFG_PHY_RXTOP_REG_RET_EN_NON_SLEEP_MASK
-        |QWLAN_PMU_DIG_TOP_CFG_PHY_RXA_REG_RET_EN_NON_SLEEP_MASK
-        | QWLAN_PMU_DIG_TOP_CFG_PHY_TX_REG_RET_EN_NON_SLEEP_MASK;
-    value |= QWLAN_PMU_DIG_TOP_CFG_PHY_RXA_REG_RET_EN_SLEEP_MASK
-        | QWLAN_PMU_DIG_TOP_CFG_PHY_TX_REG_RET_EN_SLEEP_MASK;
-    value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_RX_CORE_ON_MASK
-        |QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_TXTOP_CORE_ON_MASK
-        | QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_TX_CORE_ON_MASK;
-    value|=QWLAN_PMU_DIG_TOP_CFG_WMAC_REG_RET_EN_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_PHY_RXTOP_REG_RET_EN_NON_SLEEP_MASK |
+             QWLAN_PMU_DIG_TOP_CFG_PHY_RXA_REG_RET_EN_NON_SLEEP_MASK |
+             QWLAN_PMU_DIG_TOP_CFG_PHY_TX_REG_RET_EN_NON_SLEEP_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_PHY_RXA_REG_RET_EN_SLEEP_MASK | QWLAN_PMU_DIG_TOP_CFG_PHY_TX_REG_RET_EN_SLEEP_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_RX_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_TXTOP_CORE_ON_MASK |
+             QWLAN_PMU_DIG_TOP_CFG_FORCE_PHY_TX_CORE_ON_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_WMAC_REG_RET_EN_MASK;
     value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_WMAC_CORE_ON_MASK;
-    value|=QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK;
-    value|=QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK;
-    value|=QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK;
-    value|=QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK;
-    //TODO:PTPX have this bit set,to confirm
-    value|= QWLAN_PMU_DIG_TOP_CFG_CFG_MEM_MX_DYNAMIC_SWITCHING_EN_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK;
+    value |= QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK;
+    // TODO:PTPX have this bit set,to confirm
+    value |= QWLAN_PMU_DIG_TOP_CFG_CFG_MEM_MX_DYNAMIC_SWITCHING_EN_MASK;
 #ifndef PLATFORM_FERMION
     value|= QWLAN_PMU_DIG_TOP_CFG_RRAM_32_BIT_LEGACY_WR_MODE_MASK);
 #endif
@@ -2630,32 +2416,33 @@ static void _socpm_slpcfg_light(void)
 #endif /* PMU_REG_RETENTION_STATUS_FOR_SOC_SLP */
     NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, value);
 
-    NT_REG_WR(QWLAN_PMU_CFG_XO_SETTLE_TIME_REG, 1|QWLAN_PMU_CFG_XO_SETTLE_TIME_CFG_XO_TRIM_TIMEOUT_DEFAULT); // xo_settle_time=1
+    NT_REG_WR(QWLAN_PMU_CFG_XO_SETTLE_TIME_REG,
+              1 | QWLAN_PMU_CFG_XO_SETTLE_TIME_CFG_XO_TRIM_TIMEOUT_DEFAULT); // xo_settle_time=1
     // MX SUPPLY settle time mx_supply_settle_time=1
     value = NT_REG_RD(QWLAN_PMU_CFG_AON_SM_DELAYS_REG);
     value &= ~QWLAN_PMU_CFG_AON_SM_DELAYS_CFG_MX_SUPPLY_SETTLE_TIME_MASK;
-    value |= ((1 << QWLAN_PMU_CFG_AON_SM_DELAYS_CFG_MX_SUPPLY_SETTLE_TIME_OFFSET)
-                & QWLAN_PMU_CFG_AON_SM_DELAYS_CFG_MX_SUPPLY_SETTLE_TIME_MASK);
+    value |= ((1 << QWLAN_PMU_CFG_AON_SM_DELAYS_CFG_MX_SUPPLY_SETTLE_TIME_OFFSET) &
+              QWLAN_PMU_CFG_AON_SM_DELAYS_CFG_MX_SUPPLY_SETTLE_TIME_MASK);
     NT_REG_WR(QWLAN_PMU_CFG_AON_SM_DELAYS_REG, value);
 
     value = QWLAN_PMU_AON_TOP_CFG_DEFAULT;
     value &= ~QWLAN_PMU_AON_TOP_CFG_CFG_ENABLE_XO_CLK_DETECT_MASK;
     value &= ~(QWLAN_PMU_AON_TOP_CFG_CFG_SLP_CLK_SWITCHING_EN_MASK);
-    value |=QWLAN_PMU_AON_TOP_CFG_CFG_WAKEUP_MCU_SS_ON_DTIM_INTR_MASK;
+    value |= QWLAN_PMU_AON_TOP_CFG_CFG_WAKEUP_MCU_SS_ON_DTIM_INTR_MASK;
     value |= QWLAN_PMU_AON_TOP_CFG_CFG_WAKEUP_WIFI_SS_ON_DTIM_INTR_MASK;
     value |= QWLAN_PMU_AON_TOP_CFG_CFG_LIGHTSLEEP_EN_MASK;
     value &= ~QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_MASK;
     value |= ((1 << QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_OFFSET) &
-        QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_MASK);
+              QWLAN_PMU_AON_TOP_CFG_CFG_AON_PMIC_AONLDO_INPUT_SEL_MASK);
     NT_REG_WR(QWLAN_PMU_AON_TOP_CFG_REG, value);
 
     value = NT_REG_RD(QWLAN_PMU_SON_GDSCR_REG); // SOC part
     value |= QWLAN_PMU_SON_GDSCR_RETAIN_FF_ENABLE_MASK;
-    value &= ~(QWLAN_PMU_SON_GDSCR_EN_FEW_WAIT_MASK|QWLAN_PMU_SON_GDSCR_EN_REST_WAIT_MASK);
-    //VIFERMION-215
-    //VIFERMION-379
-    value |= (son_en_wait_light<<QWLAN_PMU_SON_GDSCR_EN_FEW_WAIT_OFFSET)&QWLAN_PMU_SON_GDSCR_EN_FEW_WAIT_MASK;
-    value |= (son_en_wait_light<<QWLAN_PMU_SON_GDSCR_EN_REST_WAIT_OFFSET)&QWLAN_PMU_SON_GDSCR_EN_REST_WAIT_MASK;
+    value &= ~(QWLAN_PMU_SON_GDSCR_EN_FEW_WAIT_MASK | QWLAN_PMU_SON_GDSCR_EN_REST_WAIT_MASK);
+    // VIFERMION-215
+    // VIFERMION-379
+    value |= (son_en_wait_light << QWLAN_PMU_SON_GDSCR_EN_FEW_WAIT_OFFSET) & QWLAN_PMU_SON_GDSCR_EN_FEW_WAIT_MASK;
+    value |= (son_en_wait_light << QWLAN_PMU_SON_GDSCR_EN_REST_WAIT_OFFSET) & QWLAN_PMU_SON_GDSCR_EN_REST_WAIT_MASK;
     NT_REG_WR(QWLAN_PMU_SON_GDSCR_REG, value);
 
     // Disable HW-DTIM with no CPU reset release. use_hwdtim_with_cpu_on=0,check_tbtt_count=0,check_dc_count=0
@@ -2697,20 +2484,18 @@ static void _socpm_slpcfg_light(void)
     value = NT_REG_RD(QWLAN_PMU_RFA_DTOP_GDSCR_REG);
     NT_REG_WR(QWLAN_PMU_RFA_DTOP_GDSCR_REG, value | QWLAN_PMU_RFA_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
 
-    value=NT_REG_RD(QWLAN_PMU_XO_GDSCR_REG);
-    NT_REG_WR(QWLAN_PMU_XO_GDSCR_REG,value|QWLAN_PMU_XO_GDSCR_RETAIN_FF_ENABLE_MASK);
+    value = NT_REG_RD(QWLAN_PMU_XO_GDSCR_REG);
+    NT_REG_WR(QWLAN_PMU_XO_GDSCR_REG, value | QWLAN_PMU_XO_GDSCR_RETAIN_FF_ENABLE_MASK);
 
     /* if a clock gated sleep precedes the protocol sleeps, wifi state moves to config on AON timer expiry
        Move wifi to sleep state back before hitting the wfi. if wifi is not in sleep state, the chip remains
        in wfi until AON timer interrupt or some other interrupt happens*/
 
-    value = HWIO_INXF(SEQ_WCSS_PMU_OFFSET,
-                     NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE, WIFI_SS_CURR_STATE);
+    value = HWIO_INXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE, WIFI_SS_CURR_STATE);
 
-    if (value != NT_PMU_CFG_WIFI_SLEEP_OFFSET)
-    {
-        HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE,
-                     CFG_WIFI_SS_NEXT_STATE, NT_PMU_CFG_WIFI_SLEEP_OFFSET);
+    if (value != NT_PMU_CFG_WIFI_SLEEP_OFFSET) {
+        HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_CFG_WIFI_SS_STATE, CFG_WIFI_SS_NEXT_STATE,
+                   NT_PMU_CFG_WIFI_SLEEP_OFFSET);
     }
 
     PM_SET_RRI_STATE(pPmStruct, PM_RRI_MAC_DOWN_LIGHT);
@@ -2722,17 +2507,13 @@ static void _socpm_slpcfg_light(void)
 
 #endif /*PLATFORM_FERMION*/
 
-
-//static void __attribute__((used)) socpm_enter_deepsleep()
+// static void __attribute__((used)) socpm_enter_deepsleep()
 
 #ifdef PLATFORM_FERMION
 
-
 #else
 
-static void
-_socpm_slpcfg_sby(
-    void)
+static void _socpm_slpcfg_sby(void)
 {
     uint32_t reg_val;
 
@@ -2822,17 +2603,15 @@ _socpm_slpcfg_sby(
 
 #endif /* PLATFORM_FERMION */
 
-//select 0 for RC from PMIC, select 1 for XO from RFA and select 2 for XO from PMIC
-// AON sleep cock source selection
+// select 0 for RC from PMIC, select 1 for XO from RFA and select 2 for XO from PMIC
+//  AON sleep cock source selection
 /*
 #define NT_SOCPM_SLP_CLK_RC     0
 #define NT_SOCPM_SLP_CLK_RFAXO  1
 #define NT_SOCPM_SLP_CLK_PMICXO 2
 */
 
-uint64_t
-nt_socpm_min_proc(
-    int *proc_routine)
+uint64_t nt_socpm_min_proc(int *proc_routine)
 {
     (void)proc_routine; // suppress compile warn/err
 
@@ -2853,23 +2632,19 @@ nt_socpm_min_proc(
     uint64_t delta_time_us = 0;
     uint32_t wkup_delay = 0;
 
-    if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD)
-    {
+    if (_socpm_slp_lst_head == _INVALID_SLP_LST_HD) {
         err_printf("MIN_SLP_FN_ERR\r\n");
         return result;
     }
 
-    if (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_cb_fn != NULL)
-    {
+    if (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_cb_fn != NULL) {
         result = 1;
         slept_time = _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time;
         delta_time_us = nt_socpm_get_slp_tmr_us();
-        if (delta_time_us > slept_time)
-        {
+        if (delta_time_us > slept_time) {
             wkup_delay = delta_time_us - slept_time;
         }
-        if (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.min_cb_fn)
-        {
+        if (_socpm_slp_lst[_socpm_slp_lst_head].slp_info.min_cb_fn) {
             sleep_back = _socpm_slp_lst[_socpm_slp_lst_head].slp_info.min_cb_fn(wkup_delay);
         }
 
@@ -2877,15 +2652,12 @@ nt_socpm_min_proc(
         uint32_t d1 = wkup_delay;
         uint32_t d2 = delta_time_us;
         uint32_t d3 = sleep_back;
-        socpm_log_timestamp(MIN_PROC_1,d1,d2,d3);
+        socpm_log_timestamp(MIN_PROC_1, d1, d2, d3);
 #endif
 
-        if (sleep_back == 0)
-        {
+        if (sleep_back == 0) {
             result = 0;
-        }
-        else
-        {
+        } else {
             process_routine = 1;
             int temp = _socpm_slp_lst_head;
 
@@ -2896,12 +2668,9 @@ nt_socpm_min_proc(
 #if defined(SUPPORT_SLEEP_LIST_IMPROVEMENTS)
             _socpm_slp_lst[_socpm_last_slp_count].slp_info.start_time_us = hres_timer_curr_time_us();
 #endif /* SUPPORT_SLEEP_LIST_IMPROVEMENTS */
-            if (nt_socpm_sleep_lst_update(slept_time, true))
-            {
+            if (nt_socpm_sleep_lst_update(slept_time, true)) {
                 result = 0;
-            }
-            else
-            {
+            } else {
                 /*clear the timer interrupt before moving the wifi SS to sleep state.
                 if AON interrupt is set the wifi will not move into sleep state*/
                 _socpm_slptmr_off();
@@ -2922,8 +2691,7 @@ nt_socpm_min_proc(
                  * here, so that the same logic need not be duplicated in all
                  * slp_cb_fn which use MCU sleep.
                  */
-                if (mcu_sleep == _socpm_slp_mode)
-                {
+                if (mcu_sleep == _socpm_slp_mode) {
                     PM_STRUCT *pPmStruct = (PM_STRUCT *)gdevp->pPmStruct;
                     PM_SET_RRI_STATE(pPmStruct, PM_RRI_MAC_DOWN_MCUSLP);
                 }
@@ -2932,8 +2700,7 @@ nt_socpm_min_proc(
                 nt_socpm_sleep_lst_reorder(_socpm_slp_lst_head, slept_time);
                 // #endif
                 result = _socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_time;
-                if (result > 0x7ff00000)
-                {
+                if (result > 0x7ff00000) {
                     (void)temp;
                     //_minprintf("slp", sleep_back >> 32, sleep_back);
                     //_minprintf("slp", temp | (_socpm_slp_lst_head << 16), result);
@@ -2951,102 +2718,78 @@ nt_socpm_min_proc(
         d2 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].slp_info.slp_cb_fn;
     if (lst_cnt >= 2)
         d3 = (uint32_t)_socpm_slp_lst[_socpm_slp_lst_head].next->slp_info.slp_cb_fn;
-    socpm_log_timestamp(MIN_PROC_2,d1,d2,d3);
+    socpm_log_timestamp(MIN_PROC_2, d1, d2, d3);
 #endif
     return result;
 #endif
 }
 
 #ifdef NT_SOCPM_SW_MTUSR
-static void
-nt_socpm_get_mtusr_timestamp(
-    nt_mtusr_timestamp_t *ts)
+static void nt_socpm_get_mtusr_timestamp(nt_mtusr_timestamp_t *ts)
 {
     // Get QTMR timerstamp during normal operation and SYSTCK timestamp in warm boot
-    if (g_socpm_struct.in_warm_boot)
-    {
+    if (g_socpm_struct.in_warm_boot) {
         ts->time = (uint64_t)GET_CURRENT_SYSTICK_US();
         ts->type = MTUSR_TS_SYSTCK;
-    }
-    else
-    {
+    } else {
         ts->time = hres_timer_curr_time_us();
         ts->type = MTUSR_TS_QTMR;
     }
 }
 
-static bool
-nt_socpm_get_mtusr_timestamp_delta(
-    const nt_mtusr_timestamp_t *first_ts, const nt_mtusr_timestamp_t *second_ts, uint64_t *delta_time)
+static bool nt_socpm_get_mtusr_timestamp_delta(const nt_mtusr_timestamp_t *first_ts,
+                                               const nt_mtusr_timestamp_t *second_ts, uint64_t *delta_time)
 {
     // If second_ts is later than first_ts, result is TRUE; else FALSE
     *delta_time = 0;
     bool result = TRUE;
 
-    if (first_ts->type == MTUSR_TS_SYSTCK)
-    {
+    if (first_ts->type == MTUSR_TS_SYSTCK) {
         // In case of SYSTCK, if second_ts was taken later, then second_ts < first_ts
-        if (first_ts->time > second_ts->time)
-        {
+        if (first_ts->time > second_ts->time) {
             *delta_time = first_ts->time - second_ts->time;
             result = TRUE;
-        }
-        else
-        {
+        } else {
             *delta_time = second_ts->time - first_ts->time;
             result = FALSE;
         }
-    }
-    else if (first_ts->type == MTUSR_TS_QTMR)
-    {
+    } else if (first_ts->type == MTUSR_TS_QTMR) {
         // In case of QTMR, if second_ts was taken later, then second_ts > first_ts
-        if (first_ts->time > second_ts->time)
-        {
+        if (first_ts->time > second_ts->time) {
             *delta_time = first_ts->time - second_ts->time;
             result = FALSE;
-        }
-        else
-        {
+        } else {
             *delta_time = second_ts->time - first_ts->time;
             result = TRUE;
         }
-    }
-    else
-    {
+    } else {
         *delta_time = 0;
     }
 
     return result;
 }
 
-void nt_socpm_mtusr_restore_mtu_time(
-    void)
+void nt_socpm_mtusr_restore_mtu_time(void)
 {
 #ifdef SOCPM_SLEEP_DEBUG
-        socpm_log_timestamp(__MTU_RSTR,NT_REG_RD(QWLAN_PMU_POWER_DOMAIN_STATUS_REG),
-            (uint32_t)g_socpm_struct.mtusr_time_data.mtu_timestamp.time,0);
+    socpm_log_timestamp(__MTU_RSTR, NT_REG_RD(QWLAN_PMU_POWER_DOMAIN_STATUS_REG),
+                        (uint32_t)g_socpm_struct.mtusr_time_data.mtu_timestamp.time, 0);
 #endif
     if (((gdevp) && (gdevp->pPmStruct)) &&
         (((PM_STRUCT *)gdevp->pPmStruct)->wlan_state_off && g_socpm_struct.mtusr_time_data.aon_programmed) &&
-        (g_socpm_struct.mtusr_time_data.aon_timestamp.type ==
-         g_socpm_struct.mtusr_time_data.mtu_timestamp.type))
-    {
+        (g_socpm_struct.mtusr_time_data.aon_timestamp.type == g_socpm_struct.mtusr_time_data.mtu_timestamp.type)) {
 
         uint64_t delta_time;
         bool add_delta;
         add_delta = nt_socpm_get_mtusr_timestamp_delta(&(g_socpm_struct.mtusr_time_data.mtu_timestamp),
-                                                       &(g_socpm_struct.mtusr_time_data.aon_timestamp),
-                                                       &delta_time);
+                                                       &(g_socpm_struct.mtusr_time_data.aon_timestamp), &delta_time);
 
         uint64_t tsf = g_socpm_struct.mtusr_time_data.mtu_tsf_us;
         uint32_t mtu_tmr = g_socpm_struct.mtusr_time_data.mtu_glob_tmr;
-        if (add_delta)
-        {
+        if (add_delta) {
             tsf += delta_time;
             mtu_tmr += (uint32_t)delta_time;
-        }
-        else
-        {
+        } else {
             tsf -= delta_time;
             mtu_tmr -= (uint32_t)delta_time;
         }
@@ -3056,8 +2799,8 @@ void nt_socpm_mtusr_restore_mtu_time(
         mtu_tmr += aon_slp_tmr_us;
 
 #ifdef SOCPM_SLEEP_DEBUG
-        socpm_log_timestamp(__MTU_RSTR,(uint32_t)aon_slp_tmr_us,
-            g_socpm_struct.aon_program_time_us,(uint32_t)delta_time);
+        socpm_log_timestamp(__MTU_RSTR, (uint32_t)aon_slp_tmr_us, g_socpm_struct.aon_program_time_us,
+                            (uint32_t)delta_time);
 #endif
 
         NT_REG_WR(QWLAN_MTU_MTU_GLOBAL_TIMER_REG, mtu_tmr);
@@ -3070,20 +2813,16 @@ void nt_socpm_mtusr_restore_mtu_time(
         NT_REG_WR(QWLAN_MTU_TBTT_L_REG, (uint32_t)g_socpm_struct.mtusr_time_data.mtu_tbtt);
         // This register contains sw_mtu_beacon_intv, which is used by HW to forward TBTT
         NT_REG_WR(QWLAN_MTU_BCN_BSSID_INTV_REG, g_socpm_struct.mtusr_time_data.mtu_bcn_bssid_intv);
-    }
-    else
-    {
+    } else {
         _minprintf("NO_MTUSR_RSTR", 0, 0);
     }
     g_socpm_struct.mtusr_time_data.aon_programmed = FALSE;
 }
 
-void nt_socpm_mtusr_save_mtu_time(
-    void)
+void nt_socpm_mtusr_save_mtu_time(void)
 {
     // Save key MTU timer registers
-    if (((gdevp) && (gdevp->pPmStruct)) && (!((PM_STRUCT *)gdevp->pPmStruct)->wlan_state_off))
-    {
+    if (((gdevp) && (gdevp->pPmStruct)) && (!((PM_STRUCT *)gdevp->pPmStruct)->wlan_state_off)) {
         g_socpm_struct.mtusr_time_data.mtu_glob_tmr = NT_REG_RD(QWLAN_MTU_MTU_GLOBAL_TIMER_REG);
         g_socpm_struct.mtusr_time_data.mtu_tsf_us =
             NT_REG_RD(QWLAN_MTU_TSF_TIMER_LO_REG) | (((uint64_t)NT_REG_RD(QWLAN_MTU_TSF_TIMER_HI_REG)) << 32);
@@ -3092,36 +2831,31 @@ void nt_socpm_mtusr_save_mtu_time(
         g_socpm_struct.mtusr_time_data.mtu_bcn_bssid_intv = NT_REG_RD(QWLAN_MTU_BCN_BSSID_INTV_REG);
         nt_socpm_get_mtusr_timestamp(&(g_socpm_struct.mtusr_time_data.mtu_timestamp));
 #ifdef SOCPM_SLEEP_DEBUG
-        socpm_log_timestamp(____MTU_SV,(uint32_t)g_socpm_struct.mtusr_time_data.mtu_timestamp.type,
-            (uint32_t)g_socpm_struct.mtusr_time_data.mtu_timestamp.time,0);
+        socpm_log_timestamp(____MTU_SV, (uint32_t)g_socpm_struct.mtusr_time_data.mtu_timestamp.type,
+                            (uint32_t)g_socpm_struct.mtusr_time_data.mtu_timestamp.time, 0);
 #endif
     }
 }
 
-void nt_socpm_mtusr_save_aon_prog_timestamp(
-    void)
+void nt_socpm_mtusr_save_aon_prog_timestamp(void)
 {
     g_socpm_struct.mtusr_time_data.aon_programmed = TRUE;
     nt_socpm_get_mtusr_timestamp(&(g_socpm_struct.mtusr_time_data.aon_timestamp));
 #ifdef SOCPM_SLEEP_DEBUG
     if (_socpm_slp_mode == mcu_sleep) {
-        socpm_log_timestamp(MTU_AON_SV,(uint32_t)g_socpm_struct.mtusr_time_data.aon_timestamp.type,
-            (uint32_t)g_socpm_struct.mtusr_time_data.aon_timestamp.time,0);
+        socpm_log_timestamp(MTU_AON_SV, (uint32_t)g_socpm_struct.mtusr_time_data.aon_timestamp.type,
+                            (uint32_t)g_socpm_struct.mtusr_time_data.aon_timestamp.time, 0);
     }
 #endif
-
 }
 
 #endif // NT_SOCPM_SW_MTUSR
 
 #ifdef NT_NEUTRINO_1_0_SYS_MAC
 
-void nlp_config(void)
-{
-}
+void nlp_config(void) {}
 
-void nt_socpm_tst_standby(
-    uint32_t slp_ms)
+void nt_socpm_tst_standby(uint32_t slp_ms)
 {
     (void)slp_ms;
 #if _SOCPM_TST_MODE_PMIC_CFG_SBY != 0
@@ -3137,12 +2871,9 @@ void nt_socpm_tst_standby(
  * @param : none
  * @return : boolean (true(1))/(false(0))
  */
-_Bool __attribute__((optimize("00")))
-nt_socpm_uart_flag_state_get(
-    nt_otp_firmware_reserved pos)
+_Bool __attribute__((optimize("00"))) nt_socpm_uart_flag_state_get(nt_otp_firmware_reserved pos)
 {
-    if (NT_CHECK_BIT_STATE(_socpm_rram_ctl_f, pos))
-    {
+    if (NT_CHECK_BIT_STATE(_socpm_rram_ctl_f, pos)) {
         pos = 1;
     }
     _Bool ret_state = (pos == 1);
@@ -3154,12 +2885,9 @@ nt_socpm_uart_flag_state_get(
  * @param : none
  * @return : boolean (true(1))/(false(0))
  */
-_Bool __attribute__((optimize("00")))
-nt_socpm_auto_start_flag_state_get(
-    nt_otp_firmware_reserved pos)
+_Bool __attribute__((optimize("00"))) nt_socpm_auto_start_flag_state_get(nt_otp_firmware_reserved pos)
 {
-    if (NT_CHECK_BIT_STATE(_socpm_rram_ctl_f, pos))
-    {
+    if (NT_CHECK_BIT_STATE(_socpm_rram_ctl_f, pos)) {
         pos = 1;
     }
     _Bool ret_state = (pos == 1);
@@ -3171,26 +2899,17 @@ nt_socpm_auto_start_flag_state_get(
  * @param : none
  * @return : boolean (true(1))/(false(0))
  */
-_Bool __attribute__((optimize("00")))
-nt_socpm_cpr_flag_state_get(
-    nt_otp_firmware_reserved pos)
+_Bool __attribute__((optimize("00"))) nt_socpm_cpr_flag_state_get(nt_otp_firmware_reserved pos)
 {
-    if (NT_CHECK_BIT_STATE(_socpm_rram_ctl_f, pos))
-    {
+    if (NT_CHECK_BIT_STATE(_socpm_rram_ctl_f, pos)) {
         pos = 1;
     }
     _Bool ret_state = (pos == 1);
     return ret_state;
 }
-void nt_cpr_enable()
-{
-    NT_REG_WR(_SOCPM_OTP_FLAGS_ADDR, 0x10);
-}
+void nt_cpr_enable() { NT_REG_WR(_SOCPM_OTP_FLAGS_ADDR, 0x10); }
 
-void nt_cpr_disable()
-{
-    NT_REG_WR(_SOCPM_OTP_FLAGS_ADDR, 0x0);
-}
+void nt_cpr_disable() { NT_REG_WR(_SOCPM_OTP_FLAGS_ADDR, 0x0); }
 
 /*
  * @brief: This function used to turn ON/OFF the power domains as per need for BMPS
@@ -3212,8 +2931,7 @@ void vPreSleepProcessingPartialSleep()
     _socpm_slpcfg_sby();
 #endif
 
-    if (FALSE == g_socpm_struct.in_warm_boot)
-    {
+    if (FALSE == g_socpm_struct.in_warm_boot) {
         value = NT_REG_RD(NT_NVIC_ISER0);
         nt_socpm_m4_regs[11] = value;
 
@@ -3235,8 +2953,7 @@ void vPreSleepProcessingPartialSleep()
     ncount++;
 #endif
 
-    if (ncount > _SOCPM_REGWR_MAX)
-    {
+    if (ncount > _SOCPM_REGWR_MAX) {
         wr_all_f = 0;
         if (ncount > _SOCPM_REGWR_RESET_LIMIT)
             ncount = 0;
@@ -3250,27 +2967,22 @@ void vPreSleepProcessingPartialSleep()
     NT_REG_WR(QWLAN_RXP_CONFIG_REG, QWLAN_RXP_CONFIG_CFG_RXP_EN_DEFAULT);
 #endif
 
-    if (wr_all_f)
-    {
+    if (wr_all_f) {
 #ifdef NT_FN_PDC_
         value = NT_REG_RD(QWLAN_PMU_DIG_TOP_CFG_REG);
-        NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG,
-                    QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK |
+        NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_A_CORE_ON_MASK |
                                                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
                                                  QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-                                                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK |
-                                                 value);
+                                                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK | value);
 #else
 #if defined(PLATFORM_FERMION)
-        value = (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK |
-                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
-                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK |
-                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK);
+        value = (QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_B_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_C_CORE_ON_MASK |
+                 QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_D_CORE_ON_MASK | QWLAN_PMU_DIG_TOP_CFG_FORCE_BANK_E_CORE_ON_MASK);
         value |= QWLAN_PMU_DIG_TOP_CFG_RRAM_PD_MODE_DEFAULT;
         NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, value); // Membank retention and RRAM PD off
 #else
 #if defined(PLATFORM_NT) && defined(RRAM_PD_WAR)
-        NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, (0x80F));  // WMAC and Membank retention. RRAM PD mode
+        NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, (0x80F)); // WMAC and Membank retention. RRAM PD mode
 #else
         NT_REG_WR(QWLAN_PMU_DIG_TOP_CFG_REG, (0x100F)); // WMAC and Membank retention.
 #endif
@@ -3278,8 +2990,7 @@ void vPreSleepProcessingPartialSleep()
 #endif // NT_FN_PDC_
     }
 
-    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO)
-    {
+    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO) {
 // TODO: Temp keep RFA DTOP ON in addition to PMIC and XO
 // Note: RFA DTOP should be turned off - not needed for RFA/XO ops
 #ifdef NT_FN_PDC_
@@ -3289,12 +3000,10 @@ void vPreSleepProcessingPartialSleep()
                       QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_PD_RFA_DTOP_CNTL_BIT_MASK |
                       QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_PD_XO_DTOP_CNTL_BIT_MASK |
                       QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_PD_PMIC_DTOP_CNTL_BIT_MASK);
-#endif // NT_FN_PDC_
-    }
-    else // PMIC XO or RC
+#endif     // NT_FN_PDC_
+    } else // PMIC XO or RC
     {
-        if (wr_all_f)
-        {
+        if (wr_all_f) {
 #ifdef NT_FN_PDC_
             value = NT_REG_RD(QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_REG);
             NT_REG_WR(QWLAN_PMU_CFG_AON_CNTL_MCU_SLEEP_STATE_RESOURCE_REQ_REG,
@@ -3303,8 +3012,7 @@ void vPreSleepProcessingPartialSleep()
         }
     }
 
-    if (wr_all_f)
-    {
+    if (wr_all_f) {
 #ifdef NT_FN_PDC_
         value = NT_REG_RD(QWLAN_PMU_CFG_MCU_SLEEP_STATE_RESOURCE_REQ_REG);
         NT_REG_WR(QWLAN_PMU_CFG_MCU_SLEEP_STATE_RESOURCE_REQ_REG,
@@ -3323,16 +3031,13 @@ void vPreSleepProcessingPartialSleep()
     // TEMP: added after discussion with Sun, should switch back to pwm-on-tx on wakeup
     //  NT_REG_WR( 0x2043048, 0x03000000);//pfm force
 
-    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO)
-    {
+    if (_socpm_slp_clk_src == NT_SOCPM_SLP_CLK_RFAXO) {
         // to use RFA XO as sleep, keep PMIC in active mode
         NT_REG_WR(QWLAN_PMU_CFG_PMIC_SLEEP_MODE_CNTL_REG,
-        QWLAN_PMU_CFG_PMIC_SLEEP_MODE_CNTL_CFG_DISABLE_PMIC_SLEEP_MODE_MASK);
-    }
-    else // PMIC XO or RC
+                  QWLAN_PMU_CFG_PMIC_SLEEP_MODE_CNTL_CFG_DISABLE_PMIC_SLEEP_MODE_MASK);
+    } else // PMIC XO or RC
     {
-        if (wr_all_f)
-        {
+        if (wr_all_f) {
             value = NT_REG_RD(QWLAN_PMU_RFA_DTOP_GDSCR_REG);
             NT_REG_WR(QWLAN_PMU_RFA_DTOP_GDSCR_REG, value | QWLAN_PMU_RFA_DTOP_GDSCR_RETAIN_FF_ENABLE_MASK);
         }
@@ -3398,10 +3103,8 @@ void print_wakelock_status()
 {
     PM_STRUCT *pPmStruct = (PM_STRUCT *)gdevp->pPmStruct;
     NT_LOG_SME_ERR("Sleep Abort Wakelock acquired! ", pPmStruct->powerModeWakeupCount, 0, 0);
-    for (uint8_t i = 0; i < PM_MODULE_ID_MAX; i++)
-    {
-        if (pPmStruct->powerModeModuleWakeupCount[i])
-        {
+    for (uint8_t i = 0; i < PM_MODULE_ID_MAX; i++) {
+        if (pPmStruct->powerModeModuleWakeupCount[i]) {
             NT_LOG_PRINT(SME, ERR, "WL_Module[%d] : [%d]", i, pPmStruct->powerModeModuleWakeupCount[i]);
         }
     }
@@ -3416,25 +3119,16 @@ void print_wakelock_status()
 void nt_socpm_log_wkup_reason_after_sleep(void)
 {
     char buff[200] = {};
-    if (g_socpm_struct.wkup_reason == REASON_TO_WKUP_Q_TIMER && g_socpm_struct.info.q_timer_callback)
-    {
+    if (g_socpm_struct.wkup_reason == REASON_TO_WKUP_Q_TIMER && g_socpm_struct.info.q_timer_callback) {
         snprintf(buff, sizeof(buff), "Expired Q-timer info: last q-timer slept for:%u ms, callback:%x",
-                    (unsigned int)(g_socpm_struct.info.ms_time),
-                    (unsigned int)(g_socpm_struct.info.q_timer_callback));
-    }
-    else if ((g_socpm_struct.wkup_reason == REASON_TO_WKUP_NT_TIMER) && g_socpm_struct.info.nt_timer_callback)
-    {
+                 (unsigned int)(g_socpm_struct.info.ms_time), (unsigned int)(g_socpm_struct.info.q_timer_callback));
+    } else if ((g_socpm_struct.wkup_reason == REASON_TO_WKUP_NT_TIMER) && g_socpm_struct.info.nt_timer_callback) {
         snprintf(buff, sizeof(buff), "Expired Nt-timer info: last Nt-timer slept for:%u ms, callback:%x",
-                    (unsigned int)(g_socpm_struct.info.ms_time),
-                    (unsigned int)(g_socpm_struct.info.nt_timer_callback));
-    }
-    else if (g_socpm_struct.wkup_reason == REASON_TO_WKUP_NT_TASK && g_socpm_struct.info.pcTaskName)
-    {
+                 (unsigned int)(g_socpm_struct.info.ms_time), (unsigned int)(g_socpm_struct.info.nt_timer_callback));
+    } else if (g_socpm_struct.wkup_reason == REASON_TO_WKUP_NT_TASK && g_socpm_struct.info.pcTaskName) {
         snprintf(buff, sizeof(buff), "Expired Nt-task info: last Nt-task slept time:%u ms, task name:%s",
-                    (unsigned int)(g_socpm_struct.info.ms_time), g_socpm_struct.info.pcTaskName);
-    }
-    else
-    {
+                 (unsigned int)(g_socpm_struct.info.ms_time), g_socpm_struct.info.pcTaskName);
+    } else {
         snprintf(buff, sizeof(buff), "%s", "sleep reason not a valid type");
     }
     NT_LOG_PRINT(SOCPM, INFO, buff);
@@ -3452,7 +3146,7 @@ void nt_socpm_set_a2f_processing_delay(uint16_t delay)
     g_socpm_struct.a2f_processing_delay = delay;
 #else
     SOCPM_UNUSED(delay);
-#endif //FIRMWARE_APPS_INFORMED_WAKE
+#endif // FIRMWARE_APPS_INFORMED_WAKE
 }
 
 #endif /* SUPPORT_SWTMR_TO_WKUP_FROM_BMPS && NT_DEBUG */
@@ -3476,7 +3170,7 @@ uint64_t dummy_min_callback(__unused uint32_t wkup_delay_us)
  */
 void dummy_wakeup_callback(soc_wkup_reason wkup_reason)
 {
-    (void) wkup_reason;
+    (void)wkup_reason;
     NT_LOG_PRINT(SOCPM, ERR, "Dummy wake up call back list idx (%d)", g_socpm_struct.socpm_dbg_curr_lst_idx);
     nt_socpm_sleep_lst_delete(g_socpm_struct.socpm_dbg_curr_lst_idx);
 }
@@ -3486,10 +3180,7 @@ void dummy_wakeup_callback(soc_wkup_reason wkup_reason)
  * @param : None
  * @return : None
  */
-void dummy_sleep_callback(void)
-{
-    NT_LOG_PRINT(SOCPM, ERR, "Dummy sleep call back");
-}
+void dummy_sleep_callback(void) { NT_LOG_PRINT(SOCPM, ERR, "Dummy sleep call back"); }
 
 /*
  * @brief : This function helps to enable/disable debug logs in sleep list functions
@@ -3498,15 +3189,12 @@ void dummy_sleep_callback(void)
  */
 void nt_enable_slp_list_debug_log(bool enable)
 {
-    if (enable)
-    {
+    if (enable) {
         g_socpm_struct.socpm_dbg_unit_test_value |= (1 << SLP_DBG_SOCPM_SLP_LIST_COMP_LOG);
-    }
-    else
-    {
+    } else {
         g_socpm_struct.socpm_dbg_unit_test_value &= ~(1 << SLP_DBG_SOCPM_SLP_LIST_COMP_LOG);
     }
-    NT_LOG_PRINT(SOCPM, ERR,"SLP_DBG_SOCPM_LIST_COMP_LOG: %d", enable);
+    NT_LOG_PRINT(SOCPM, ERR, "SLP_DBG_SOCPM_LIST_COMP_LOG: %d", enable);
 }
 
 /*
@@ -3516,15 +3204,12 @@ void nt_enable_slp_list_debug_log(bool enable)
  */
 void nt_set_soc_state_during_protocol_sleep(bool enable)
 {
-    if (enable)
-    {
+    if (enable) {
         g_socpm_struct.socpm_dbg_unit_test_value |= (1 << SLP_DBG_SOCPM_ON_DURING_BMPS);
-    }
-    else
-    {
+    } else {
         g_socpm_struct.socpm_dbg_unit_test_value &= ~(1 << SLP_DBG_SOCPM_ON_DURING_BMPS);
     }
-    NT_LOG_PRINT(SOCPM, ERR,"SLP_DBG_SOCPM_ON_DURING_BMPS: %d", enable);
+    NT_LOG_PRINT(SOCPM, ERR, "SLP_DBG_SOCPM_ON_DURING_BMPS: %d", enable);
 }
 
 /*
@@ -3534,23 +3219,17 @@ void nt_set_soc_state_during_protocol_sleep(bool enable)
  */
 void nt_enable_dummy_slp_list_node(bool enable, uint64_t sleep_time, int dummy_node_count)
 {
-    if (enable)
-    {
-        if (_socpm_last_slp_count < (_SOCPM_SLP_LST_SZ - 1))
-        {
+    if (enable) {
+        if (_socpm_last_slp_count < (_SOCPM_SLP_LST_SZ - 1)) {
             g_socpm_struct.socpm_dbg_unit_test_value |= (1 << SLP_DBG_SOCPM_SLP_LIST_ADD);
             g_socpm_struct.dummy_slp_time_us = sleep_time;
             g_socpm_struct.dummy_slp_lst_node_count = dummy_node_count;
             g_socpm_struct.add_dummy_slp_list_node = TRUE;
-            NT_LOG_PRINT(SOCPM, ERR,"SLP_DBG_SOCPM_SLP_LIST_ADD: %d", enable);
+            NT_LOG_PRINT(SOCPM, ERR, "SLP_DBG_SOCPM_SLP_LIST_ADD: %d", enable);
+        } else {
+            NT_LOG_PRINT(SOCPM, ERR, "sleep list is full, no more room to add new node in current sleep list");
         }
-        else
-        {
-           NT_LOG_PRINT(SOCPM, ERR, "sleep list is full, no more room to add new node in current sleep list");
-        }
-    }
-    else
-    {
+    } else {
         g_socpm_struct.socpm_dbg_unit_test_value &= ~(1 << SLP_DBG_SOCPM_SLP_LIST_ADD);
     }
 }
@@ -3562,15 +3241,12 @@ void nt_enable_dummy_slp_list_node(bool enable, uint64_t sleep_time, int dummy_n
  */
 void nt_enable_beacon_miss_log(bool enable)
 {
-    if (enable)
-    {
+    if (enable) {
         g_socpm_struct.socpm_dbg_unit_test_value |= (1 << SLP_DBG_SOCPM_BEACON_MISS_LOG);
-    }
-    else
-    {
+    } else {
         g_socpm_struct.socpm_dbg_unit_test_value &= ~(1 << SLP_DBG_SOCPM_BEACON_MISS_LOG);
     }
-    NT_LOG_PRINT(SOCPM, ERR,"SLP_DBG_SOCPM_BEACON_MISS_LOG: %d", enable);
+    NT_LOG_PRINT(SOCPM, ERR, "SLP_DBG_SOCPM_BEACON_MISS_LOG: %d", enable);
 }
 
 /*
@@ -3580,15 +3256,12 @@ void nt_enable_beacon_miss_log(bool enable)
  */
 uint32_t nt_socpm_status(void)
 {
-    if (nt_socpm_slp_time_min > 0)
-    {
-        NT_LOG_PRINT(SOCPM, ERR,"socpm status: enabled");
-    }
-    else
-    {
+    if (nt_socpm_slp_time_min > 0) {
+        NT_LOG_PRINT(SOCPM, ERR, "socpm status: enabled");
+    } else {
         NT_LOG_PRINT(SOCPM, ERR, "socpm status: disabled");
     }
-	return nt_socpm_slp_time_min;
+    return nt_socpm_slp_time_min;
 }
 
 /*
@@ -3609,12 +3282,10 @@ bool nt_bcn_logs_is_enabled(void)
 void nt_add_dummy_slp_list_node(void)
 {
     static nt_socpm_sleep_t dummy_timer = {
-        dummy_sleep_callback, dummy_wakeup_callback,
-        dummy_min_callback, clk_gtd_sleep, 100, -1, 0};
-    for (int count = 0; count < g_socpm_struct.dummy_slp_lst_node_count; count++)
-    {
-         dummy_timer.slp_time = g_socpm_struct.dummy_slp_time_us;
-         nt_socpm_sleep_register(&dummy_timer, -1);
+        dummy_sleep_callback, dummy_wakeup_callback, dummy_min_callback, clk_gtd_sleep, 100, -1, 0};
+    for (int count = 0; count < g_socpm_struct.dummy_slp_lst_node_count; count++) {
+        dummy_timer.slp_time = g_socpm_struct.dummy_slp_time_us;
+        nt_socpm_sleep_register(&dummy_timer, -1);
     }
     g_socpm_struct.add_dummy_slp_list_node = FALSE;
 }
@@ -3622,31 +3293,31 @@ void nt_add_dummy_slp_list_node(void)
 #endif /* SUPPORT_SLEEP_DEBUG_UNIT_TEST_CMD */
 
 /*
-* @brief  : update clk latency(in us).it could be 3ms or 32us. default clk_latency is 3ms.
-*         : When WiFi is connected with handset/home AP and active audio streaming is about to start:clk_latency = 32us
-*         : Rest all cases: clk_latency = 3ms
-* @param  : buffer - pointer which contains information related to WMI_CLK_LATENCY_CMD command
-* @return : nt_status_t
-*/
+ * @brief  : update clk latency(in us).it could be 3ms or 32us. default clk_latency is 3ms.
+ *         : When WiFi is connected with handset/home AP and active audio streaming is about to start:clk_latency = 32us
+ *         : Rest all cases: clk_latency = 3ms
+ * @param  : buffer - pointer which contains information related to WMI_CLK_LATENCY_CMD command
+ * @return : nt_status_t
+ */
 nt_status_t nt_update_clk_latency(void *buffer)
 {
-	if (buffer == NULL){
-		return NT_EPARAM;
-	}
+    if (buffer == NULL) {
+        return NT_EPARAM;
+    }
 
 #ifdef SUPPORT_RING_IF
-	uint32_t old_clk_latency = g_socpm_struct.clk_latency_us;
-	wlan_clk_latency_cmd_t *clk_lat_cmd = (wlan_clk_latency_cmd_t*)buffer;
-	g_socpm_struct.clk_latency_us = (uint32_t)clk_lat_cmd->clk_latency;
+    uint32_t old_clk_latency = g_socpm_struct.clk_latency_us;
+    wlan_clk_latency_cmd_t *clk_lat_cmd = (wlan_clk_latency_cmd_t *)buffer;
+    g_socpm_struct.clk_latency_us = (uint32_t)clk_lat_cmd->clk_latency;
 
-	/*Send event with status success */
-	wlan_clk_latency_evt_t clk_lat_evt;
-	clk_lat_evt.evt_hdr.status = NT_OK;
-	if (g_Cmd_Translation_wifi_hndl.msg_struct.event_notify){
-	g_Cmd_Translation_wifi_hndl.msg_struct.event_notify(eWiFiSuccess,wifi_clk_latency_event_id, &clk_lat_evt);
-	}
-	NT_LOG_PRINT(SOCPM,INFO,"CLK Latency updated: old_clk_latency: %d new_clk_latency: %d",old_clk_latency,g_socpm_struct.clk_latency_us);
+    /*Send event with status success */
+    wlan_clk_latency_evt_t clk_lat_evt;
+    clk_lat_evt.evt_hdr.status = NT_OK;
+    if (g_Cmd_Translation_wifi_hndl.msg_struct.event_notify) {
+        g_Cmd_Translation_wifi_hndl.msg_struct.event_notify(eWiFiSuccess, wifi_clk_latency_event_id, &clk_lat_evt);
+    }
+    NT_LOG_PRINT(SOCPM, INFO, "CLK Latency updated: old_clk_latency: %d new_clk_latency: %d", old_clk_latency,
+                 g_socpm_struct.clk_latency_us);
 #endif
-return NT_OK;
+    return NT_OK;
 }
-

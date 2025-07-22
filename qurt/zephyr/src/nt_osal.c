@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #include <stdint.h>
 #include "nt_osal.h"
@@ -16,18 +16,16 @@
  */
 void nt_normal_delay(uint32_t time)
 {
-    volatile int32_t i,j, value;
-    value = (volatile int32_t)(time * (10^6)*3);
-    for(i = value ; i>=0 ; i--)
-    {
-       for(j = 100;j>=0;j--)
-       {
-         __asm volatile("nop");
-       }
+    volatile int32_t i, j, value;
+    value = (volatile int32_t)(time * (10 ^ 6) * 3);
+    for (i = value; i >= 0; i--) {
+        for (j = 100; j >= 0; j--) {
+            __asm volatile("nop");
+        }
     }
 }
 
-int tickless_idle_enabled (void)
+int tickless_idle_enabled(void)
 {
 #ifdef CONFIG_PM
     return 1;
@@ -35,4 +33,3 @@ int tickless_idle_enabled (void)
     return 0;
 #endif
 }
-

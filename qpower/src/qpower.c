@@ -1,13 +1,13 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 /**
  * @file soc.c
  * @brief System/hardware module for QCA402x processor
  * @version 0.1
  * @date 2025-06-18
- * 
+ *
  */
 
 #include "printfext.h"
@@ -51,7 +51,7 @@
 
 qpower_param_t gs_qpower_param;
 
-qapi_Status_t qapi_pmu_init (void)
+qapi_Status_t qapi_pmu_init(void)
 {
     PRINT_LOG_FUNC_LINE_ENTRY;
 
@@ -61,8 +61,8 @@ qapi_Status_t qapi_pmu_init (void)
     gs_qpower_param.s2ram_wakeup_src = DEFAULT_S2RAM_WAKEUP_SRC;
 
     /* dev cfg should be the first to get initialized */
-    nt_devcfg_parse();      // devcfg parser function call to fill the common devcfg structure
-    //nt_devcfg_byte_seq_parse(); // byte_sequence :: devcfg parser function call to fill the common devcfg structure
+    nt_devcfg_parse(); // devcfg parser function call to fill the common devcfg structure
+    // nt_devcfg_byte_seq_parse(); // byte_sequence :: devcfg parser function call to fill the common devcfg structure
     PRINT_LOG_FUNC_LINE;
 
 #ifdef FEATURE_FDI
@@ -100,7 +100,7 @@ qapi_Status_t qapi_pmu_init (void)
     hres_timer_init_setup();
     PRINT_LOG_FUNC_LINE;
 #if defined(HRES_TIMER_UNIT_TEST)
-    //TO-DO: should be moved to POST_KERNEL due to task creation
+    // TO-DO: should be moved to POST_KERNEL due to task creation
     hres_timer_test_create_task();
     PRINT_LOG_FUNC_LINE;
 #endif
@@ -110,8 +110,8 @@ qapi_Status_t qapi_pmu_init (void)
     PRINT_LOG_FUNC_LINE;
 
 #ifdef NT_SOPCM_CHANGE
-    enum error_no reason=wifi_pdc_init();
-    if(reason != pdc_init_success ) {
+    enum error_no reason = wifi_pdc_init();
+    if (reason != pdc_init_success) {
         WLAN_DBG0_PRINT("WIFI Resource Creation failed");
     }
     PRINT_LOG_FUNC_LINE;
@@ -132,14 +132,14 @@ qapi_Status_t qapi_pmu_init (void)
 #endif
 
 #ifdef NT_FN_CPR
-    if((uint8_t) nt_socpm_cpr_flag_state_get(CPR_EN)) {
+    if ((uint8_t)nt_socpm_cpr_flag_state_get(CPR_EN)) {
         nt_cpr_init();
         PRINT_LOG_FUNC_LINE;
     }
-#endif //NT_FN_CPR
+#endif // NT_FN_CPR
 
 #ifdef NT_FN_SYSMON
-    nt_sysmon_threshold_init();// initializing the thresholds for voltage and temperature
+    nt_sysmon_threshold_init(); // initializing the thresholds for voltage and temperature
     PRINT_LOG_FUNC_LINE;
 #endif
 
@@ -174,8 +174,8 @@ qapi_Status_t qapi_pmu_init (void)
 #endif
 #else
     /** Disable the external wakeup interrupt when the feature is not enabled
-    * as it prevents SOC from entering sleep state.
-    */
+     * as it prevents SOC from entering sleep state.
+     */
     disable_aon_ext_wakeup_int();
     PRINT_LOG_FUNC_LINE;
 
@@ -196,17 +196,17 @@ qapi_Status_t qapi_power_set_parameter(uint32_t type, uint32_t val)
 
     log_printf("%s, type:%d val:%d\n", __func__, type, val);
     switch (type) {
-        case __QAPI_POWER_SOFTOFF_DURATION_MS:
-            log_printf("softoff_duration_ms %d=>%d\n", gs_qpower_param.softoff_duration_ms, val);
-            gs_qpower_param.softoff_duration_ms = val;
-            break;
-        case __QAPI_POWER_SUSPEND2RAM_DURATION_MS:
-            log_printf("s2ram_duration_ms %d=>%d\n", gs_qpower_param.s2ram_duration_ms, val);
-            gs_qpower_param.s2ram_duration_ms = val;
-            break;
-        default:
-            ret = QAPI_ERR_NOT_SUPPORTED;
-            break;
+    case __QAPI_POWER_SOFTOFF_DURATION_MS:
+        log_printf("softoff_duration_ms %d=>%d\n", gs_qpower_param.softoff_duration_ms, val);
+        gs_qpower_param.softoff_duration_ms = val;
+        break;
+    case __QAPI_POWER_SUSPEND2RAM_DURATION_MS:
+        log_printf("s2ram_duration_ms %d=>%d\n", gs_qpower_param.s2ram_duration_ms, val);
+        gs_qpower_param.s2ram_duration_ms = val;
+        break;
+    default:
+        ret = QAPI_ERR_NOT_SUPPORTED;
+        break;
     }
     return ret;
 }
@@ -222,15 +222,15 @@ qapi_Status_t qapi_power_get_parameter(uint32_t type, uint32_t *val)
 
     log_printf("%s, type:%d\n", __func__, type);
     switch (type) {
-        case __QAPI_POWER_SOFTOFF_DURATION_MS:
-            *val = gs_qpower_param.softoff_duration_ms;
-            break;
-        case __QAPI_POWER_SUSPEND2RAM_DURATION_MS:
-            *val = gs_qpower_param.s2ram_duration_ms;
-            break;
-        default:
-            ret = QAPI_ERR_NOT_SUPPORTED;
-            break;
+    case __QAPI_POWER_SOFTOFF_DURATION_MS:
+        *val = gs_qpower_param.softoff_duration_ms;
+        break;
+    case __QAPI_POWER_SUSPEND2RAM_DURATION_MS:
+        *val = gs_qpower_param.s2ram_duration_ms;
+        break;
+    default:
+        ret = QAPI_ERR_NOT_SUPPORTED;
+        break;
     }
 
 exit:
@@ -244,11 +244,10 @@ void qapi_enter_softoff(void)
     PRINT_LOG_FUNC_LINE_ENTRY;
     nt_socpm_enable(1);
     PRINT_LOG_FUNC_LINE;
-    if (p_qpower_param->softoff_duration_ms
-            && IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_AON_TIMER)
-            && IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_EXT_PIN)) {
+    if (p_qpower_param->softoff_duration_ms && IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_AON_TIMER) &&
+        IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_EXT_PIN)) {
         log_printf("%s wakeup by timer %d ms or gpio\n", __FUNCTION__, p_qpower_param->softoff_duration_ms);
-        nt_enable_standby(((uint64_t)(p_qpower_param->softoff_duration_ms))*1000);
+        nt_enable_standby(((uint64_t)(p_qpower_param->softoff_duration_ms)) * 1000);
     } else if (IS_BIT_SET(p_qpower_param->softoff_wakeup_src, WKUP_EXT_PIN)) {
         log_printf("%s only wakeup by gpio\n", __FUNCTION__);
         nt_enable_indef_deepsleep();
@@ -256,7 +255,7 @@ void qapi_enter_softoff(void)
     PRINT_LOG_FUNC_LINE_EXIT;
 }
 
-void __enter_suspend2ram (void)
+void __enter_suspend2ram(void)
 {
     __disable_irq();
     early_printk("%s %d entry\r\n", __FUNCTION__, __LINE__);
@@ -273,9 +272,8 @@ void qapi_enter_suspend2ram(void)
     qpower_param_t *p_qpower_param = &gs_qpower_param;
 
     PRINT_LOG_FUNC_LINE_ENTRY;
-    if (p_qpower_param->s2ram_duration_ms
-            && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_AON_TIMER)
-            && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
+    if (p_qpower_param->s2ram_duration_ms && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_AON_TIMER) &&
+        IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
         log_printf("%s wakeup by timer %d ms or gpio\n", __FUNCTION__, p_qpower_param->s2ram_duration_ms);
         __enter_suspend2ram();
     } else if (IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
@@ -294,4 +292,3 @@ void qapi_suspend2ram_exit_post_ops(void)
     dead_loop_cond2();
     irq_unlock(0);
 }
-

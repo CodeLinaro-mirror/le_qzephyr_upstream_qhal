@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  * SPDX-License-Identifier: BSD-3-Clause*/
+ * SPDX-License-Identifier: BSD-3-Clause*/
 
 /**
    @file qapi_lowpower.h
@@ -20,14 +20,18 @@
 #ifdef FEATURE_FPCI
 #include "wifi_fw_pwr_cb_infra.h"
 #endif
-//Sleep modes types
+// Sleep modes types
 typedef enum qapi_sleep_types {
-   qapi_clk_gtd_sleep = 1, qapi_mcu_sleep, qapi_standby,qapi_active,qapi_lightsleep,qapi_infdeepsleep 
+    qapi_clk_gtd_sleep = 1,
+    qapi_mcu_sleep,
+    qapi_standby,
+    qapi_active,
+    qapi_lightsleep,
+    qapi_infdeepsleep
 } qapi_sleep_mode;
 
-
 /* @brief bmps rx filter callback typedef */
-typedef bool (*qapi_bmps_rx_filter_cb)(uint16_t type, bool bm_cast,void* pbuf,uint16_t len);
+typedef bool (*qapi_bmps_rx_filter_cb)(uint16_t type, bool bm_cast, void *pbuf, uint16_t len);
 
 /**
    @brief Enable/Disable system power management.
@@ -61,15 +65,18 @@ qapi_Status_t qapi_deepsleep_enter(uint8_t wkup_src, uint64_t sleep_time);
 
    @param[in] enable        1: Enable; 0: disable. Below parameters are valid only when enable is 1;
    @param[in] sleep_time  Sleep time in ms, during deepsleep state;
-   @param[in] recnx_wait  Re-connection timeout in ms. When wlan disconnect/connect_fail happens, this timer will start; if connect success happens then cancel the timer; if timeout, system will determine whether to enter into deepsleep;
-   @param[in] wmi_wait    Wmi_wait time in ms. Upon recnx_wait timeout, check if there's any WMI cmd received during the wmi_wait duration, if no then goto deepsleep, if yes then start a timer with wmi_wait duration;
-   @param[in] cnx_wait     Time in ms. Use for ENABLE_IMPS_TIMER_ON_BOOTUP feature, means starting this timer during bootup, if there's no wlan connection during this period, then system enters into deepsleep;
+   @param[in] recnx_wait  Re-connection timeout in ms. When wlan disconnect/connect_fail happens, this timer will start;
+   if connect success happens then cancel the timer; if timeout, system will determine whether to enter into deepsleep;
+   @param[in] wmi_wait    Wmi_wait time in ms. Upon recnx_wait timeout, check if there's any WMI cmd received during the
+   wmi_wait duration, if no then goto deepsleep, if yes then start a timer with wmi_wait duration;
+   @param[in] cnx_wait     Time in ms. Use for ENABLE_IMPS_TIMER_ON_BOOTUP feature, means starting this timer during
+   bootup, if there's no wlan connection during this period, then system enters into deepsleep;
 
    @return
    - QAPI_OK                             --  IMPS cfg and enable successfully.
 */
-qapi_Status_t qapi_imps_cfg(uint8_t enable, uint32_t sleep_time, uint32_t recnx_wait, uint32_t wmi_wait, uint32_t cnx_wait, qapi_sleep_mode policy);
-
+qapi_Status_t qapi_imps_cfg(uint8_t enable, uint32_t sleep_time, uint32_t recnx_wait, uint32_t wmi_wait,
+                            uint32_t cnx_wait, qapi_sleep_mode policy);
 
 /**
    @brief Config and enable IMPS.
@@ -78,14 +85,17 @@ qapi_Status_t qapi_imps_cfg(uint8_t enable, uint32_t sleep_time, uint32_t recnx_
 
    @param[in] enable        1: Enable; 0: disable. Below parameters are valid only when enable is 1;
    @param[in] sleep_time  Sleep time in ms, during deepsleep state;
-   @param[in] recnx_wait  Re-connection timeout in ms. When wlan disconnect/connect_fail happens, this timer will start; if connect success happens then cancel the timer; if timeout, system will determine whether to enter into deepsleep;
-   @param[in] wmi_wait    Wmi_wait time in ms. Upon recnx_wait timeout, check if there's any WMI cmd received during the wmi_wait duration, if no then goto deepsleep, if yes then start a timer with wmi_wait duration;
-   @param[in] cnx_wait     Time in ms. Use for ENABLE_IMPS_TIMER_ON_BOOTUP feature, means starting this timer during bootup, if there's no wlan connection during this period, then system enters into deepsleep;
+   @param[in] recnx_wait  Re-connection timeout in ms. When wlan disconnect/connect_fail happens, this timer will start;
+   if connect success happens then cancel the timer; if timeout, system will determine whether to enter into deepsleep;
+   @param[in] wmi_wait    Wmi_wait time in ms. Upon recnx_wait timeout, check if there's any WMI cmd received during the
+   wmi_wait duration, if no then goto deepsleep, if yes then start a timer with wmi_wait duration;
+   @param[in] cnx_wait     Time in ms. Use for ENABLE_IMPS_TIMER_ON_BOOTUP feature, means starting this timer during
+   bootup, if there's no wlan connection during this period, then system enters into deepsleep;
 
    @return
    - QAPI_OK                             --  IMPS cfg and enable successfully.
 */
-qapi_Status_t qapi_imps_enter_sleep(uint8_t enable,uint32_t wait_time,uint32_t sleep_time);
+qapi_Status_t qapi_imps_enter_sleep(uint8_t enable, uint32_t wait_time, uint32_t sleep_time);
 
 /**
    @brief disenable IMPS.
@@ -103,7 +113,9 @@ qapi_Status_t qapi_imps_disable_sleep(void);
    The API config and enable/disable BMPS.
 
    @param[in] enable          1: Enable; 0: disable;
-   @param[in] idle_timeout  Idle timeout value in ms. When BMPS is enabled, system would start a timer with idle_timeout as timeout value, after timer expires, it'll check tx/rx cnt during this period, if meet condition then trigger system entering into BMPS, otherwise re-start the idle timer again;
+   @param[in] idle_timeout  Idle timeout value in ms. When BMPS is enabled, system would start a timer with idle_timeout
+   as timeout value, after timer expires, it'll check tx/rx cnt during this period, if meet condition then trigger
+   system entering into BMPS, otherwise re-start the idle timer again;
 
    @return
    - QAPI_OK                             --  BMPS cfg and enable/disable successfully.
@@ -120,14 +132,13 @@ qapi_Status_t qapi_bmps_cfg(uint8_t enable, uint32_t idle_timeout);
    @return
    - QAPI_OK                             --  BMPS  RX Filter enable/disable successfully.
 */
-qapi_Status_t  qapi_bmps_rx_filter_enable(uint8_t enable);
-
-
+qapi_Status_t qapi_bmps_rx_filter_enable(uint8_t enable);
 
 /**
    @brief Register the rx filter callback function for bmps for broadcast/multicast packets.
 
-   @param[in] bmps_cb  callback function used in bmps mode, used as filter to ignore some broadcast/multicast packets that will not wake up chip;
+   @param[in] bmps_cb  callback function used in bmps mode, used as filter to ignore some broadcast/multicast packets
+   that will not wake up chip;
    @param[in] net_cb  callback function used in net stack, could be NULL;
 
    @return

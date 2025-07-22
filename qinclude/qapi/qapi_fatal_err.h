@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
-#ifndef __QAPI_FATAL_ERR_H__ 
+ */
+#ifndef __QAPI_FATAL_ERR_H__
 #define __QAPI_FATAL_ERR_H__
 
 /*=================================================================================
@@ -10,7 +10,7 @@
  *                            FATAL ERROR MANAGER
  *
  *===============================================================================*/
- /** @file qapi_fatal_err.h
+/** @file qapi_fatal_err.h
  *
  * @addtogroup qapi_fatal_err
  * @{
@@ -31,11 +31,11 @@
  * @code {.c}
  *
  *    * The code snippet below demonstrates the use of this interface. The example
- *    * dynamically allocates a region of memory, failing in which it 
+ *    * dynamically allocates a region of memory, failing in which it
  *    * asserts the code. This macro populates the debug information in a global
  *    * variable 'coredump' with line number, file name, and user parameters.
  *    * It also dumps the contents of general purpose registers and invokes
- *    * various user callbacks before resetting the system. The header file 
+ *    * various user callbacks before resetting the system. The header file
  *    * qapi_fatal_err.h should be included before calling the macro.
  *
  *   char * c;
@@ -88,8 +88,6 @@ when       who     what, where, why
 #define __FILENAME__ __FILE__
 #endif
 
-
-
 /*==================================================================================
 
                                TYPE DEFINITIONS
@@ -100,28 +98,25 @@ when       who     what, where, why
 @{ */
 
 /**
-* Debug information structure.
-*
-* This structure is used to capture the module name and line number in the 
-* source file where a fatal error was detected. Reference to an instance of
-* this structure is passed as a parameter to the qapi_err_fatal_internal()
-*          function. 
-*/
-typedef struct 
-{
-  const char  *fname;
-  /**< Pointer to the source file name. */ 
-  
-  uint16_t     line;
-  /**< Line number in the source module. */
-}qapi_Err_const_t;
+ * Debug information structure.
+ *
+ * This structure is used to capture the module name and line number in the
+ * source file where a fatal error was detected. Reference to an instance of
+ * this structure is passed as a parameter to the qapi_err_fatal_internal()
+ *          function.
+ */
+typedef struct {
+    const char *fname;
+    /**< Pointer to the source file name. */
 
+    uint16_t line;
+    /**< Line number in the source module. */
+} qapi_Err_const_t;
 
 /**
  * @file qapi_fatal_err.h
  *
  */
-
 
 /** @} */ /* end_addtogroup qapi_fatal_err */
 
@@ -154,22 +149,14 @@ typedef struct
  * @param[in] param3    Client-provided parameter saved with debug information.
  *
  * @note This function does not return. It should only be used to gracefully
- *       handle unrecoverable errors and restart the system. Clients should 
+ *       handle unrecoverable errors and restart the system. Clients should
  *       not call the function directly. Instead, they should use the macro
  *       QAPI_FATAL_ERR to access the functionality to ensure that all
  *       relevant debug information is carried forward.
  */
-void qapi_err_fatal_internal
-(
-  const qapi_Err_const_t * err_const, 
-  uint32_t                 param1, 
-  uint32_t                 param2, 
-  uint32_t                 param3 
-);
+void qapi_err_fatal_internal(const qapi_Err_const_t *err_const, uint32_t param1, uint32_t param2, uint32_t param3);
 
-/** @} */ /* end_addtogroup qapi_fatal_err */ 
-
-
+/** @} */ /* end_addtogroup qapi_fatal_err */
 
 /*==================================================================================
   MACRO         QAPI_FATAL_ERR
@@ -195,12 +182,11 @@ void qapi_err_fatal_internal
  * @note1hang This macro does not return. It should only be used to gracefully
  *       handle unrecoverable errors and restart the system.
  @hideinitializer */
-#define QAPI_FATAL_ERR(param1,param2,param3)                             \
-do                                                                       \
-{                                                                        \
-   static const qapi_Err_const_t xx_err_const = {(const char  *)__FILENAME__, (uint16_t)__LINE__};\
-   qapi_err_fatal_internal(&xx_err_const, (uint32_t)param1,(uint32_t)param2,(uint32_t)param3);         \
-}while (0)
+#define QAPI_FATAL_ERR(param1, param2, param3)                                                                         \
+    do {                                                                                                               \
+        static const qapi_Err_const_t xx_err_const = {(const char *)__FILENAME__, (uint16_t)__LINE__};                 \
+        qapi_err_fatal_internal(&xx_err_const, (uint32_t)param1, (uint32_t)param2, (uint32_t)param3);                  \
+    } while (0)
 
 #endif
 
@@ -217,24 +203,22 @@ do                                                                       \
 /**
  *
 * @brif Read M4 core RAM information from MISC0.
-* 
-* @param[out]Pointer to structure, to get m4 core dump info read out. 
+*
+* @param[out]Pointer to structure, to get m4 core dump info read out.
 @param[in] flags  Control flags for core dump info retrieval. Currently unused.
 
 @return
-status QAPI_OK on successful reconstruction of core dump structure,otherwise 
-appropriate error. 
+status QAPI_OK on successful reconstruction of core dump structure,otherwise
+appropriate error.
  **/
 qapi_Status_t qapi_coredump_read(qapi_m4_coredump_type *m4_dump_info, int flag);
-
-
 
 /*==================================================================================
   FUNCTION         qapi_set_ramdump_flag
 ==================================================================================*/
 /**
- *   
- * @brief set the ramdump print flag, control the printed ram info after 
+ *
+ * @brief set the ramdump print flag, control the printed ram info after
  *        crash
  *
  * @param[in] ramdump_print_flag   if print all the ram info
@@ -245,5 +229,5 @@ qapi_Status_t qapi_coredump_read(qapi_m4_coredump_type *m4_dump_info, int flag);
  *       QAPI_OK -- successful set the ramdump print flag
  *       Error code -- If there is an error.
  **/
- qapi_Status_t qapi_set_ramdump_flag(int ramdump_print_flag);
+qapi_Status_t qapi_set_ramdump_flag(int ramdump_print_flag);
 #endif

@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 /*
  * qurt_timer.c
@@ -17,14 +17,13 @@
 #include "qurt_timer.h"
 #include "qurt_error.h"
 
-#define QURT_TIMER_NOTIFY_TYPE_CALLBACK     1
-#define QURT_TIMER_NOTIFY_TYPE_SIGNAL       2
+#define QURT_TIMER_NOTIFY_TYPE_CALLBACK 1
+#define QURT_TIMER_NOTIFY_TYPE_SIGNAL 2
 
-#define QURT_TIMER_NOTIFY_TYPE_CALLBACK     1
-#define QURT_TIMER_NOTIFY_TYPE_SIGNAL       2
+#define QURT_TIMER_NOTIFY_TYPE_CALLBACK 1
+#define QURT_TIMER_NOTIFY_TYPE_SIGNAL 2
 
-typedef struct _qurt_timer_attr_t
-{
+typedef struct _qurt_timer_attr_t {
     qurt_time_t duration;
     qurt_time_t reload;
     qurt_time_t remaining;
@@ -34,16 +33,12 @@ typedef struct _qurt_timer_attr_t
     void *id;
 } _qurt_timer_attr_t;
 
-typedef struct _qurt_timer_t
-{
+typedef struct _qurt_timer_t {
     struct k_timer timer;
     _qurt_timer_attr_t qurt_timer_info;
 } _qurt_timer_t;
 
-void qurt_timer_attr_init(qurt_timer_attr_t *attr)
-{
-    memset(attr, 0, QURT_TIMER_OBJ_SIZE_BYTES);
-}
+void qurt_timer_attr_init(qurt_timer_attr_t *attr) { memset(attr, 0, QURT_TIMER_OBJ_SIZE_BYTES); }
 
 void qurt_timer_attr_set_duration(qurt_timer_attr_t *attr, qurt_time_t duration)
 {
@@ -182,8 +177,7 @@ int qurt_timer_change_period(TimerHandle_t timer, TickType_t period, TickType_t 
 int qurt_timer_attr_get_duration(qurt_timer_attr_t *attr, qurt_time_t *duration)
 {
     _qurt_timer_attr_t *pattr = (_qurt_timer_attr_t *)attr;
-    if (NULL == pattr || NULL == duration)
-    {
+    if (NULL == pattr || NULL == duration) {
         return QURT_EINVALID;
     }
     *duration = pattr->duration;
@@ -193,8 +187,7 @@ int qurt_timer_attr_get_duration(qurt_timer_attr_t *attr, qurt_time_t *duration)
 int qurt_timer_attr_get_option(qurt_timer_attr_t *attr, uint32 *option)
 {
     _qurt_timer_attr_t *pattr = (_qurt_timer_attr_t *)attr;
-    if (NULL == pattr || NULL == option)
-    {
+    if (NULL == pattr || NULL == option) {
         return QURT_EINVALID;
     }
     *option = pattr->option;
@@ -204,8 +197,7 @@ int qurt_timer_attr_get_option(qurt_timer_attr_t *attr, uint32 *option)
 int qurt_timer_attr_get_remaining(qurt_timer_attr_t *attr, qurt_time_t *remaining)
 {
     _qurt_timer_attr_t *pattr = (_qurt_timer_attr_t *)attr;
-    if (NULL == pattr || NULL == remaining)
-    {
+    if (NULL == pattr || NULL == remaining) {
         return QURT_EINVALID;
     }
     *remaining = pattr->remaining;
@@ -215,8 +207,7 @@ int qurt_timer_attr_get_remaining(qurt_timer_attr_t *attr, qurt_time_t *remainin
 int qurt_timer_attr_get_reload(qurt_timer_attr_t *attr, qurt_time_t *reload_time)
 {
     _qurt_timer_attr_t *pattr = (_qurt_timer_attr_t *)attr;
-    if (NULL == pattr || NULL == reload_time)
-    {
+    if (NULL == pattr || NULL == reload_time) {
         return QURT_EINVALID;
     }
     *reload_time = pattr->reload;
@@ -235,21 +226,14 @@ int qurt_timer_delete(TimerHandle_t timer, TickType_t block_time)
     return QURT_EOK;
 }
 
-//k_uptime_ticks
-qurt_time_t qurt_timer_get_ticks(void)
-{
-    return sys_clock_tick_get_32();
-}
+// k_uptime_ticks
+qurt_time_t qurt_timer_get_ticks(void) { return sys_clock_tick_get_32(); }
 
-qurt_time_t qurt_timer_get_remaining(void)
-{
-    return (qurt_time_t)QURT_TIME_WAIT_FOREVER;
-}
+qurt_time_t qurt_timer_get_remaining(void) { return (qurt_time_t)QURT_TIME_WAIT_FOREVER; }
 
 qurt_time_t qurt_timer_convert_time_to_ticks(qurt_time_t time, qurt_time_unit_t unit_of_time)
 {
-    switch (unit_of_time)
-    {
+    switch (unit_of_time) {
     case QURT_TIME_TICK:
         return time;
     // Round up
@@ -264,8 +248,7 @@ qurt_time_t qurt_timer_convert_time_to_ticks(qurt_time_t time, qurt_time_unit_t 
 
 qurt_time_t qurt_timer_convert_ticks_to_time(qurt_time_t ticks, qurt_time_unit_t time_unit)
 {
-    switch (time_unit)
-    {
+    switch (time_unit) {
     case QURT_TIME_TICK:
         return ticks;
 
@@ -276,51 +259,42 @@ qurt_time_t qurt_timer_convert_ticks_to_time(qurt_time_t ticks, qurt_time_unit_t
     }
 }
 
-TimerHandle_t nt_qurt_timer_create(	char * pcTimerName,
-		const TickType_t xTimerPeriodInTicks,
-		const UBaseType_t uxAutoReload,
-		void *  pvTimerID,
-		TimerCallbackFunction_t pxCallbackFunction )
+TimerHandle_t nt_qurt_timer_create(char *pcTimerName, const TickType_t xTimerPeriodInTicks,
+                                   const UBaseType_t uxAutoReload, void *pvTimerID,
+                                   TimerCallbackFunction_t pxCallbackFunction)
 {
-	qurt_timer_attr_t timer_create ;
-	qurt_timer_attr_init(&timer_create);
-	qurt_timer_attr_set_duration(&timer_create, xTimerPeriodInTicks);
+    qurt_timer_attr_t timer_create;
+    qurt_timer_attr_init(&timer_create);
+    qurt_timer_attr_set_duration(&timer_create, xTimerPeriodInTicks);
 
-	if(uxAutoReload == 0) {
-		qurt_timer_attr_set_option(&timer_create, QURT_TIMER_ONESHOT);
-	} else {
-		qurt_timer_attr_set_option(&timer_create, QURT_TIMER_PERIODIC);
-		qurt_timer_attr_set_reload(&timer_create, xTimerPeriodInTicks);
-	}
+    if (uxAutoReload == 0) {
+        qurt_timer_attr_set_option(&timer_create, QURT_TIMER_ONESHOT);
+    } else {
+        qurt_timer_attr_set_option(&timer_create, QURT_TIMER_PERIODIC);
+        qurt_timer_attr_set_reload(&timer_create, xTimerPeriodInTicks);
+    }
 
-	return qurt_timer_create(pvTimerID, &timer_create, pxCallbackFunction);
+    return qurt_timer_create(pvTimerID, &timer_create, pxCallbackFunction);
 }
 
 #define TIMER_NAME "sme_timer"
 
 /*Timer Functions*/
-//target to call back function
-TimerHandle_t nt_create_timer(void *call_back_function, void *timer_id,
-		TickType_t time_countdown,UBaseType_t auto_reload) 
+// target to call back function
+TimerHandle_t nt_create_timer(void *call_back_function, void *timer_id, TickType_t time_countdown,
+                              UBaseType_t auto_reload)
 {
-	return nt_qurt_timer_create(TIMER_NAME, time_countdown, auto_reload,
-			timer_id, call_back_function);
+    return nt_qurt_timer_create(TIMER_NAME, time_countdown, auto_reload, timer_id, call_back_function);
 }
 
-int nt_start_timer(TimerHandle_t timer_handle) {
+int nt_start_timer(TimerHandle_t timer_handle) { return qurt_timer_start(timer_handle, 100); }
 
-	return qurt_timer_start(timer_handle, 100);
-}
+int nt_stop_timer(TimerHandle_t timer_handle) { return qurt_timer_stop(timer_handle, 100); }
 
-int nt_stop_timer(TimerHandle_t timer_handle) {
-
-	return qurt_timer_stop(timer_handle, 100);
-}
-
-int nt_timer_change_time_period(TimerHandle_t timer,
-		TickType_t period)
+int nt_timer_change_time_period(TimerHandle_t timer, TickType_t period)
 {
-	return qurt_timer_change_period(timer, period, 0);;
+    return qurt_timer_change_period(timer, period, 0);
+    ;
 }
 
 void *nt_get_timeout_arg(TimerHandle_t timer_handle)
@@ -332,4 +306,3 @@ void *nt_get_timeout_arg(TimerHandle_t timer_handle)
         return NULL;
     }
 }
-

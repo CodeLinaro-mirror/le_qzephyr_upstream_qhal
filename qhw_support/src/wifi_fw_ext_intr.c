@@ -16,19 +16,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-//#include "ExceptionHandlers.h"
+// #include "ExceptionHandlers.h"
 #include "HALhwio.h"
 #include "Fermion_seq_hwioreg.h"
-//#include "FreeRTOS.h"
-//#include "semphr.h"
-//#include "list.h"
+// #include "FreeRTOS.h"
+// #include "semphr.h"
+// #include "list.h"
 
 #include "nt_common.h"
 #include "nt_hw.h"
 #include "nt_hw_support.h"
 #include "nt_gpio_api.h"
 #include "nt_socpm_sleep.h"
-//#include "nt_timer.h"
+// #include "nt_timer.h"
 #include "nt_logger_api.h"
 
 #include "wifi_fw_logger.h"
@@ -38,7 +38,7 @@
 #include "wlan_power.h"
 #include "wifi_fw_ext_intr.h"
 #include "wifi_fw_internal_api.h"
-#if defined (SUPPORT_HIGH_RES_TIMER)
+#if defined(SUPPORT_HIGH_RES_TIMER)
 #include "timer.h"
 #endif
 #ifdef SUPPORT_QCSPI_SLAVE
@@ -46,7 +46,7 @@
 #endif
 
 #ifdef FIRMWARE_APPS_INFORMED_WAKE
-//#include "ferm_prof.h"
+// #include "ferm_prof.h"
 
 /*-------------------------------------------------------------------------
  * Preprocessor Definitions and Constants
@@ -56,7 +56,7 @@
  * Global Data Definitions
  * ----------------------------------------------------------------------*/
 extern SOCPM_STRUCT g_socpm_struct;
-//static SemaphoreHandle_t _socpm_mutex;
+// static SemaphoreHandle_t _socpm_mutex;
 
 /*-------------------------------------------------------------------------
  * Static Function Definitions
@@ -72,27 +72,21 @@ extern SOCPM_STRUCT g_socpm_struct;
  * @return         : NONE
  *
  */
-void __attribute__((section(".__sect_ps_txt")))
-wifi_fw_ext_f2a_pulse(f2a_short_reason_t reason)
+void __attribute__((section(".__sect_ps_txt"))) wifi_fw_ext_f2a_pulse(f2a_short_reason_t reason)
 {
 #if defined(SUPPORT_RING_IF) || defined(SUPPORT_RING_IF_ONLY)
     /* Wait till Fw Table is initialized */
-    if (!wifi_fw_is_table_initialized())
-    {
+    if (!wifi_fw_is_table_initialized()) {
         NT_LOG_PRINT(SOCPM, ERR, "F2A Int attempt before Table init");
         return;
     }
 
-    if ((nt_twt_is_negotiated()) && (reason == F2A_SHORT_REASON_A2F_RESP))
-    {
+    if ((nt_twt_is_negotiated()) && (reason == F2A_SHORT_REASON_A2F_RESP)) {
         /* If TWT is negotiated Fw shall not send a F2A short in response to A2F assertion */
         NT_LOG_PRINT(SOCPM, INFO, "F2A short response in TWT mode");
-    }
-    else
-    {
-        //The delay is for the FTDI to detect any F2A pulse, following an A2F assertion.
-        if (reason == F2A_SHORT_REASON_A2F_RESP && g_socpm_struct.a2f_processing_delay > 0 )
-        {
+    } else {
+        // The delay is for the FTDI to detect any F2A pulse, following an A2F assertion.
+        if (reason == F2A_SHORT_REASON_A2F_RESP && g_socpm_struct.a2f_processing_delay > 0) {
             hres_timer_us_delay(g_socpm_struct.a2f_processing_delay);
         }
         nt_gpio_pin_write(FIRMWARE_2_HOST_GPIO_PORT, FIRMWARE_2_HOST_GPIO, FIRMWARE_2_HOST_ASSERT);
@@ -100,7 +94,7 @@ wifi_fw_ext_f2a_pulse(f2a_short_reason_t reason)
         nt_gpio_pin_write(FIRMWARE_2_HOST_GPIO_PORT, FIRMWARE_2_HOST_GPIO, FIRMWARE_2_HOST_DE_ASSERT);
         NT_LOG_PRINT(SOCPM, INFO, "F2A pulse");
     }
-#endif	
+#endif
 }
 
 /*
@@ -113,8 +107,7 @@ void wifi_fw_ext_f2a_signal_assert(f2a_short_reason_t reason)
 {
 #if defined(SUPPORT_RING_IF) || defined(SUPPORT_RING_IF_ONLY)
     /* Wait till Fw Table is initialized */
-    if (!wifi_fw_is_table_initialized())
-    {
+    if (!wifi_fw_is_table_initialized()) {
         NT_LOG_PRINT(SOCPM, ERR, "F2A Assert attempt before Table init");
         return;
     }
@@ -123,17 +116,13 @@ void wifi_fw_ext_f2a_signal_assert(f2a_short_reason_t reason)
      * A2F need not be asserted as Aria is already awake and communicating
      * with Fw.
      */
-    if (FALSE == g_socpm_struct.a2f_asserted)
-    {
-        if (g_socpm_struct.f2a_assert_enabled && g_socpm_struct.host_supports_a2f)
-        {
+    if (FALSE == g_socpm_struct.a2f_asserted) {
+        if (g_socpm_struct.f2a_assert_enabled && g_socpm_struct.host_supports_a2f) {
             g_socpm_struct.f2a_asserted = TRUE;
             nt_gpio_pin_write(FIRMWARE_2_HOST_GPIO_PORT, FIRMWARE_2_HOST_GPIO, FIRMWARE_2_HOST_ASSERT);
             NT_LOG_PRINT(SOCPM, INFO, "F2A assert");
             nt_start_timer(g_socpm_struct.f2a_timer);
-        }
-        else
-        {
+        } else {
             /** To aid in testing with FermionApp
              * If F2A assert is disabled using this command, the device
              * will send an F2A pulse instead of F2A assert to notify Apps.
@@ -142,15 +131,13 @@ void wifi_fw_ext_f2a_signal_assert(f2a_short_reason_t reason)
              */
             wifi_fw_ext_f2a_pulse(reason);
         }
-    }
-    else
-    {
+    } else {
         /**
          * If A2F is already asserted then only send pulses no F2A assertion allowed.
          */
         wifi_fw_ext_f2a_pulse(reason);
     }
-#endif	
+#endif
 }
 
 /*
@@ -174,14 +161,11 @@ void wifi_fw_ext_f2a_signal_deassert(void)
  */
 void wifi_fw_ext_f2a_timeout_cb(void)
 {
-    if (TRUE == g_socpm_struct.f2a_asserted)
-    {
-        if(TRUE == wifi_fw_in_hosted_mode()) {
+    if (TRUE == g_socpm_struct.f2a_asserted) {
+        if (TRUE == wifi_fw_in_hosted_mode()) {
             NT_LOG_PRINT(SOCPM, INFO, "F2A Timeout");
         }
-    }
-    else
-    {
+    } else {
         /* This condition is not expected to occur*/
         NT_LOG_PRINT(SOCPM, CRIT, "F2A Timeout when f2a_asserted is FALSE");
     }
@@ -192,8 +176,7 @@ void wifi_fw_ext_f2a_timeout_cb(void)
      * entry sequence.
      */
 #ifndef SUPPORT_IMPS_IMPROVEMENTS
-    if (nt_is_imps_registered())
-    {
+    if (nt_is_imps_registered()) {
         nt_set_reset_delayed_imps(FALSE);
         nt_send_imps_enter_cmd(FALSE);
     }
@@ -219,45 +202,37 @@ void aon_ext_wakeup_set_lvl_trigger(void)
     NT_REG_WR(NT_NVIC_ISER3, en_ext_int);
 
     // Set to Level Triggers
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_POS_EDGE_EN,
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_POS_EDGE_EN,
                EXT_WAKEUP_INTR_POS_EDGE_EN, 0);
 
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_NEG_EDGE_EN,
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_NEG_EDGE_EN,
                EXT_WAKEUP_INTR_NEG_EDGE_EN, 0);
 }
 
 uint32_t aon_ext_interrupt_wake_up_cnt = 0;
 uint32_t aon_ext_interrupt_wake_up_processed;
 
-//ext assert
+// ext assert
 void aon_ext_interrupt_wake_up(void)
 {
     aon_ext_interrupt_wake_up_cnt++;
     aon_ext_interrupt_wake_up_processed = 1;
 
     // Clear the interrupt
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR,
-               EXT_WAKEUP_INTR_CLR, 1);
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR,
-               EXT_WAKEUP_INTR_CLR, 0);
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 1);
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 0);
 }
-
-//#define EXT_WAKE_UP_DEASSERT
+
+// #define EXT_WAKE_UP_DEASSERT
 
 #ifdef EXT_WAKE_UP_DEASSERT
-//ext deassert
+// ext deassert
 void aon_ext_interrupt_wake_up_deassert(void)
 {
     // Clear the interrupt
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR,
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR,
                EXT_WAKEUP_POS_EDGE_DETECT_INTR_CLR, 1);
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR,
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR,
                EXT_WAKEUP_POS_EDGE_DETECT_INTR_CLR, 0);
 }
 #endif
@@ -272,34 +247,26 @@ void init_aon_ext_wakeup_int(void)
 {
     uint32_t en_ext_int = 0;
     // Enable ext wakeup interrupt and ext wakeup pos edge interrupt
-    HWIO_OUTX2F(SEQ_WCSS_PMU_OFFSET,
-                NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_EN,
-                EXT_WAKEUP_INTR_EN, EXT_WAKEUP_POS_EDGE_DETECT_INTR_EN, 1, 1);
+    HWIO_OUTX2F(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_EN, EXT_WAKEUP_INTR_EN,
+                EXT_WAKEUP_POS_EDGE_DETECT_INTR_EN, 1, 1);
 
     // Set external wakeup interrupt polarity to active low
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_POL,
-               EXT_WAKEUP_INTR_POL, 0);
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_POL, EXT_WAKEUP_INTR_POL, 0);
 
     // Enable external wakeup pos edge interrupt
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_POS_EDGE_EN,
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_POS_EDGE_EN,
                EXT_WAKEUP_INTR_POS_EDGE_EN, 1);
 
     // Enable external wakeup neg edge interrupt
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_NEG_EDGE_EN,
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_NEG_EDGE_EN,
                EXT_WAKEUP_INTR_NEG_EDGE_EN, 1);
 
     // External wakeup interrupt ack generation disable
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_ACK_EN,
-               EXT_WAKEUP_INTR_ACK_EN, 0);
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_ACK_EN, EXT_WAKEUP_INTR_ACK_EN, 0);
 
     // External wakeup interrupt sticky disable
-    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET,
-               NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_STICKY_EN,
-               EXT_WAKEUP_INTR_STICKY_EN, 0);
+    HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_STICKY_EN, EXT_WAKEUP_INTR_STICKY_EN,
+               0);
 
     qurt_isr_register_3(AON_cmnss_ext_wakeup_int, aon_ext_interrupt_wake_up);
 
@@ -314,8 +281,8 @@ void init_aon_ext_wakeup_int(void)
     en_ext_int |= A2F_DEASSERT_INTR_NVIC3_MASK;
     NT_REG_WR(NT_NVIC_ISER3, en_ext_int);
 #endif
-	//_socpm_mutex = xSemaphoreCreateMutex();
-	//xSemaphoreGive(_socpm_mutex);
+    //_socpm_mutex = xSemaphoreCreateMutex();
+    // xSemaphoreGive(_socpm_mutex);
 }
 
 /*
@@ -326,19 +293,15 @@ void init_aon_ext_wakeup_int(void)
  */
 void wifi_fw_ext_cold_boot_f2a_signal(void)
 {
-    uint8_t a2f_stat = HWIO_INXF(SEQ_WCSS_PMU_OFFSET,
-                                 NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_STAT,
-                                 EXT_WAKEUP_INTR_STAT_RAW);
+    uint8_t a2f_stat =
+        HWIO_INXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_STAT, EXT_WAKEUP_INTR_STAT_RAW);
 
     /** If wakeup was due to A2F assertion, F2A pulse would be sent by the A2F
      * ISR. So, F2A need not be sent when A2F was asserted on cold boot.
      */
-    if (0 == a2f_stat)
-    {
+    if (0 == a2f_stat) {
         wifi_fw_ext_f2a_pulse(F2A_SHORT_REASON_RING_TX_RX);
-    }
-    else
-    {
+    } else {
         NT_LOG_PRINT(SOCPM, WARN, "Cold boot with A2F asserted");
     }
 }
@@ -349,11 +312,7 @@ void wifi_fw_ext_cold_boot_f2a_signal(void)
  * @return : NONE
  *
  */
-void configure_twt_wake_send_f2a(
-    uint8_t enable_f2a)
-{
-    g_socpm_struct.twt_wake_send_f2a = enable_f2a;
-}
+void configure_twt_wake_send_f2a(uint8_t enable_f2a) { g_socpm_struct.twt_wake_send_f2a = enable_f2a; }
 
 /*
  * @brief  Get configuration of F2A indication on TWT wakeup
@@ -361,11 +320,7 @@ void configure_twt_wake_send_f2a(
  * @return uint8_t -> Whether F2A indication on TWT wakeup is enabled
  *
  */
-bool get_twt_wake_send_f2a_configuration(
-    void)
-{
-    return g_socpm_struct.twt_wake_send_f2a;
-}
+bool get_twt_wake_send_f2a_configuration(void) { return g_socpm_struct.twt_wake_send_f2a; }
 
 /*
  * @brief  Enable/disable F2A assert for testing with FermionApp
@@ -373,18 +328,13 @@ bool get_twt_wake_send_f2a_configuration(
  * @return bool -> operation successful/failed
  *
  */
-bool f2a_enable_disable_assert(
-    uint8_t enable_assert)
+bool f2a_enable_disable_assert(uint8_t enable_assert)
 {
     bool result = TRUE;
-    if ((0 == enable_assert) || (1 == enable_assert))
-    {
+    if ((0 == enable_assert) || (1 == enable_assert)) {
         g_socpm_struct.f2a_assert_enabled = enable_assert;
-    }
-    else
-    {
-        NT_LOG_PRINT(SOCPM, ERR, "F2A assert enable/disable: Invalid argument %d",
-                     enable_assert);
+    } else {
+        NT_LOG_PRINT(SOCPM, ERR, "F2A assert enable/disable: Invalid argument %d", enable_assert);
         result = FALSE;
     }
     return result;
@@ -581,10 +531,8 @@ aon_a2f_deassert_isr_handler(void)
 void disable_aon_ext_wakeup_int(void)
 {
     // Disable ext wakeup interrupt and ext wakeup pos edge interrupt
-    HWIO_OUTX2F(SEQ_WCSS_PMU_OFFSET,
-                NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_EN,
-                EXT_WAKEUP_INTR_EN, EXT_WAKEUP_POS_EDGE_DETECT_INTR_EN, 0, 0);
+    HWIO_OUTX2F(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_EN, EXT_WAKEUP_INTR_EN,
+                EXT_WAKEUP_POS_EDGE_DETECT_INTR_EN, 0, 0);
 }
 
 #endif /* FIRMWARE_APPS_INFORMED_WAKE */
-

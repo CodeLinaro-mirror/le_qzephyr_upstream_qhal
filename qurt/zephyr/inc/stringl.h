@@ -38,7 +38,7 @@
  */
 
 #ifndef _STRINGL_H_
-#define	_STRINGL_H_
+#define _STRINGL_H_
 
 #include <stdio.h>
 #include <string.h>
@@ -53,19 +53,19 @@
 // AEEstd.h header error codes
 //
 #ifndef STD_NODIGITS
-    #define STD_NODIGITS   1    /**< See std_scanul(). */
+#define STD_NODIGITS 1 /**< See std_scanul(). */
 #endif
 
 #ifndef STD_NEGATIVE
-    #define STD_NEGATIVE   2    /**< See std_scanul(). */
+#define STD_NEGATIVE 2 /**< See std_scanul(). */
 #endif
 
 #ifndef STD_OVERFLOW
-    #define STD_OVERFLOW   3    /**< See std_scanul(). */
+#define STD_OVERFLOW 3 /**< See std_scanul(). */
 #endif
 
 #ifndef STD_BADPARAM
-    #define STD_BADPARAM   4    /**< See std_scanul(). */
+#define STD_BADPARAM 4 /**< See std_scanul(). */
 #endif
 
 /**< UTF-16 2-byte wide char type */
@@ -74,18 +74,17 @@ typedef unsigned short wchar;
 #ifdef __cplusplus
 namespace std
 {
-    extern "C"
-    {
+extern "C" {
 #endif //__cplusplus
 
 /**
 Added these macros for supporting compilation on Win based
 software dev environments like VC, .Net etc.
 */
-//#ifdef _WIN32
-//   #define snprintf     _snprintf
-//   #define vsnprintf    _vsnprintf
-//#endif
+// #ifdef _WIN32
+//    #define snprintf     _snprintf
+//    #define vsnprintf    _vsnprintf
+// #endif
 
 /**
   strlcat - Size bounded string concatenation.
@@ -159,7 +158,7 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t siz);
   @dependencies
   None.
 */
-size_t wstrlcat(wchar* dst, const wchar* src, size_t siz);
+size_t wstrlcat(wchar *dst, const wchar *src, size_t siz);
 
 /**
   strlcpy - Size bounded string copy.
@@ -230,7 +229,7 @@ size_t wcslcpy(wchar_t *dst, const wchar_t *src, size_t siz);
   @dependencies
   None.
 */
-size_t wstrlcpy(wchar* dst, const wchar* src, size_t siz);
+size_t wstrlcpy(wchar *dst, const wchar *src, size_t siz);
 
 /**
   wstrlen - Returns the number of characters in the source string.
@@ -310,7 +309,7 @@ int wstrncmp(const wchar *s1, const wchar *s2, size_t n);
   @dependencies
   None.
 */
-int strcasecmp(const char * s1, const char * s2);
+int strcasecmp(const char *s1, const char *s2);
 
 /**
   strncasecmp - compare two strings ignoring case (sized).
@@ -329,7 +328,7 @@ int strcasecmp(const char * s1, const char * s2);
   @dependencies
   None.
 */
-int strncasecmp(const char * s1, const char * s2, size_t n);
+int strncasecmp(const char *s1, const char *s2, size_t n);
 
 /**
 std_scanul()
@@ -394,7 +393,7 @@ Description:
   None.
 
 */
-unsigned int std_scanul(const char * pchBuf, int nRadix, const char ** ppchEnd, int *pnError);
+unsigned int std_scanul(const char *pchBuf, int nRadix, const char **ppchEnd, int *pnError);
 
 /**
   memscpy - Size bounded memory copy.
@@ -429,19 +428,13 @@ size_t memscpy(void *dst, size_t dst_size, const void *src, size_t src_size);
   @see memscpy()
 */
 
-static __inline size_t memscpy_i
-(
-  void *dst,
-  size_t dst_size,
-  const void *src,
-  size_t src_size
-)
+static __inline size_t memscpy_i(void *dst, size_t dst_size, const void *src, size_t src_size)
 {
-  size_t  copy_size = (dst_size <= src_size)? dst_size : src_size;
+    size_t copy_size = (dst_size <= src_size) ? dst_size : src_size;
 
-  memcpy(dst, src, copy_size);
+    memcpy(dst, src, copy_size);
 
-  return copy_size;
+    return copy_size;
 }
 
 /**
@@ -481,19 +474,13 @@ size_t memsmove(void *dst, size_t dst_size, const void *src, size_t src_size);
   @see memsmove()
 */
 
-static __inline size_t memsmove_i
-(
-  void *dst,
-  size_t dst_size,
-  const void *src,
-  size_t src_size
-)
+static __inline size_t memsmove_i(void *dst, size_t dst_size, const void *src, size_t src_size)
 {
-  size_t  copy_size = (dst_size <= src_size)? dst_size : src_size;
+    size_t copy_size = (dst_size <= src_size) ? dst_size : src_size;
 
-  memmove(dst, src, copy_size);
+    memmove(dst, src, copy_size);
 
-  return copy_size;
+    return copy_size;
 }
 
 /**
@@ -524,7 +511,7 @@ static __inline size_t memsmove_i
   None.
 */
 
-void* secure_memset(void* ptr, int value, size_t len);
+void *secure_memset(void *ptr, int value, size_t len);
 
 /**
   timesafe_memcmp - Constant-time memory comparison
@@ -555,7 +542,7 @@ void* secure_memset(void* ptr, int value, size_t len);
   None.
 */
 
-int timesafe_memcmp(const void* ptr1, const void* ptr2, size_t len);
+int timesafe_memcmp(const void *ptr1, const void *ptr2, size_t len);
 
 /**
   timesafe_strncmp - Constant-time string comparison
@@ -586,7 +573,7 @@ int timesafe_memcmp(const void* ptr1, const void* ptr2, size_t len);
   None.
 */
 
-int timesafe_strncmp(const char* ptr1, const char* ptr2, size_t len);
+int timesafe_strncmp(const char *ptr1, const char *ptr2, size_t len);
 
 /**
   strnlen - Determine the length of a fixed size string
@@ -613,32 +600,32 @@ size_t strnlen(const char *str, size_t maxlen);
 /** @}  */ /* end_addtogroup dxy_stringl */
 
 #ifdef __cplusplus
-    } //extern "C"
-} //namespace std
+} // extern "C"
+} // namespace std
 #endif //__cplusplus
 
-//Explicit export of the libstd implemented functions
+// Explicit export of the libstd implemented functions
 #ifdef __cplusplus
 #ifdef _WIN32
-    using std::strlcat;
-    using std::strlcpy;
-    using std::strcasecmp;
-    using std::strncasecmp;
+using std::strcasecmp;
+using std::strlcat;
+using std::strlcpy;
+using std::strncasecmp;
 #endif
-    using std::wcslcat;
-    using std::wstrlcat;
-    using std::wcslcpy;
-    using std::wstrlcpy;
-    using std::wstrcmp;
-    using std::wstrncmp;
-    using std::wstrlen;
-    using std::memscpy;
-    using std::memsmove;
-    using std::secure_memset;
-    using std::timesafe_memcmp;
-    using std::timesafe_strncmp;
+using std::memscpy;
+using std::memsmove;
+using std::secure_memset;
+using std::timesafe_memcmp;
+using std::timesafe_strncmp;
+using std::wcslcat;
+using std::wcslcpy;
+using std::wstrcmp;
+using std::wstrlcat;
+using std::wstrlcpy;
+using std::wstrlen;
+using std::wstrncmp;
 #ifndef _WIN32
-    using std::strnlen;
+using std::strnlen;
 #endif
 #endif //__cplusplus
 

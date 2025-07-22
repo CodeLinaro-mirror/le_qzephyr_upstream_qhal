@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 /*==============================================================================
 
@@ -22,8 +22,7 @@ INITIALIZATION AND SEQUENCING REQUIREMENTS
 
 #include "qurt_thread_internal.h"
 
-typedef struct _qal_isr
-{
+typedef struct _qal_isr {
     struct k_work_q *z_work_q;
     void (*isr)(void *, int);
     void *arg;
@@ -67,29 +66,25 @@ static qal_isr_t qal_isr_table[QAL_IRQ_TABLE_SIZE];
 #ifndef CONFIG_ZTEST
 static inline
 #endif
-int _get_qal_index(unsigned int irq)
+    int
+    _get_qal_index(unsigned int irq)
 {
     int table_idx;
 
 #ifdef CONFIG_2ND_LEVEL_INTERRUPTS
     unsigned int level = irq_get_level(irq);
-    if (level == 2U)
-    {
+    if (level == 2U) {
         unsigned int parent_irq = irq_parent_level_2(irq);
-        if (parent_irq == CONFIG_2ND_LVL_INTR_00_OFFSET)
-        {
+        if (parent_irq == CONFIG_2ND_LVL_INTR_00_OFFSET) {
             table_idx = CONFIG_2ND_LVL_ISR_TBL_OFFSET + irq_from_level_2(irq);
-        }
-        else
-        {
+        } else {
             table_idx = -1;
         }
     }
 #ifdef CONFIG_3RD_LEVEL_INTERRUPTS
 #error QuRT ISR does not support 3rd level interrupts
 #endif /* CONFIG_3RD_LEVEL_INTERRUPTS */
-    else
-    {
+    else {
         table_idx = irq;
     }
 
@@ -104,8 +99,7 @@ int _get_qal_index(unsigned int irq)
 static void _qal_isr_handler(const void *arg)
 {
     qal_isr_t *this_isr = (qal_isr_t *)arg;
-    if (this_isr->z_work_q != NULL)
-    {
+    if (this_isr->z_work_q != NULL) {
         // disable this interrupt, otherwise this interrupt handler will be
         // invoked after exiting from interrupt handling and no other threads
         // would be run
@@ -118,13 +112,11 @@ static void _qal_isr_handler(const void *arg)
 void _qal_isr_work(struct k_work *item)
 {
     qal_isr_t *this_isr = CONTAINER_OF(item, qal_isr_t, work);
-    if (this_isr->isr != NULL)
-    {
+    if (this_isr->isr != NULL) {
         this_isr->isr(this_isr->arg, this_isr->int_num);
     }
 
-    if (this_isr->restore_interrupt)
-    {
+    if (this_isr->restore_interrupt) {
         // enable the interrupt back which was disabled in the isr handler
         irq_enable(this_isr->int_num);
     }
@@ -136,34 +128,28 @@ int qurt_isr_create(qurt_thread_t *thread_id, qurt_thread_attr_t *pAttr)
     return QURT_EOK;
 }
 
-int qurt_isr_register2(qurt_thread_t isr_thread_id, int int_num,
-                       unsigned short prio, unsigned short flags,
-                       unsigned int int_type,
-                       void (*isr)(void *, int), void *arg)
+int qurt_isr_register2(qurt_thread_t isr_thread_id, int int_num, unsigned short prio, unsigned short flags,
+                       unsigned int int_type, void (*isr)(void *, int), void *arg)
 {
     int qal_index;
 
-    if (isr == NULL)
-    {
+    if (isr == NULL) {
         return QURT_EINT;
     }
 
     qal_index = _get_qal_index(int_num);
-    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE))
-    {
+    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE)) {
         return QURT_EINT;
     }
 
     qal_thread_t *work_thread = _qal_get_thread(isr_thread_id);
-    if (work_thread == NULL)
-    {
+    if (work_thread == NULL) {
         return QURT_EINVALID;
     }
 
     qal_isr_t *qal_isr = &qal_isr_table[qal_index];
 
-    if (qal_isr->isr != NULL)
-    {
+    if (qal_isr->isr != NULL) {
         return QURT_EDUPLICATE;
     }
 
@@ -186,8 +172,7 @@ int qurt_isr_deregister2(int int_num)
     int qal_index;
 
     qal_index = _get_qal_index(int_num);
-    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE))
-    {
+    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE)) {
         return QURT_EINT;
     }
 
@@ -214,8 +199,7 @@ unsigned int qurt_interrupt_disable(int int_num)
     int qal_index;
 
     qal_index = _get_qal_index(int_num);
-    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE))
-    {
+    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE)) {
         return QURT_EINT;
     }
 
@@ -229,8 +213,7 @@ unsigned int qurt_interrupt_enable(int int_num)
     int qal_index;
 
     qal_index = _get_qal_index(int_num);
-    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE))
-    {
+    if ((qal_index < 0) || (qal_index >= QAL_IRQ_TABLE_SIZE)) {
         return QURT_EINT;
     }
 

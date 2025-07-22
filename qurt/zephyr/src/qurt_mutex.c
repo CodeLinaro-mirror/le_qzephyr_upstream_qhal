@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 /*==============================================================================
 
@@ -41,31 +41,23 @@ INITIALIZATION AND SEQUENCING REQUIREMENTS
 static int qurt_mutex_lock_timed_impl(qurt_mutex_t *lock, unsigned long long int duration_in_us)
 {
     int ret = QURT_EOK;
-    if (QURT_TIMER_IS_DURATION_VALID(duration_in_us) != QURT_EOK)
-    {
+    if (QURT_TIMER_IS_DURATION_VALID(duration_in_us) != QURT_EOK) {
         return QURT_EINVALID;
     }
 
     int retVal = k_mutex_lock(lock, K_USEC(duration_in_us));
-    switch (retVal)
-    {
-    case 0:
-    {
+    switch (retVal) {
+    case 0: {
         ret = QURT_EOK;
-    }
-    break;
+    } break;
     case -EAGAIN:
-    case -ETIMEDOUT:
-    {
+    case -ETIMEDOUT: {
         ret = QURT_EFAILED_TIMEOUT;
-    }
-    break;
+    } break;
     case -EBUSY:
-    default:
-    {
+    default: {
         ret = QURT_EFATAL;
-    }
-    break;
+    } break;
     }
     return ret;
 }
@@ -76,10 +68,7 @@ void qurt_rmutex_init(qurt_mutex_t *lock)
     ARG_UNUSED(ret_val);
 }
 
-void qurt_rmutex_destroy(qurt_mutex_t *lock)
-{
-    lock->lock_count = 0;
-}
+void qurt_rmutex_destroy(qurt_mutex_t *lock) { lock->lock_count = 0; }
 
 void qurt_rmutex_lock(qurt_mutex_t *lock)
 {
@@ -104,10 +93,7 @@ void qurt_mutex_init(qurt_mutex_t *lock)
     ARG_UNUSED(ret_val);
 }
 
-void qurt_mutex_destroy(qurt_mutex_t *lock)
-{
-    lock->lock_count = 0;
-} 
+void qurt_mutex_destroy(qurt_mutex_t *lock) { lock->lock_count = 0; }
 
 void qurt_mutex_lock(qurt_mutex_t *lock)
 {
@@ -132,10 +118,7 @@ void qurt_pimutex_init(qurt_mutex_t *lock)
     ARG_UNUSED(ret_val);
 }
 
-void qurt_pimutex_destroy(qurt_mutex_t *lock)
-{
-    lock->lock_count = 0;
-} 
+void qurt_pimutex_destroy(qurt_mutex_t *lock) { lock->lock_count = 0; }
 
 void qurt_pimutex_lock(qurt_mutex_t *lock)
 {
@@ -156,7 +139,6 @@ void qurt_pimutex_unlock(qurt_mutex_t *lock)
 
 int qurt_mutex_create(qurt_mutex_t *lock)
 {
-	qurt_mutex_init(lock);
-	return QURT_EOK;
+    qurt_mutex_init(lock);
+    return QURT_EOK;
 }
-

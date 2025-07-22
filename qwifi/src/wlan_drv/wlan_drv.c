@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  * SPDX-License-Identifier: BSD-3-Clause*/
+ * SPDX-License-Identifier: BSD-3-Clause*/
 
 #include <stdlib.h>
 #include "wlan_drv.h"
@@ -9,17 +9,17 @@
 #include "libwifi.h"
 #include <zephyr/autoconf.h>
 
-#define WLAN_ROAMING_TIMER_PERIOD_DEFAULT  5000
-#define WLAN_ROAMING_TIMER_PERIOD_NICREASE1  5000
-#define WLAN_ROAMING_TIMER_PERIOD_NICREASE2  15000
-#define WLAN_ROAMING_TIMER_PERIOD_NICREASE3  30000
-#define WLAN_ROAMING_TIMER_PERIOD_MAX  600000
+#define WLAN_ROAMING_TIMER_PERIOD_DEFAULT 5000
+#define WLAN_ROAMING_TIMER_PERIOD_NICREASE1 5000
+#define WLAN_ROAMING_TIMER_PERIOD_NICREASE2 15000
+#define WLAN_ROAMING_TIMER_PERIOD_NICREASE3 30000
+#define WLAN_ROAMING_TIMER_PERIOD_MAX 600000
 #define WLAN_ROAMING_CNT_FOR_NXT_TIMER_PERIOD 3
 
 wlan_qapi_cxt_t gs_wlan_qapi_cxt;
 wlan_qapi_cxt_t *gp_wlan_qapi_cxt;
 
-qapi_Status_t wlan_drv_set_cb (qapi_WLAN_Callback_t callback, void *application_Context)
+qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_Context)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -66,7 +66,8 @@ void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
 
     if (p_cxt->roaming_time_out <= WLAN_ROAMING_TIMER_PERIOD_MAX) {
         uint8_t authMode = p_cxt->connect_cmd.authMode;
-        if ((authMode==WMI_WPA_PSK_AUTH) || (authMode==WMI_WPA2_PSK_AUTH)  || (authMode==WMI_WPA3_SHA256_AUTH) || (authMode==(WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))) {
+        if ((authMode == WMI_WPA_PSK_AUTH) || (authMode == WMI_WPA2_PSK_AUTH) || (authMode == WMI_WPA3_SHA256_AUTH) ||
+            (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))) {
             wmi_set_passphrase();
         }
         wmi_connect();
@@ -79,17 +80,15 @@ void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
 
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 
-    return ;
+    return;
 }
 
 qapi_Status_t wlan_drv_roaming_start(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
-    if ((p_cxt) && \
-        (p_cxt->roaming_timer) && \
-        (p_cxt->wlan_roaming_started == 0) && \
-		(p_cxt->connect_cmd.ssidLength != 0)) {
+    if ((p_cxt) && (p_cxt->roaming_timer) && (p_cxt->wlan_roaming_started == 0) &&
+        (p_cxt->connect_cmd.ssidLength != 0)) {
         p_cxt->wlan_roaming_started = 1;
         p_cxt->roaming_time_out = WLAN_ROAMING_TIMER_PERIOD_DEFAULT;
         nt_timer_change_time_period(p_cxt->roaming_timer, NT_MS_TO_TICKS(p_cxt->roaming_time_out));
@@ -104,9 +103,7 @@ qapi_Status_t wlan_drv_roaming_stop(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
-    if ((p_cxt) && \
-        (p_cxt->roaming_timer) && \
-        (p_cxt->wlan_roaming_started)) {
+    if ((p_cxt) && (p_cxt->roaming_timer) && (p_cxt->wlan_roaming_started)) {
         p_cxt->wlan_roaming_started = 0;
         nt_stop_timer(p_cxt->roaming_timer);
     }
@@ -114,7 +111,7 @@ qapi_Status_t wlan_drv_roaming_stop(void)
     return QAPI_OK;
 }
 
-int wlan_qapi_init (void)
+int wlan_qapi_init(void)
 {
     gp_wlan_qapi_cxt = &gs_wlan_qapi_cxt;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -147,40 +144,41 @@ int wlan_qapi_init (void)
     p_cxt->wlan_connect_block_mode = false;
     p_cxt->wlan_disconnect_block_mode = true;
     p_cxt->wlan_get_stat_block_mode = true;
-	p_cxt->wlan_set_param_block_mode = true;
+    p_cxt->wlan_set_param_block_mode = true;
     p_cxt->wlan_get_regulatory_block_mode = true;
     p_cxt->wlan_set_rate_block_mode = true;
-	p_cxt->wlan_send_raw_block_mode = true;
+    p_cxt->wlan_send_raw_block_mode = true;
     p_cxt->wlan_set_mgmt_filter_block_mode = true;
     p_cxt->wlan_get_tx_power_block_mode = true;
 
-    wmi_register_event_handler(wmi_event_relay, (void*)p_cxt);
+    wmi_register_event_handler(wmi_event_relay, (void *)p_cxt);
     p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_length = QAPI_EVENT_LARGE_PAYLOAD_LENGTH_MAX;
     p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_num = QAPI_EVENT_LARGE_PAYLOAD_BUF_NUM;
-    p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf = (uint8_t*)malloc(p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_length * p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_num);
+    p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf = (uint8_t *)malloc(
+        p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_length * p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_num);
     p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_length = QAPI_EVENT_SMALL_PAYLOAD_LENGTH_MAX;
     p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_num = QAPI_EVENT_SMALL_PAYLOAD_BUF_NUM;
-    p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf = (uint8_t*)malloc(p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_length * p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_num);
+    p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf = (uint8_t *)malloc(
+        p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_length * p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_num);
     p_cxt->scanBssMaxCount = __QAPI_MAX_SCAN_RESULT_ENTRY;
-    p_cxt->pScanOutSize = sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t)*p_cxt->scanBssMaxCount;
+    p_cxt->pScanOutSize =
+        sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t) * p_cxt->scanBssMaxCount;
     p_cxt->pScanOut = malloc(p_cxt->pScanOutSize);
-	p_cxt->opmode = DEV_MODE_AP_E;
-	p_cxt->conc_mode = DEV_MODE_NO_CONC_E;
+    p_cxt->opmode = DEV_MODE_AP_E;
+    p_cxt->conc_mode = DEV_MODE_NO_CONC_E;
     wlan_clear_privacy();
     wlan_preset_specific_param();
 
     p_cxt->wlan_roaming_started = 0;
     p_cxt->roaming_time_out = WLAN_ROAMING_TIMER_PERIOD_DEFAULT;
-    p_cxt->roaming_timer = nt_create_timer(wlan_drv_roaming_timer_handler, \
-                                                                NULL, \
-                                                                NT_MS_TO_TICKS(p_cxt->roaming_time_out), \
-                                                                FALSE);
-    memscpy(p_cxt->country_code,3,DEF_AP_COUNTRY_CODE,3);
-    p_cxt->mgmt_filter.recv_queue = nt_qurt_pipe_create(100, sizeof(WMI_MGMT_FRAME_RECV_MSG));	
+    p_cxt->roaming_timer =
+        nt_create_timer(wlan_drv_roaming_timer_handler, NULL, NT_MS_TO_TICKS(p_cxt->roaming_time_out), FALSE);
+    memscpy(p_cxt->country_code, 3, DEF_AP_COUNTRY_CODE, 3);
+    p_cxt->mgmt_filter.recv_queue = nt_qurt_pipe_create(100, sizeof(WMI_MGMT_FRAME_RECV_MSG));
     return (int)QAPI_OK;
 }
 
-void wlan_qapi_exit (void)
+void wlan_qapi_exit(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
@@ -195,4 +193,3 @@ void wlan_qapi_exit (void)
     p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf = NULL;
     p_cxt->pScanOut = NULL;
 }
-

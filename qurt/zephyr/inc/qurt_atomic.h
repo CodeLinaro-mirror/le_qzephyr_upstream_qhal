@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef QAL_ATOMIC_H
 #define QAL_ATOMIC_H
@@ -23,61 +23,55 @@
 
   @param[in,out]  target Pointer to the atomic variable.
   @param[in]      value  Value to set.
-  
+
   @return
   Value successfuly set.
 
   @dependencies
   None.
 */
-static inline unsigned int qurt_atomic_set(unsigned int* target, unsigned int value)
+static inline unsigned int qurt_atomic_set(unsigned int *target, unsigned int value)
 {
     atomic_set((atomic_t *)target, value);
     return value;
 }
 
 /**@ingroup func_qurt_atomic_and
-  Bitwise AND operation of the atomic variable with mask. 
+  Bitwise AND operation of the atomic variable with mask.
 
   @note1hang The function retries until load lock and store conditional
              is successful.
 
   @param[in,out]  target Pointer to the atomic variable.
-  @param[in]      mask   Mask for bitwise AND. 
+  @param[in]      mask   Mask for bitwise AND.
 
   @return
   None
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_and(unsigned int* target, unsigned int mask)
-{
-    atomic_and((atomic_t *)target, mask);
-}
+static inline void qurt_atomic_and(unsigned int *target, unsigned int mask) { atomic_and((atomic_t *)target, mask); }
 
 /**@ingroup func_qurt_atomic_or
-  Bitwise OR operation of the atomic variable with mask. 
+  Bitwise OR operation of the atomic variable with mask.
 
   @note1hang The function retries until load lock and store conditional
              is successful.
 
   @param[in,out]  target Pointer to the atomic variable.
-  @param[in]      mask   Mask for bitwise OR. 
+  @param[in]      mask   Mask for bitwise OR.
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_or(unsigned int* target, unsigned int mask)
-{
-    atomic_or((atomic_t *)target, mask);
-}
+static inline void qurt_atomic_or(unsigned int *target, unsigned int mask) { atomic_or((atomic_t *)target, mask); }
 
 /**@ingroup func_qurt_atomic_xor
-  Bitwise XOR operation of the atomic variable with mask. 
+  Bitwise XOR operation of the atomic variable with mask.
 
   @note1hang The function retries until load lock and store conditional
              is successful.
@@ -87,14 +81,11 @@ static inline void qurt_atomic_or(unsigned int* target, unsigned int mask)
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_xor(unsigned int* target, unsigned int mask)
-{
-    atomic_xor((atomic_t *)target, mask);
-}
+static inline void qurt_atomic_xor(unsigned int *target, unsigned int mask) { atomic_xor((atomic_t *)target, mask); }
 
 /**@ingroup func_qurt_atomic_set_bit
   Sets a bit in the atomic variable at a specified position.
@@ -103,11 +94,11 @@ static inline void qurt_atomic_xor(unsigned int* target, unsigned int mask)
              is successful.
 
   @param[in,out]  target Pointer to the atomic variable.
-  @param[in]      bit    Bit position to set. 
+  @param[in]      bit    Bit position to set.
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
@@ -117,7 +108,7 @@ static inline void qurt_atomic_set_bit(unsigned int *target, unsigned int bit)
 }
 
 /**@ingroup func_qurt_atomic_clear_bit
-  Clears a bit in the atomic variable at a specified position. 
+  Clears a bit in the atomic variable at a specified position.
 
   @note1hang The function retries until load lock and store conditional
              is successful.
@@ -127,7 +118,7 @@ static inline void qurt_atomic_set_bit(unsigned int *target, unsigned int bit)
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
@@ -136,7 +127,6 @@ static inline void qurt_atomic_clear_bit(unsigned int *target, unsigned int bit)
     atomic_clear_bit((atomic_t *)target, bit);
 }
 
-
 /**@ingroup func_qurt_atomic_add
   Adds an integer to atomic variable.
 
@@ -144,18 +134,15 @@ static inline void qurt_atomic_clear_bit(unsigned int *target, unsigned int bit)
              is successful.
 
   @param[in,out]  target Pointer to the atomic variable.
-  @param[in]      v      An integer value to add. 
+  @param[in]      v      An integer value to add.
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_add(unsigned int *target, unsigned int v)
-{
-    atomic_add((atomic_t *)target, v);
-}
+static inline void qurt_atomic_add(unsigned int *target, unsigned int v) { atomic_add((atomic_t *)target, v); }
 
 /**@ingroup func_qurt_atomic_sub
   Subtracts an integer from an atomic variable.
@@ -164,18 +151,15 @@ static inline void qurt_atomic_add(unsigned int *target, unsigned int v)
              is successful.
 
   @param[in,out]  target Pointer to the atomic variable.
-  @param[in]      v      An integer value to subtract. 
+  @param[in]      v      An integer value to subtract.
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_sub(unsigned int *target, unsigned int v)
-{
-    atomic_sub((atomic_t *)target, v);
-}
+static inline void qurt_atomic_sub(unsigned int *target, unsigned int v) { atomic_sub((atomic_t *)target, v); }
 
 /**@ingroup func_qurt_atomic_inc
   Increments an atomic variable by one.
@@ -187,14 +171,11 @@ static inline void qurt_atomic_sub(unsigned int *target, unsigned int v)
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_inc(unsigned int *target)
-{
-    atomic_inc((atomic_t *)target);
-}
+static inline void qurt_atomic_inc(unsigned int *target) { atomic_inc((atomic_t *)target); }
 
 /**@ingroup func_qurt_atomic_inc_return
   Increments an atomic variable by one.
@@ -206,14 +187,11 @@ static inline void qurt_atomic_inc(unsigned int *target)
 
   @return
   Incremented value.
-  
+
   @dependencies
   None.
 */
-static inline unsigned int qurt_atomic_inc_return(unsigned int *target)
-{
-    return atomic_inc((atomic_t *)target)+1;
-}
+static inline unsigned int qurt_atomic_inc_return(unsigned int *target) { return atomic_inc((atomic_t *)target) + 1; }
 
 /**@ingroup func_qurt_atomic_dec
   Decrements an atomic variable by one.
@@ -225,14 +203,11 @@ static inline unsigned int qurt_atomic_inc_return(unsigned int *target)
 
   @return
   None.
-  
+
   @dependencies
   None.
 */
-static inline void qurt_atomic_dec(unsigned int *target)
-{
-    atomic_dec((atomic_t *)target);
-}
+static inline void qurt_atomic_dec(unsigned int *target) { atomic_dec((atomic_t *)target); }
 
 /**@ingroup func_qurt_atomic_dec_return
   Decrements an atomic variable by one.
@@ -244,14 +219,11 @@ static inline void qurt_atomic_dec(unsigned int *target)
 
   @return
   Decremented value.
-  
+
   @dependencies
   None.
 */
-static inline unsigned int qurt_atomic_dec_return(unsigned int *target)
-{
-    return atomic_dec((atomic_t *)target)-1;
-}
+static inline unsigned int qurt_atomic_dec_return(unsigned int *target) { return atomic_dec((atomic_t *)target) - 1; }
 
 /**@ingroup func_qurt_atomic_compare_and_set
   Compares the current value of the atomic variable with the
@@ -267,12 +239,11 @@ static inline unsigned int qurt_atomic_dec_return(unsigned int *target)
   @return
   FALSE -- Specified value is not equal to the current value. \n
   TRUE --Specified value is equal to the current value.
-  
+
   @dependencies
   None.
 */
-static inline unsigned int qurt_atomic_compare_and_set(unsigned int* target,
-    unsigned int old_val, unsigned int new_val)
+static inline unsigned int qurt_atomic_compare_and_set(unsigned int *target, unsigned int old_val, unsigned int new_val)
 {
     return atomic_cas((atomic_t *)target, old_val, new_val);
 }

@@ -32,10 +32,13 @@ typedef int32_t qapi_Status_t;
    the format -((10000 * \<Module ID>) + \<Status Code>).
    @{
 */
-#define __QAPI_ERR_MOD_OFFSET                (10000)                                                                  /**< Module offset - error code format. */
-#define __QAPI_ERR_ENCAP_MOD_ID(__mod_id__)  ((__mod_id__) * __QAPI_ERR_MOD_OFFSET)                                   /**< Module offset and module id - error code format. */
-#define __QAPI_ERROR(__mod_id__, __err__)    ((qapi_Status_t)(0 - (__QAPI_ERR_ENCAP_MOD_ID(__mod_id__) + (__err__)))) /**< Module offset, module id, and status code - error code format. */
-/** @} */ /* end namegroup */
+#define __QAPI_ERR_MOD_OFFSET (10000) /**< Module offset - error code format. */
+#define __QAPI_ERR_ENCAP_MOD_ID(__mod_id__)                                                                            \
+    ((__mod_id__) * __QAPI_ERR_MOD_OFFSET) /**< Module offset and module id - error code format. */
+#define __QAPI_ERROR(__mod_id__, __err__)                                                                              \
+    ((qapi_Status_t)(0 - (__QAPI_ERR_ENCAP_MOD_ID(__mod_id__) +                                                        \
+                          (__err__)))) /**< Module offset, module id, and status code - error code format. */
+/** @} */                              /* end namegroup */
 
 /**
    @name Module IDs
@@ -48,24 +51,24 @@ typedef int32_t qapi_Status_t;
    with future module updates and additions to the QAPI.
    @{
 */
-#define QAPI_MOD_BASE                    (1)  /**< Base module - module id. */
-#define QAPI_MOD_UART                    (2)  /**< UART module - module id. */
-#define QAPI_MOD_I2C                     (3)  /**< I2C module - module id. */
-#define QAPI_MOD_SPI                     (4)  /**< SPI module - module id. */
-#define QAPI_MOD_GPIO                    (5)  /**< GPIO module - module id. */
-#define QAPI_MOD_FTC                     (6)  /**< FTC module - module id. */
-#define QAPI_MOD_M2MDMA                  (7)  /**< M2MDMA module - module id. */
-#define QAPI_MOD_TMR                     (8)  /**< TMR module - module id. */
-#define QAPI_MOD_CRYPTO                  (9)  /**< CRYPTO module - module id. */
-#define QAPI_MOD_LIC                     (10)  /**< LIC module - module id. */
-#define QAPI_MOD_FWUP                    (11)  /**< FWUP module - module id. */
-#define QAPI_MOD_NVM                     (12)  /**< NVM module - module id. */
-#define QAPI_MOD_APPI2C                  (13)  /**< APPI2C module - module id. */
-#define QAPI_MOD_CONSOLE                 (14)  /**< Console module - module id. */
-#define QAPI_MOD_WIFI                    (15)  /**< Wifi module - module id. */
-#define QAPI_MOD_NETWORKING              (16)  /**< NET module - module id. */
-#define QAPI_MOD_FLASH                   (17)  /**< Flash module - module id. */
-#define QAPI_MOD_HKADC                   (18)  /**< Flash module - module id. */
+#define QAPI_MOD_BASE (1)        /**< Base module - module id. */
+#define QAPI_MOD_UART (2)        /**< UART module - module id. */
+#define QAPI_MOD_I2C (3)         /**< I2C module - module id. */
+#define QAPI_MOD_SPI (4)         /**< SPI module - module id. */
+#define QAPI_MOD_GPIO (5)        /**< GPIO module - module id. */
+#define QAPI_MOD_FTC (6)         /**< FTC module - module id. */
+#define QAPI_MOD_M2MDMA (7)      /**< M2MDMA module - module id. */
+#define QAPI_MOD_TMR (8)         /**< TMR module - module id. */
+#define QAPI_MOD_CRYPTO (9)      /**< CRYPTO module - module id. */
+#define QAPI_MOD_LIC (10)        /**< LIC module - module id. */
+#define QAPI_MOD_FWUP (11)       /**< FWUP module - module id. */
+#define QAPI_MOD_NVM (12)        /**< NVM module - module id. */
+#define QAPI_MOD_APPI2C (13)     /**< APPI2C module - module id. */
+#define QAPI_MOD_CONSOLE (14)    /**< Console module - module id. */
+#define QAPI_MOD_WIFI (15)       /**< Wifi module - module id. */
+#define QAPI_MOD_NETWORKING (16) /**< NET module - module id. */
+#define QAPI_MOD_FLASH (17)      /**< Flash module - module id. */
+#define QAPI_MOD_HKADC (18)      /**< Flash module - module id. */
 
 /** @} */ /* end namegroup */
 
@@ -76,20 +79,19 @@ typedef int32_t qapi_Status_t;
    QAPI modules.
    @{
 */
-#define QAPI_OK                              ((qapi_Status_t)(0))              /**< Success.                   */
-#define QAPI_ERROR                           (__QAPI_ERROR(QAPI_MOD_BASE,  1)) /**< General error.             */
-#define QAPI_ERR_INVALID_PARAM               (__QAPI_ERROR(QAPI_MOD_BASE,  2)) /**< Invalid parameter.         */
-#define QAPI_ERR_NO_MEMORY                   (__QAPI_ERROR(QAPI_MOD_BASE,  3)) /**< Memory allocation error.   */
-#define QAPI_ERR_NO_RESOURCE                 (__QAPI_ERROR(QAPI_MOD_BASE,  4)) /**< Resource allocation error. */
-#define QAPI_ERR_BUSY                        (__QAPI_ERROR(QAPI_MOD_BASE,  6)) /**< Operation is busy.         */
-#define QAPI_ERR_NO_ENTRY                    (__QAPI_ERROR(QAPI_MOD_BASE,  7)) /**< Entry was not found.       */
-#define QAPI_ERR_NOT_SUPPORTED               (__QAPI_ERROR(QAPI_MOD_BASE,  8)) /**< Feature is not supported.  */
-#define QAPI_ERR_TIMEOUT                     (__QAPI_ERROR(QAPI_MOD_BASE,  9)) /**< Operation timed out.       */
-#define QAPI_ERR_BOUNDS                      (__QAPI_ERROR(QAPI_MOD_BASE, 10)) /**< Out of bounds.             */
-#define QAPI_ERR_BAD_PAYLOAD                 (__QAPI_ERROR(QAPI_MOD_BASE, 11)) /**< Bad payload.               */
-#define QAPI_ERR_EXISTS                      (__QAPI_ERROR(QAPI_MOD_BASE, 12)) /**< Entry already exists.      */
-/** @} */ /* end namegroup */
+#define QAPI_OK ((qapi_Status_t)(0))                            /**< Success.                   */
+#define QAPI_ERROR (__QAPI_ERROR(QAPI_MOD_BASE, 1))             /**< General error.             */
+#define QAPI_ERR_INVALID_PARAM (__QAPI_ERROR(QAPI_MOD_BASE, 2)) /**< Invalid parameter.         */
+#define QAPI_ERR_NO_MEMORY (__QAPI_ERROR(QAPI_MOD_BASE, 3))     /**< Memory allocation error.   */
+#define QAPI_ERR_NO_RESOURCE (__QAPI_ERROR(QAPI_MOD_BASE, 4))   /**< Resource allocation error. */
+#define QAPI_ERR_BUSY (__QAPI_ERROR(QAPI_MOD_BASE, 6))          /**< Operation is busy.         */
+#define QAPI_ERR_NO_ENTRY (__QAPI_ERROR(QAPI_MOD_BASE, 7))      /**< Entry was not found.       */
+#define QAPI_ERR_NOT_SUPPORTED (__QAPI_ERROR(QAPI_MOD_BASE, 8)) /**< Feature is not supported.  */
+#define QAPI_ERR_TIMEOUT (__QAPI_ERROR(QAPI_MOD_BASE, 9))       /**< Operation timed out.       */
+#define QAPI_ERR_BOUNDS (__QAPI_ERROR(QAPI_MOD_BASE, 10))       /**< Out of bounds.             */
+#define QAPI_ERR_BAD_PAYLOAD (__QAPI_ERROR(QAPI_MOD_BASE, 11))  /**< Bad payload.               */
+#define QAPI_ERR_EXISTS (__QAPI_ERROR(QAPI_MOD_BASE, 12))       /**< Entry already exists.      */
+/** @} */                                                       /* end namegroup */
 
 /** @} */
 #endif // ] #ifndef __QAPI_STATUS_H__
-

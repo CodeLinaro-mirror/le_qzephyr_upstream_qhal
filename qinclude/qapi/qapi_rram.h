@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  * SPDX-License-Identifier: BSD-3-Clause*/
+ * SPDX-License-Identifier: BSD-3-Clause*/
 /** @file qapi_rram.h
    @brief Rram Services Interface definition.
 
@@ -16,8 +16,8 @@
 #include "qapi_status.h"
 #include "ferm_qspi.h"
 
-#define RRAM_DEVICE_DONE                 0 /**< Operation passed */
-#define RRAM_DEVICE_FAIL                (-1) /**< Operation failed */
+#define RRAM_DEVICE_DONE 0    /**< Operation passed */
+#define RRAM_DEVICE_FAIL (-1) /**< Operation failed */
 
 // define struct with id and addr
 typedef struct {
@@ -25,10 +25,10 @@ typedef struct {
     uint32_t addr;
 } IDAddr;
 
-typedef enum{
-   RRAM_OFFSET_ERROR  = -2,  
-	RRAM_ADDRESS_ERROR = -3,
-   RRAM_OK = 1,
+typedef enum {
+    RRAM_OFFSET_ERROR = -2,
+    RRAM_ADDRESS_ERROR = -3,
+    RRAM_OK = 1,
 } rram_status_t;
 
 /*-------------------------------------------------------------------------
@@ -61,6 +61,3 @@ qapi_Status_t qapi_rram_read(uint32_t partid, uint32_t offset, uint8_t *buffer, 
    Error code -- If there is an error.
 */
 qapi_Status_t qapi_rram_write(uint32_t partid, uint32_t offset, uint8_t *buffer, uint32_t len);
-
-
-

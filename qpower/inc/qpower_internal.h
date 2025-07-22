@@ -1,15 +1,15 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 /**
  * @file qpower.h
  * @brief System/hardware module for QCC730 processor
  * @version 0.1
  * @date 2025-06-18
- * 
- * 
+ *
+ *
  */
 
 #pragma once
@@ -22,4 +22,3 @@ typedef struct {
 } qpower_param_t;
 
 extern qpower_param_t gs_qpower_param;
-

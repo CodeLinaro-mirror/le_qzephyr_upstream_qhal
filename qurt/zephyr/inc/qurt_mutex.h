@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef QURT_MUTEX_H
 #define QURT_MUTEX_H
@@ -11,33 +11,31 @@
 
 typedef struct k_mutex qurt_mutex_t;
 
-
 /**@ingroup func_qurt_rmutex_init
    Initializes a recursive mutex object.
    The recursive mutex is initialized in unlocked state.
 
    @datatypes
    #qurt_mutex_t
-   
+
    @param[out]  lock  Pointer to the recursive mutex object.
 
-   @return 
+   @return
    None.
 
    @dependencies
-   None.  
+   None.
  */
 void qurt_rmutex_init(qurt_mutex_t *lock);
 
-
-/**@ingroup func_qurt_rmutex_destroy  
+/**@ingroup func_qurt_rmutex_destroy
   Destroys the specified recursive mutex. \n
   @note1hang Recursive mutexes must not be destroyed while they are still in use. If this
-             happens the behavior of QuRT is undefined. 
-  
+             happens the behavior of QuRT is undefined.
+
   @datatypes
   #qurt_mutex_t
-  
+
   @param[in]  lock  Pointer to the recursive mutex object to destroy.
 
   @return
@@ -45,101 +43,101 @@ void qurt_rmutex_init(qurt_mutex_t *lock);
 
   @dependencies
   None.
-  
+
  */
 void qurt_rmutex_destroy(qurt_mutex_t *lock);
 
 /**@ingroup func_qurt_rmutex_lock
-  Locks the specified recursive mutex. \n 
+  Locks the specified recursive mutex. \n
 
-  If a thread performs a lock operation on a mutex that is not being used, the thread 
+  If a thread performs a lock operation on a mutex that is not being used, the thread
   gains access to the shared resource that the mutex protects, and continues executing.
 
-  If a thread performs a lock operation on a mutex that is already being used by another 
-  thread, the thread is suspended. When the mutex becomes available again (because the 
+  If a thread performs a lock operation on a mutex that is already being used by another
+  thread, the thread is suspended. When the mutex becomes available again (because the
   other thread has unlocked it), the thread is awakened and given access to the shared resource.
-  
-   @note1hang A thread is not suspended if it locks a recursive mutex that it has already 
+
+   @note1hang A thread is not suspended if it locks a recursive mutex that it has already
    locked by itself. However, the mutex does not become available to other threads until the
    thread performs a balanced number of unlocks on the mutex.
 
    @datatypes
    #qurt_mutex_t
-  
-   @param[in]  lock  Pointer to the recursive mutex object to lock. 
+
+   @param[in]  lock  Pointer to the recursive mutex object to lock.
 
    @return
    None.
 
    @dependencies
    None.
-  
+
  */
 void qurt_rmutex_lock(qurt_mutex_t *lock);
 
 /**@ingroup func_qurt_rmutex_lock_timed
-  Locks the specified recursive mutex. The wait must be terminated when the specified timeout expires.\n 
+  Locks the specified recursive mutex. The wait must be terminated when the specified timeout expires.\n
 
-  If a thread performs a lock operation on a mutex that is not being used, the thread 
+  If a thread performs a lock operation on a mutex that is not being used, the thread
   gains access to the shared resource that the mutex is protecting, and continues executing.
 
-  If a thread performs a lock operation on a mutex that is already being used by another 
-  thread, the thread is suspended. When the mutex becomes available again (because the 
+  If a thread performs a lock operation on a mutex that is already being used by another
+  thread, the thread is suspended. When the mutex becomes available again (because the
   other thread has unlocked it), the thread is awakened and given access to the shared resource.
-  
-   @note1hang A thread is not suspended if it locks a recursive mutex that it has already 
+
+   @note1hang A thread is not suspended if it locks a recursive mutex that it has already
    locked by itself. However, the mutex does not become available to other threads until the
    thread performs a balanced number of unlocks on the mutex.
    If timeout expires, this wait must be terminated and no access to the mutex is granted.
-   
+
    @datatypes
    #qurt_mutex_t
-  
-   @param[in]  lock  Pointer to the recursive mutex object to lock. 
-   @param[in] duration Interval (in microseconds) duration value must be between #QURT_TIMER_MIN_DURATION and
-    #QURT_TIMER_MAX_DURATION 
 
-   @return 
+   @param[in]  lock  Pointer to the recursive mutex object to lock.
+   @param[in] duration Interval (in microseconds) duration value must be between #QURT_TIMER_MIN_DURATION and
+    #QURT_TIMER_MAX_DURATION
+
+   @return
    #QURT_EOK -- Success \n
    #QURT_ETIMEDOUT -- Timeout
 
    @dependencies
    None.
-  
+
  */
 int qurt_rmutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_in_us);
 
 /**@ingroup func_qurt_rmutex_unlock
-   Unlocks the specified recursive mutex. \n 
-   More than one thread can be suspended on a mutex. When the mutex is 
+   Unlocks the specified recursive mutex. \n
+   More than one thread can be suspended on a mutex. When the mutex is
    unlocked, the thread waiting on the mutex awakens. If the awakened
    thread has higher priority than the current thread, a context switch occurs.
 
-   @note1hang When a thread unlocks a recursive mutex, the mutex is not available until 
+   @note1hang When a thread unlocks a recursive mutex, the mutex is not available until
    the balanced number of locks and unlocks has been performed on the mutex.
 
    @datatypes
    #qurt_mutex_t
-  
-   @param[in]  lock  Pointer to the recursive mutex object to unlock. 
+
+   @param[in]  lock  Pointer to the recursive mutex object to unlock.
 
    @return
    None.
 
    @dependencies
    None.
-  
+
  */
 void qurt_rmutex_unlock(qurt_mutex_t *lock);
 
 void qurt_mutex_init(qurt_mutex_t *lock);
-void qurt_mutex_destroy(qurt_mutex_t *lock); 
+void qurt_mutex_destroy(qurt_mutex_t *lock);
 void qurt_mutex_lock(qurt_mutex_t *lock);
 int qurt_mutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_in_us);
 void qurt_mutex_unlock(qurt_mutex_t *lock);
 
 void qurt_pimutex_init(qurt_mutex_t *lock);
-void qurt_pimutex_destroy(qurt_mutex_t *lock); 
+void qurt_pimutex_destroy(qurt_mutex_t *lock);
 void qurt_pimutex_lock(qurt_mutex_t *lock);
 int qurt_pimutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_in_us);
 void qurt_pimutex_unlock(qurt_mutex_t *lock);

@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #pragma once
 
@@ -14,4 +14,3 @@
 #include "qurt_sem.h"
 #include "qurt_sclk.h"
 #include "qurt_mem.h"
-

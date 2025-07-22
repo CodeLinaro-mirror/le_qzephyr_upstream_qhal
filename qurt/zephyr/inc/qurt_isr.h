@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef QAL_ISR_H
 #define QAL_ISR_H
@@ -9,10 +9,10 @@
 #include "zephyr/kernel.h"
 #include "qurt_thread.h"
 
-#define QURT_INT_NON_DELAYED_ACK           0
-#define QURT_INT_DELAYED_ACK               1
-#define QURT_INT_ACK_DEFAULT               QURT_INT_NON_DELAYED_ACK
-#define QURT_INT_TRIGGER_USE_DEFAULT       0xff
+#define QURT_INT_NON_DELAYED_ACK 0
+#define QURT_INT_DELAYED_ACK 1
+#define QURT_INT_ACK_DEFAULT QURT_INT_NON_DELAYED_ACK
+#define QURT_INT_TRIGGER_USE_DEFAULT 0xff
 
 /**@ingroup func_qurt_isr_create
   Creates an ISR thread with the specified attributes, and makes it executable.
@@ -34,7 +34,7 @@
   @dependencies
   None.
  */
-int qurt_isr_create (qurt_thread_t *thread_id, qurt_thread_attr_t *pAttr);
+int qurt_isr_create(qurt_thread_t *thread_id, qurt_thread_attr_t *pAttr);
 
 /**@ingroup func_qurt_isr_register2
   Registers an Interrupt Service Routine to an ISR thread. ISR callback with
@@ -50,7 +50,7 @@ int qurt_isr_create (qurt_thread_t *thread_id, qurt_thread_attr_t *pAttr);
   @param[in]   prio     Priority of the ISR
   @param[in]   flags    Defines ACK type. Values : \n
                              QURT_INT_NON_DELAYED_ACK - ISR is acknowledged by
-			                       the interrupt handle routine in the Kernel.
+                                   the interrupt handle routine in the Kernel.
                              QURT_INT_DELAYED_ACK     - Client chooses to acknowledge.
   @param[in]   int_type Notifies it to registered function. Values: \n
                              - QURT_INT_TRIGGER_USE_DEFAULT
@@ -74,10 +74,8 @@ int qurt_isr_create (qurt_thread_t *thread_id, qurt_thread_attr_t *pAttr);
   @dependencies
    Thread ID should be created using qurt_isr_create()
  */
-int qurt_isr_register2 (qurt_thread_t isr_thread_id, int int_num,
-                        unsigned short prio, unsigned short flags,
-                        unsigned int int_type,
-                        void (*isr) (void *, int), void *arg);
+int qurt_isr_register2(qurt_thread_t isr_thread_id, int int_num, unsigned short prio, unsigned short flags,
+                       unsigned int int_type, void (*isr)(void *, int), void *arg);
 
 /**@ingroup func_qurt_isr_deregister2
   De-registers the ISR for the specified interrupt.
@@ -93,7 +91,7 @@ int qurt_isr_register2 (qurt_thread_t isr_thread_id, int int_num,
   @dependencies
   None.
  */
-int qurt_isr_deregister2 (int int_num);
+int qurt_isr_deregister2(int int_num);
 
 /**@ingroup func_qurt_isr_delete
    ISR thread will exit and releases Kernel resources
@@ -111,7 +109,7 @@ int qurt_isr_deregister2 (int int_num);
    @dependencies
    Thread ID should be created using qurt_isr_create()
  */
-int qurt_isr_delete (qurt_thread_t isr_tid);
+int qurt_isr_delete(qurt_thread_t isr_tid);
 
 /**@ingroup func_qurt_interrupt_disable
   Disables an interrupt with its interrupt number.
@@ -154,7 +152,6 @@ unsigned int qurt_interrupt_disable(int int_num);
 */
 unsigned int qurt_interrupt_enable(int int_num);
 
-
-#define qurt_isr_register_3(irq_p, isr_p)  IRQ_CONNECT(irq_p, 1, isr_p, NULL, 0)
+#define qurt_isr_register_3(irq_p, isr_p) IRQ_CONNECT(irq_p, 1, isr_p, NULL, 0)
 
 #endif

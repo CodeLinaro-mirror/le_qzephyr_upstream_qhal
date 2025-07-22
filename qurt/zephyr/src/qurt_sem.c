@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 /*==============================================================================
 
@@ -55,16 +55,12 @@ int qurt_sem_up(qurt_sem_t *sem)
     return 0;
 }
 
-int qurt_sem_down(qurt_sem_t *sem)
-{
-    return k_sem_take(sem, K_FOREVER);
-}
+int qurt_sem_down(qurt_sem_t *sem) { return k_sem_take(sem, K_FOREVER); }
 
 int qurt_sem_try_down(qurt_sem_t *sem)
 {
     int ret = k_sem_take(sem, K_NO_WAIT);
-    if (ret == -EBUSY)
-    {
+    if (ret == -EBUSY) {
         // setting same return value as QuRT
         ret = QURT_EFATAL;
     }
@@ -78,34 +74,24 @@ void qurt_sem_destroy(qurt_sem_t *sem)
     k_free(sem);
 }
 
-unsigned int qurt_sem_get_val(qurt_sem_t *sem)
-{
-    return k_sem_count_get(sem);
-}
+unsigned int qurt_sem_get_val(qurt_sem_t *sem) { return k_sem_count_get(sem); }
 
 int qurt_sem_down_timed(qurt_sem_t *sem, TickType_t block_time)
 {
     int ret = QURT_EOK;
     int ret_val = k_sem_take(sem, K_TICKS(block_time));
-    switch (ret_val)
-    {
-    case 0:
-    {
+    switch (ret_val) {
+    case 0: {
         ret = QURT_EOK;
-    }
-    break;
+    } break;
     case -EAGAIN:
-    case -ETIMEDOUT:
-    {
+    case -ETIMEDOUT: {
         ret = QURT_EFAILED_TIMEOUT;
-    }
-    break;
+    } break;
     case -EBUSY:
-    default:
-    {
+    default: {
         ret = QURT_EFATAL;
-    }
-    break;
+    } break;
     }
     return ret;
 }

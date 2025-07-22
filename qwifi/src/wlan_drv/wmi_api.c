@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  * SPDX-License-Identifier: BSD-3-Clause*/
+ * SPDX-License-Identifier: BSD-3-Clause*/
 
 #include "wlan_drv.h"
 #include "wlan_qapi_helper.h"
@@ -12,7 +12,7 @@
 #include "libwifi.h"
 #include <zephyr/autoconf.h>
 
-typedef void (*wlan_evt_fn_table)(void*);
+typedef void (*wlan_evt_fn_table)(void *);
 
 extern qurt_pipe_t msg_wfm_wmi_id;
 extern int32_t wlan_freq_to_channel(uint16_t *channel);
@@ -28,9 +28,9 @@ static void wmi_enabled_event(void *msg)
     qapi_WLAN_Enable_Evt_t enable_evt = {0};
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-    if(msg) {
+    if (msg) {
         enable_evt.evt_hdr.status = QAPI_OK;
-        memscpy(enable_evt.mac_addr, __QAPI_WLAN_MAC_LEN, (const void  *)get_ap_dev_ic_myaddr(msg), __QAPI_WLAN_MAC_LEN);
+        memscpy(enable_evt.mac_addr, __QAPI_WLAN_MAC_LEN, (const void *)get_ap_dev_ic_myaddr(msg), __QAPI_WLAN_MAC_LEN);
         enable_evt.num_networks = get_ap_dev_numConn(msg);
         enable_evt.cap_info = get_ap_dev_ic_flags(msg);
         enable_evt.cap_info2 = get_ap_dev_ic_flags2(msg);
@@ -45,7 +45,8 @@ static void wmi_enabled_event(void *msg)
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_ENABLE_DONE);
     }
     if (p_cxt->qapi_event_handler) {
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_ENABLE_CB_E, p_cxt->event_application_Context, &enable_evt, sizeof(qapi_WLAN_Enable_Evt_t));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_ENABLE_CB_E, p_cxt->event_application_Context,
+                                  &enable_evt, sizeof(qapi_WLAN_Enable_Evt_t));
     }
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 }
@@ -64,7 +65,8 @@ static void wmi_disabled_event(__unused void *msg)
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_DISABLE_DONE);
     }
     if (p_cxt->qapi_event_handler) {
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_DISABLE_CB_E, p_cxt->event_application_Context, &disable_evt, sizeof(qapi_WLAN_Enable_Evt_t));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_DISABLE_CB_E, p_cxt->event_application_Context,
+                                  &disable_evt, sizeof(qapi_WLAN_Enable_Evt_t));
     }
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 }
@@ -81,8 +83,8 @@ static void wmi_if_added_event(void *msg)
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
 
-    p_cxt->network_id = ((WMI_NETIF_ADD_EVT*)msg)->net_id;
-    if(0 == ((WMI_NETIF_ADD_EVT*)msg)->status) {
+    p_cxt->network_id = ((WMI_NETIF_ADD_EVT *)msg)->net_id;
+    if (0 == ((WMI_NETIF_ADD_EVT *)msg)->status) {
         if_comp_evt.evt_hdr.status = QAPI_OK;
     } else {
         if_comp_evt.evt_hdr.status = QAPI_WLAN_ERR_EINVAL;
@@ -96,15 +98,16 @@ static void wmi_if_added_event(void *msg)
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_IF_ADDED);
     }
     if (p_cxt->qapi_event_handler) {
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_IF_ADD_COMP_CB_E, p_cxt->event_application_Context, &if_comp_evt, sizeof(qapi_WLAN_If_Add_Comp_Evt_t));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_IF_ADD_COMP_CB_E, p_cxt->event_application_Context,
+                                  &if_comp_evt, sizeof(qapi_WLAN_If_Add_Comp_Evt_t));
     }
 }
 
 static void wmi_set_mode_event(void *msg)
 {
-	int8_t ret;
-	qapi_Status_t err = QAPI_ERROR;
-	wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    int8_t ret;
+    qapi_Status_t err = QAPI_ERROR;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
     if (!msg) {
         warn_printf("msg NULL\n");
@@ -112,14 +115,14 @@ static void wmi_set_mode_event(void *msg)
     }
 
     PRINT_LOG_FUNC_LINE_ENTRY;
-	ret = *(int8_t*)msg;
-	if(ret == eWiFiSuccess)
-		err = QAPI_OK;
-	qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-	set_wlan_qapi_error(err);
-	qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    ret = *(int8_t *)msg;
+    if (ret == eWiFiSuccess)
+        err = QAPI_OK;
+    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    set_wlan_qapi_error(err);
+    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 
-	if (p_cxt->wlan_if_add_block_mode) {
+    if (p_cxt->wlan_if_add_block_mode) {
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_MODE);
     }
 }
@@ -134,7 +137,7 @@ static void wmi_scan_started_event(void *msg)
     PRINT_LOG_FUNC_LINE_ENTRY;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_WLAN_Scan_Start_Evt_t scan_start_evt = {0};
-    uint8_t scan_id = *((uint8_t*)msg);
+    uint8_t scan_id = *((uint8_t *)msg);
 
     scan_start_evt.evt_hdr.status = QAPI_OK;
     scan_start_evt.scan_id = scan_id;
@@ -144,7 +147,8 @@ static void wmi_scan_started_event(void *msg)
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_STARTED_SCAN);
     }
     if (p_cxt->qapi_event_handler) {
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_SCAN_START_CB_E, p_cxt->event_application_Context, &scan_start_evt, sizeof(qapi_WLAN_Scan_Start_Evt_t));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_SCAN_START_CB_E, p_cxt->event_application_Context,
+                                  &scan_start_evt, sizeof(qapi_WLAN_Scan_Start_Evt_t));
     }
     PRINT_LOG_FUNC_LINE_EXIT;
 }
@@ -153,7 +157,7 @@ static void _wlan_fill_scan_info(qapi_WLAN_BSS_Scan_Info_t *dst, const ap_info *
 {
     uint16_t channel = src->chan_freq;
     uint8_t rsn_Cipher, rsn_Auth, wpa_Cipher, wpa_Auth;
-    extern int32_t wlan_freq_to_channel(uint16_t *channel);
+    extern int32_t wlan_freq_to_channel(uint16_t * channel);
     wlan_freq_to_channel(&channel);
     dst->channel = channel;
     memscpy(dst->bssid, __QAPI_WLAN_MAC_LEN, src->bssid, __QAPI_WLAN_MAC_LEN);
@@ -163,49 +167,48 @@ static void _wlan_fill_scan_info(qapi_WLAN_BSS_Scan_Info_t *dst, const ap_info *
     }
     memscpy(dst->ssid, dst->ssid_Length, src->ssid.ssid, dst->ssid_Length);
     dst->rssi = src->rssi;
-    //src->wlan_mode  //wlan phy mode, WLAN_PHY_MODE, no map
-    if(src->security_mode >> 16) {
+    // src->wlan_mode  //wlan phy mode, WLAN_PHY_MODE, no map
+    if (src->security_mode >> 16) {
         dst->security_Enabled = 1;
         wpa_Cipher = src->security_mode >> 24;
         wpa_Auth = (src->security_mode >> 16 & 0x00FF);
-        if(wpa_Cipher & TKIP_CRYPT)
+        if (wpa_Cipher & TKIP_CRYPT)
             dst->wpa_Cipher |= __QAPI_WLAN_CIPHER_TYPE_TKIP;
 
-        if(wpa_Cipher & AES_CRYPT)
+        if (wpa_Cipher & AES_CRYPT)
             dst->wpa_Cipher |= __QAPI_WLAN_CIPHER_TYPE_CCMP;
 
-        if(wpa_Cipher & WEP_CRYPT)
+        if (wpa_Cipher & WEP_CRYPT)
             dst->wpa_Cipher |= __QAPI_WLAN_CIPHER_TYPE_WEP;
 
-        if(wpa_Auth & WMI_WPA_AUTH)
+        if (wpa_Auth & WMI_WPA_AUTH)
             dst->wpa_Auth |= __QAPI_WLAN_SECURITY_AUTH_1X;
 
-        if(wpa_Auth & WMI_WPA_PSK_AUTH)
+        if (wpa_Auth & WMI_WPA_PSK_AUTH)
             dst->wpa_Auth |= __QAPI_WLAN_SECURITY_AUTH_PSK;
     }
 
-    if(src->security_mode & 0xFFFF) {
+    if (src->security_mode & 0xFFFF) {
         dst->security_Enabled = 1;
         rsn_Auth = src->security_mode & 0xFF;
         rsn_Cipher = (src->security_mode & 0xFF00) >> 8;
-        if(rsn_Cipher & TKIP_CRYPT)
+        if (rsn_Cipher & TKIP_CRYPT)
             dst->rsn_Cipher |= __QAPI_WLAN_CIPHER_TYPE_TKIP;
 
-        if(rsn_Cipher & AES_CRYPT)
+        if (rsn_Cipher & AES_CRYPT)
             dst->rsn_Cipher |= __QAPI_WLAN_CIPHER_TYPE_CCMP;
 
-        if(rsn_Cipher & WEP_CRYPT)
+        if (rsn_Cipher & WEP_CRYPT)
             dst->rsn_Cipher |= __QAPI_WLAN_CIPHER_TYPE_WEP;
 
-        if(rsn_Auth & WMI_WPA2_AUTH)
+        if (rsn_Auth & WMI_WPA2_AUTH)
             dst->rsn_Auth |= __QAPI_WLAN_SECURITY_AUTH_1X;
 
-        if((rsn_Auth & WMI_WPA2_PSK_AUTH))
+        if ((rsn_Auth & WMI_WPA2_PSK_AUTH))
             dst->rsn_Auth |= __QAPI_WLAN_SECURITY_AUTH_PSK;
 
-        if(rsn_Auth & WMI_WPA3_SHA256_AUTH)
+        if (rsn_Auth & WMI_WPA3_SHA256_AUTH)
             dst->rsn_Auth |= __QAPI_WLAN_SECURITY_AUTH_SAE;
-
     }
 }
 
@@ -218,9 +221,9 @@ static void wmi_scan_comp_event(void *msg)
 
     PRINT_LOG_FUNC_LINE_ENTRY;
 
-    SCAN_RESULT *p_scan_result = (SCAN_RESULT*)msg;
+    SCAN_RESULT *p_scan_result = (SCAN_RESULT *)msg;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-	uint8_t num_entries, last_idx;
+    uint8_t num_entries, last_idx;
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     if (!p_cxt->scan_in_progress) {
@@ -229,24 +232,26 @@ static void wmi_scan_comp_event(void *msg)
         return;
     }
 
-    qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t*)p_cxt->pScanOut;
+    qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t *)p_cxt->pScanOut;
     scan_comp_evt->evt_hdr.status = QAPI_OK;
-	if(scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
-		last_idx = scan_comp_evt->num_bss_cur;
-		num_entries = scan_comp_evt->num_bss_cur + p_scan_result->num_entries;
+    if (scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
+        last_idx = scan_comp_evt->num_bss_cur;
+        num_entries = scan_comp_evt->num_bss_cur + p_scan_result->num_entries;
 
-    	if (num_entries > p_cxt->scanBssMaxCount) {
-        	scan_comp_evt->num_bss_cur = p_cxt->scanBssMaxCount;
-    	} else {
-        	scan_comp_evt->num_bss_cur = num_entries;
-    	}
-    	scan_comp_evt->scan_id = p_scan_result->scan_id;
-    	int i;
-    	for (i=last_idx; i<scan_comp_evt->num_bss_cur; i++) {
-        	_wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[i], (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info)*(i-last_idx)));
-    	}
-	}
-	scan_comp_evt->total_bss += p_scan_result->num_entries;
+        if (num_entries > p_cxt->scanBssMaxCount) {
+            scan_comp_evt->num_bss_cur = p_cxt->scanBssMaxCount;
+        } else {
+            scan_comp_evt->num_bss_cur = num_entries;
+        }
+        scan_comp_evt->scan_id = p_scan_result->scan_id;
+        int i;
+        for (i = last_idx; i < scan_comp_evt->num_bss_cur; i++) {
+            _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[i],
+                                 (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) +
+                                             sizeof(ap_info) * (i - last_idx)));
+        }
+    }
+    scan_comp_evt->total_bss += p_scan_result->num_entries;
     log_printf("scan found %d bss, our capacity %d\n", scan_comp_evt->total_bss, p_cxt->scanBssMaxCount);
 
     p_cxt->scan_in_progress = false;
@@ -260,8 +265,10 @@ static void wmi_scan_comp_event(void *msg)
     }
     if (p_cxt->qapi_event_handler) {
         info_printf("QAPI_WLAN_SCAN_COMPLETE_CB_E sent, scan_id=%d\n", scan_comp_evt->scan_id);
-        uint32_t len = sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t)*scan_comp_evt->num_bss_cur;
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_SCAN_COMPLETE_CB_E, p_cxt->event_application_Context, p_cxt->pScanOut, len);
+        uint32_t len =
+            sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t) * scan_comp_evt->num_bss_cur;
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_SCAN_COMPLETE_CB_E, p_cxt->event_application_Context,
+                                  p_cxt->pScanOut, len);
     }
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
     PRINT_LOG_FUNC_LINE_EXIT;
@@ -276,9 +283,9 @@ static void wmi_scan_result_event(void *msg)
 
     PRINT_LOG_FUNC_LINE_ENTRY;
 
-    SCAN_RESULT *p_scan_result = (SCAN_RESULT*)msg;
+    SCAN_RESULT *p_scan_result = (SCAN_RESULT *)msg;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-	uint8_t num_entries, last_idx;
+    uint8_t num_entries, last_idx;
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     if (!p_cxt->scan_in_progress) {
@@ -287,29 +294,31 @@ static void wmi_scan_result_event(void *msg)
         return;
     }
 
-    qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t*)p_cxt->pScanOut;
-	if(scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
-		last_idx = scan_comp_evt->num_bss_cur;
-		num_entries = scan_comp_evt->num_bss_cur + p_scan_result->num_entries;
+    qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t *)p_cxt->pScanOut;
+    if (scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
+        last_idx = scan_comp_evt->num_bss_cur;
+        num_entries = scan_comp_evt->num_bss_cur + p_scan_result->num_entries;
 
-    	if (num_entries > p_cxt->scanBssMaxCount) {
-        	scan_comp_evt->num_bss_cur = p_cxt->scanBssMaxCount;
-    	} else {
-        	scan_comp_evt->num_bss_cur = num_entries;
-    	}
-    	scan_comp_evt->scan_id = p_scan_result->scan_id;
-    	int i;
-    	for (i=last_idx; i<scan_comp_evt->num_bss_cur; i++) {
-        	_wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[i], (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info)*(i-last_idx)));
-    	}
-	}
-	scan_comp_evt->total_bss += p_scan_result->num_entries;
-	
+        if (num_entries > p_cxt->scanBssMaxCount) {
+            scan_comp_evt->num_bss_cur = p_cxt->scanBssMaxCount;
+        } else {
+            scan_comp_evt->num_bss_cur = num_entries;
+        }
+        scan_comp_evt->scan_id = p_scan_result->scan_id;
+        int i;
+        for (i = last_idx; i < scan_comp_evt->num_bss_cur; i++) {
+            _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[i],
+                                 (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) +
+                                             sizeof(ap_info) * (i - last_idx)));
+        }
+    }
+    scan_comp_evt->total_bss += p_scan_result->num_entries;
+
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
     PRINT_LOG_FUNC_LINE_EXIT;
 }
 
-extern void show_net_info_by_id(uint8_t id,uint8_t ip_ver);
+extern void show_net_info_by_id(uint8_t id, uint8_t ip_ver);
 static void wmi_ip_addr_ready_event(void *msg)
 {
     if (!msg) {
@@ -319,22 +328,22 @@ static void wmi_ip_addr_ready_event(void *msg)
 
     PRINT_LOG_FUNC_LINE_ENTRY;
 #if CONFIG_SHOW_IP_READY_EVT
-    WMI_IP_DDR_EVT *ip_ready_evt = (WMI_IP_DDR_EVT*)msg;
+    WMI_IP_DDR_EVT *ip_ready_evt = (WMI_IP_DDR_EVT *)msg;
 
     show_net_info_by_id(ip_ready_evt->netif_id, ip_ready_evt->ip_ver);
 #endif
 }
 
-static void _wlan_fill_join_event (qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOIN_EVT *src)
+static void _wlan_fill_join_event(qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOIN_EVT *src)
 {
-	uint8_t mac_addr[__QAPI_WLAN_MAC_LEN];
-	wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    uint8_t mac_addr[__QAPI_WLAN_MAC_LEN];
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
-	wlan_get_mac_address(0, mac_addr);
-	if(p_cxt->opmode == DEV_MODE_AP_E && memcmp(src->bssid, mac_addr, __QAPI_WLAN_MAC_LEN) != 0)
-		dst->bss_Connection_Status = 0;
-	else
-		dst->bss_Connection_Status = 1;
+    wlan_get_mac_address(0, mac_addr);
+    if (p_cxt->opmode == DEV_MODE_AP_E && memcmp(src->bssid, mac_addr, __QAPI_WLAN_MAC_LEN) != 0)
+        dst->bss_Connection_Status = 0;
+    else
+        dst->bss_Connection_Status = 1;
 
     if (src->status == NT_OK) {
         dst->evt_hdr.status = QAPI_OK;
@@ -342,14 +351,14 @@ static void _wlan_fill_join_event (qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOI
         dst->evt_hdr.status = QAPI_WLAN_ERR_EPROTO;
     }
 
-    if(p_cxt->opmode == DEV_MODE_STATION_E)
-        memscpy(dst->passphrase, WMI_PASSPHRASE_LEN+1, src->passphrase, WMI_PASSPHRASE_LEN+1);
+    if (p_cxt->opmode == DEV_MODE_STATION_E)
+        memscpy(dst->passphrase, WMI_PASSPHRASE_LEN + 1, src->passphrase, WMI_PASSPHRASE_LEN + 1);
 
     memscpy(dst->bssid, __QAPI_WLAN_MAC_LEN, src->bssid, __QAPI_WLAN_MAC_LEN);
     dst->ssid_Length = src->ssid.ssid_len;
     memscpy(dst->ssid, dst->ssid_Length, src->ssid.ssid, dst->ssid_Length);
     dst->assoc_id = src->assoc_id;
-    //dst->host_initiated = src->host_initiated; //host can judge this
+    // dst->host_initiated = src->host_initiated; //host can judge this
     dst->reason_code = src->reason_code;
     dst->channel_frequency = src->channel_frequency;
     dst->channel = src->channel_frequency;
@@ -370,10 +379,10 @@ static void wmi_join_comp_event(void *msg)
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
 
     _wlan_fill_join_event(p_qapi_join_evt, (WMI_JOIN_EVT *)msg);
-	set_wlan_qapi_error(p_qapi_join_evt->evt_hdr.status);
+    set_wlan_qapi_error(p_qapi_join_evt->evt_hdr.status);
 
-	if(p_qapi_join_evt->bss_Connection_Status == 0)
-		goto done;
+    if (p_qapi_join_evt->bss_Connection_Status == 0)
+        goto done;
 
     if (p_qapi_join_evt->evt_hdr.status == QAPI_OK) {
         p_cxt->connected = true;
@@ -400,7 +409,8 @@ static void wmi_join_comp_event(void *msg)
     }
     if (p_cxt->disconnect_in_progress) {
         if (p_cxt->qapi_event_handler) {
-            p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_DISCONNECT_CB_E, p_cxt->event_application_Context, p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
+            p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_DISCONNECT_CB_E, p_cxt->event_application_Context,
+                                      p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
         }
         if (p_cxt->wlan_disconnect_block_mode) {
             info_printf("wakeup qapi_WLAN_Disconnect about disconnect complete\n");
@@ -418,18 +428,19 @@ static void wmi_join_comp_event(void *msg)
 done:
     if (p_cxt->qapi_event_handler) {
         info_printf("QAPI_WLAN_CONNECT_CB_E sent, status=%d\n", p_qapi_join_evt->evt_hdr.status);
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CONNECT_CB_E, p_cxt->event_application_Context, p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CONNECT_CB_E, p_cxt->event_application_Context,
+                                  p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
     }
 
-	if(p_cxt->opmode == DEV_MODE_STATION_E) {
-		if (p_cxt->connected == false) {
-			wlan_drv_roaming_start();
+    if (p_cxt->opmode == DEV_MODE_STATION_E) {
+        if (p_cxt->connected == false) {
+            wlan_drv_roaming_start();
             start_imps_cnx_wait_timer_ext();
-		} else {
-			wlan_drv_roaming_stop();
+        } else {
+            wlan_drv_roaming_stop();
             stop_imps_cnx_wait_timer();
-		}
-	}
+        }
+    }
 
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 exit:
@@ -443,7 +454,7 @@ static void wmi_disconnect_event(void *msg)
         return;
     }
 
-	WMI_DISC_EVT *evt = (WMI_DISC_EVT *)msg;
+    WMI_DISC_EVT *evt = (WMI_DISC_EVT *)msg;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_WLAN_Join_Comp_Evt_t *p_qapi_join_evt = &p_cxt->connect_result;
 
@@ -451,11 +462,11 @@ static void wmi_disconnect_event(void *msg)
     start_imps_cnx_wait_timer_ext();
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-	{
-		p_qapi_join_evt->assoc_id = evt->assoc_id;
-		p_qapi_join_evt->reason_code = evt->reason;
-		p_qapi_join_evt->evt_hdr.status = QAPI_WLAN_ERR_EPROTO;
-	}
+    {
+        p_qapi_join_evt->assoc_id = evt->assoc_id;
+        p_qapi_join_evt->reason_code = evt->reason;
+        p_qapi_join_evt->evt_hdr.status = QAPI_WLAN_ERR_EPROTO;
+    }
     p_cxt->connected = false;
 
     if (p_cxt->disconnect_in_progress) {
@@ -469,11 +480,12 @@ static void wmi_disconnect_event(void *msg)
 
     if (p_cxt->qapi_event_handler) {
         info_printf("QAPI_WLAN_DISCONNECT_CB_E sent, status=%d\n", p_qapi_join_evt->evt_hdr.status);
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CONNECT_CB_E, p_cxt->event_application_Context, p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CONNECT_CB_E, p_cxt->event_application_Context,
+                                  p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
     }
 
-	if(p_cxt->opmode == DEV_MODE_STATION_E)
-		wlan_drv_roaming_start();
+    if (p_cxt->opmode == DEV_MODE_STATION_E)
+        wlan_drv_roaming_start();
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 }
 
@@ -484,15 +496,15 @@ static void wmi_set_param_event(void *msg)
         return;
     }
 
-	wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-	SET_PDEV_PARAM_RESULT *buffer = (SET_PDEV_PARAM_RESULT*)msg;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    SET_PDEV_PARAM_RESULT *buffer = (SET_PDEV_PARAM_RESULT *)msg;
 
-	qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     if (p_cxt->wlan_set_param_block_mode) {
         uint8_t num = 0;
         while (buffer->param_id != p_cxt->param_id) {
-            //vTaskDelay(10 / portTICK_PERIOD_MS);
-            qurt_thread_sleep_ms(10); //sleep 10ms
+            // vTaskDelay(10 / portTICK_PERIOD_MS);
+            qurt_thread_sleep_ms(10); // sleep 10ms
             num++;
             if (num >= 100) {
                 err_printf("param id can not match\n");
@@ -500,16 +512,15 @@ static void wmi_set_param_event(void *msg)
             }
         }
     }
-	if (buffer->param_id == p_cxt->param_id && p_cxt->wlan_set_param_block_mode) {
-		if(buffer->status == WIFI_STATUS_SUCCESS) {
-			set_wlan_qapi_error(QAPI_OK);
-		}
-		else {
-			set_wlan_qapi_error(QAPI_ERROR);
-		}
+    if (buffer->param_id == p_cxt->param_id && p_cxt->wlan_set_param_block_mode) {
+        if (buffer->status == WIFI_STATUS_SUCCESS) {
+            set_wlan_qapi_error(QAPI_OK);
+        } else {
+            set_wlan_qapi_error(QAPI_ERROR);
+        }
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM);
     }
-	qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 }
 
 static void wmi_report_stat_event(void *msg)
@@ -519,21 +530,20 @@ static void wmi_report_stat_event(void *msg)
         return;
     }
 
-	wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-	wlan_cserv_stats_t *stat = (wlan_cserv_stats_t *)msg;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_cserv_stats_t *stat = (wlan_cserv_stats_t *)msg;
 
-	qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-	if(stat->status) {
-		p_cxt->rssi = stat->cs_rssi;
-		set_wlan_qapi_error(QAPI_OK);
-	}
-	else {
-		set_wlan_qapi_error(QAPI_ERROR);
-	}
-	if (p_cxt->wlan_get_stat_block_mode) {
+    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    if (stat->status) {
+        p_cxt->rssi = stat->cs_rssi;
+        set_wlan_qapi_error(QAPI_OK);
+    } else {
+        set_wlan_qapi_error(QAPI_ERROR);
+    }
+    if (p_cxt->wlan_get_stat_block_mode) {
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_GET_STAT);
     }
-	qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 }
 
 static void wmi_regulatory_event(void *msg)
@@ -543,22 +553,22 @@ static void wmi_regulatory_event(void *msg)
         return;
     }
 
-    int i,num;
+    int i, num;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_WLAN_Reg_Evt_t *evt = &(p_cxt->reg_result);
     wlan_regulatory_t *result = (wlan_regulatory_t *)msg;
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-    memscpy(evt->alpha,3,result->alpha,3);
+    memscpy(evt->alpha, 3, result->alpha, 3);
     evt->num_2g_reg_rules = result->num_2g_reg_rules;
     evt->num_5g_reg_rules = result->num_5g_reg_rules;
 
     num = (result->num_2g_reg_rules) + (result->num_5g_reg_rules);
-    if(num > QAPI_MAX_REG_RULES) {
+    if (num > QAPI_MAX_REG_RULES) {
         set_wlan_qapi_error(QAPI_ERROR);
         goto error;
     }
-    for(i=0;i<num;i++) {
+    for (i = 0; i < num; i++) {
         evt->reg_rules[i].start_freq = result->reg_rules[i].start_freq;
         evt->reg_rules[i].end_freq = result->reg_rules[i].end_freq;
         evt->reg_rules[i].reg_power = result->reg_rules[i].reg_power;
@@ -606,9 +616,9 @@ static void wmi_get_tx_power_event(void *msg)
     evt->reg_power = result->reg_power;
     evt->target_power = result->target_power;
 
-	set_wlan_qapi_error(QAPI_OK);
+    set_wlan_qapi_error(QAPI_OK);
 
-    if (p_cxt->wlan_get_tx_power_block_mode){
+    if (p_cxt->wlan_get_tx_power_block_mode) {
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_GET_TX_POWER);
     }
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
@@ -620,10 +630,8 @@ static void wmi_get_rate_event(void *msg)
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
 
-    memscpy(&(gp_wlan_qapi_cxt->rate_param), \
-                  sizeof(gp_wlan_qapi_cxt->rate_param), \
-                  msg, \
-                  sizeof(qapi_WLAN_Set_Rate_Params_t));
+    memscpy(&(gp_wlan_qapi_cxt->rate_param), sizeof(gp_wlan_qapi_cxt->rate_param), msg,
+            sizeof(qapi_WLAN_Set_Rate_Params_t));
 
     if (p_cxt->wlan_disable_block_mode) {
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_GET_RATE);
@@ -663,7 +671,7 @@ static void wmi_stop_scan_event(void *msg)
 
 static void wmi_wps_fail_event(void *msg)
 {
-	wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     int reason = *(int *)msg;
 
     if (!msg) {
@@ -674,7 +682,8 @@ static void wmi_wps_fail_event(void *msg)
     p_cxt->connected = false;
 
     if (p_cxt->qapi_event_handler) {
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_WPS_FAIL_CB_E, p_cxt->event_application_Context, &reason, sizeof(reason));
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_WPS_FAIL_CB_E, p_cxt->event_application_Context, &reason,
+                                  sizeof(reason));
     }
 
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
@@ -684,37 +693,37 @@ static void wmi_wps_fail_event(void *msg)
 static void wmi_chan_switch_event(void *msg)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-	qapi_WLAN_Chan_Switch_Evt_t qapi_chan_switch_evt;
-	chan_switch_event *chan_switch_evt = (chan_switch_event *)msg;
-	
+    qapi_WLAN_Chan_Switch_Evt_t qapi_chan_switch_evt;
+    chan_switch_event *chan_switch_evt = (chan_switch_event *)msg;
+
     if (!msg) {
         warn_printf("msg NULL\n");
         return;
     }
-	
-    if (p_cxt->qapi_event_handler) {
-		memset(&qapi_chan_switch_evt, 0, sizeof(qapi_chan_switch_evt));
-		if(chan_switch_evt->status == 0) {
-			qapi_chan_switch_evt.evt_hdr.status = QAPI_OK;
-			qapi_chan_switch_evt.freq = chan_switch_evt->new_chan_freq;
-		} else {
-			qapi_chan_switch_evt.evt_hdr.status = QAPI_ERROR;
-			qapi_chan_switch_evt.reason = chan_switch_evt->reason;
-		}
-        info_printf("QAPI_WLAN_CHANNEL_SWITCH_CB_E sent, status=%d\n", qapi_chan_switch_evt.evt_hdr.status);
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CHANNEL_SWITCH_CB_E, p_cxt->event_application_Context, &qapi_chan_switch_evt, sizeof(qapi_chan_switch_evt));
-    }
 
+    if (p_cxt->qapi_event_handler) {
+        memset(&qapi_chan_switch_evt, 0, sizeof(qapi_chan_switch_evt));
+        if (chan_switch_evt->status == 0) {
+            qapi_chan_switch_evt.evt_hdr.status = QAPI_OK;
+            qapi_chan_switch_evt.freq = chan_switch_evt->new_chan_freq;
+        } else {
+            qapi_chan_switch_evt.evt_hdr.status = QAPI_ERROR;
+            qapi_chan_switch_evt.reason = chan_switch_evt->reason;
+        }
+        info_printf("QAPI_WLAN_CHANNEL_SWITCH_CB_E sent, status=%d\n", qapi_chan_switch_evt.evt_hdr.status);
+        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CHANNEL_SWITCH_CB_E, p_cxt->event_application_Context,
+                                  &qapi_chan_switch_evt, sizeof(qapi_chan_switch_evt));
+    }
 }
 
 static void wmi_send_raw_event(void *msg)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-	int ret = *(int *)msg;
+    int ret = *(int *)msg;
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
 
-	set_wlan_qapi_error((ret == 1) ? QAPI_OK : QAPI_ERROR);
+    set_wlan_qapi_error((ret == 1) ? QAPI_OK : QAPI_ERROR);
     if (p_cxt->wlan_disable_block_mode) {
         qurt_signal_set(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SEND_RAW);
     }
@@ -724,79 +733,78 @@ static void wmi_send_raw_event(void *msg)
 
 static void wmi_event_dispatch(uint32_t event_id, void *data)
 {
-    switch(event_id)
-    {
-		case WMI_DISCONNECT_EVTID:
-			wmi_disconnect_event(data);
-			break;
-        case WMI_CONNECT_FAIL_EVTID:
-        case WMI_CONNECT_SUCCESS_EVTID:
-            wmi_join_comp_event(data);
-            break;
-        case WMI_WIFI_SET_MODE_EVTID:
-            wmi_set_mode_event(data);
-            break;
-        case WMI_WIFI_EN_EVTID:
-            wmi_enabled_event(data);
-            break;
-        case WMI_WIFI_DIS_EVTID:
-            wmi_disabled_event(data);
-            break;
-        case WMI_NETIF_ADD_EVTID:
-            wmi_if_added_event(data);
-            break;
-        case WMI_SCAN_COMP_EVTID:
-            wmi_scan_comp_event(data);
-            break;
-        case WMI_SCAN_RESULT_EVTID:
-            wmi_scan_result_event(data);
-            break;
-        case WMI_SCAN_START_EVTID:
-            wmi_scan_started_event(data);
-            break;
-        case WMI_IP_DHCP_SUCCESS_EVTID:
-            log_printf("DHCP operation successful\n");
-            break;
-        case WMI_IP_ADDR_READY_EVTID:
-            wmi_ip_addr_ready_event(data);
-            break;
-        case WMI_SET_PARAM_EVENT_ID:
-            wmi_set_param_event(data);
-            break;
-        case WMI_REPORT_STATISTICS_EVTID:
-            wmi_report_stat_event(data);
-            break;
-        case WMI_REGULATORY_EVTID:
-            wmi_regulatory_event(data);
-            break;
-        case WMI_SET_RATE_EVTID:
-            wmi_set_rate_event(data);
-            break;
-        case WMI_GET_RATE_EVTID:
-            wmi_get_rate_event(data);
-            break;
-		case WMI_CHAN_SWITCH_EVTID:
-			wmi_chan_switch_event(data);
-			break;
-		case WMI_SEND_RAW_FRAME_EVTID:
-			wmi_send_raw_event(data);
-			break;
-        case WMI_GET_TX_POWER_EVTID:
-            wmi_get_tx_power_event(data);
-            break;
-		case WMI_MGMT_FRAME_FILTER_EVTID:
-			wmi_set_mgmt_filter_event(data);
-            break;
+    switch (event_id) {
+    case WMI_DISCONNECT_EVTID:
+        wmi_disconnect_event(data);
+        break;
+    case WMI_CONNECT_FAIL_EVTID:
+    case WMI_CONNECT_SUCCESS_EVTID:
+        wmi_join_comp_event(data);
+        break;
+    case WMI_WIFI_SET_MODE_EVTID:
+        wmi_set_mode_event(data);
+        break;
+    case WMI_WIFI_EN_EVTID:
+        wmi_enabled_event(data);
+        break;
+    case WMI_WIFI_DIS_EVTID:
+        wmi_disabled_event(data);
+        break;
+    case WMI_NETIF_ADD_EVTID:
+        wmi_if_added_event(data);
+        break;
+    case WMI_SCAN_COMP_EVTID:
+        wmi_scan_comp_event(data);
+        break;
+    case WMI_SCAN_RESULT_EVTID:
+        wmi_scan_result_event(data);
+        break;
+    case WMI_SCAN_START_EVTID:
+        wmi_scan_started_event(data);
+        break;
+    case WMI_IP_DHCP_SUCCESS_EVTID:
+        log_printf("DHCP operation successful\n");
+        break;
+    case WMI_IP_ADDR_READY_EVTID:
+        wmi_ip_addr_ready_event(data);
+        break;
+    case WMI_SET_PARAM_EVENT_ID:
+        wmi_set_param_event(data);
+        break;
+    case WMI_REPORT_STATISTICS_EVTID:
+        wmi_report_stat_event(data);
+        break;
+    case WMI_REGULATORY_EVTID:
+        wmi_regulatory_event(data);
+        break;
+    case WMI_SET_RATE_EVTID:
+        wmi_set_rate_event(data);
+        break;
+    case WMI_GET_RATE_EVTID:
+        wmi_get_rate_event(data);
+        break;
+    case WMI_CHAN_SWITCH_EVTID:
+        wmi_chan_switch_event(data);
+        break;
+    case WMI_SEND_RAW_FRAME_EVTID:
+        wmi_send_raw_event(data);
+        break;
+    case WMI_GET_TX_POWER_EVTID:
+        wmi_get_tx_power_event(data);
+        break;
+    case WMI_MGMT_FRAME_FILTER_EVTID:
+        wmi_set_mgmt_filter_event(data);
+        break;
 #ifdef CONFIG_WPS
-		case WMI_SCAN_STOP_EVTID:
-			wmi_stop_scan_event(data);
-			break;
-		case WMI_WPS_FAIL_EVTID:
-			wmi_wps_fail_event(data);
-			break;
+    case WMI_SCAN_STOP_EVTID:
+        wmi_stop_scan_event(data);
+        break;
+    case WMI_WPS_FAIL_EVTID:
+        wmi_wps_fail_event(data);
+        break;
 #endif
-        default:
-            break;
+    default:
+        break;
     }
 
     return;
@@ -838,18 +846,16 @@ static void wmi_cmd_result(void *msg)
         return;
     }
 
-    void *data = ((wmi_msg_struct_t*)wmi_msg)->msg_struct.vo_data;
-    uint32_t event_id = ((wmi_msg_struct_t*)wmi_msg)->msg_struct.id;
+    void *data = ((wmi_msg_struct_t *)wmi_msg)->msg_struct.vo_data;
+    uint32_t event_id = ((wmi_msg_struct_t *)wmi_msg)->msg_struct.id;
     if (event_id == 0) {
-        //default response, ignore
+        // default response, ignore
         qapi_Status_t ret;
 
         if (wmi_msg->msg_struct.return_status == eWiFiSuccess) //
         {
             ret = QAPI_OK;
-        }
-        else
-        {
+        } else {
             ret = QAPI_ERROR;
         }
 
@@ -861,7 +867,8 @@ static void wmi_cmd_result(void *msg)
 
         return;
     }
-    log_printf("msg WMI cmd_id=%d return_status=%d event_id=%d\n", wmi_msg->trans_wmi_message_id, wmi_msg->msg_struct.return_status, wmi_msg->msg_struct.id);
+    log_printf("msg WMI cmd_id=%d return_status=%d event_id=%d\n", wmi_msg->trans_wmi_message_id,
+               wmi_msg->msg_struct.return_status, wmi_msg->msg_struct.id);
     wmi_event_dispatch(event_id, data);
 
     if (data != NULL && wmi_msg->trans_wmi_message_id == WMI_GET_RETURN_STATUS_CMDID) {
@@ -871,12 +878,13 @@ static void wmi_cmd_result(void *msg)
     return;
 }
 
-static void wmi_event_notify(WIFIReturnCode_t return_type, uint32_t event_id, void* data)
+static void wmi_event_notify(WIFIReturnCode_t return_type, uint32_t event_id, void *data)
 {
-    log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n", return_type, event_id, (unsigned int)data, *(int*)data);
+    log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n", return_type, event_id, (unsigned int)data,
+               *(int *)data);
 
     wmi_msg_struct_t wlan_result = {0};
-    if(event_id >= invalid_app_event_id || event_id < aws_app_event_id) {
+    if (event_id >= invalid_app_event_id || event_id < aws_app_event_id) {
         PRINT_ERR_INVALID_PARAM1("event_id", event_id);
         return;
     }
@@ -890,14 +898,15 @@ static void wmi_event_notify(WIFIReturnCode_t return_type, uint32_t event_id, vo
     //Has a mixed sequence, but can work on data allocated in stack
     wmi_qapi_response_handler((void*)&wlan_result);
 #else
-    //this way is used by nt_wfm, will call  WMI_xxx and its return(eid=0)->WMI_GET_RETURN_STATUS_CMDID and its return(actual eid).
-    //THis has a better sequence, but cannot work on data allocated in stack
-    //The data stack limitation now is fixed by relay on p_cxt->event_payload_buf
-    qurt_pipe_send(msg_wfm_wmi_id, (void*)&wlan_result);
+    // this way is used by nt_wfm, will call  WMI_xxx and its return(eid=0)->WMI_GET_RETURN_STATUS_CMDID and its
+    // return(actual eid). THis has a better sequence, but cannot work on data allocated in stack The data stack
+    // limitation now is fixed by relay on p_cxt->event_payload_buf
+    qurt_pipe_send(msg_wfm_wmi_id, (void *)&wlan_result);
 #endif
 }
 
-void wmi_event_relay(uint32_t if_id, uint32_t event_id, void* data, uint32_t data_length, void __attribute__((__unused__))*cxt)
+void wmi_event_relay(uint32_t if_id, uint32_t event_id, void *data, uint32_t data_length,
+                     void __attribute__((__unused__)) * cxt)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     uint8_t *dst;
@@ -909,7 +918,7 @@ void wmi_event_relay(uint32_t if_id, uint32_t event_id, void* data, uint32_t dat
         return;
     }
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-    
+
     if (data_length > p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_length) {
         event_payload = &(p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD]);
     } else {
@@ -925,12 +934,12 @@ void wmi_event_relay(uint32_t if_id, uint32_t event_id, void* data, uint32_t dat
     memscpy(dst, data_length, data, data_length);
     event_payload->buf_write_pointer = ((event_payload->buf_write_pointer + 1) % event_payload->buf_num);
     event_payload->buf_used++;
-    
+
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
     wmi_event_notify(eWiFiSuccess, event_id, dst);
 }
 
-qapi_Status_t wmi_cmd_send (WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_len)
+qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_len)
 {
     wmi_msg_struct_t wmi_msg = {0};
 
@@ -940,18 +949,18 @@ qapi_Status_t wmi_cmd_send (WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_l
     wmi_msg.msg_struct.return_status = eWiFiNotSupported;
     wmi_msg.msg_struct.result_function = &wmi_cmd_result;
     wmi_msg.msg_struct.event_notify = &wmi_event_notify;
-    if (cmd_id==WMI_WLAN_ON_CMDID || cmd_id==WMI_WLAN_OFF_CMDID) {
+    if (cmd_id == WMI_WLAN_ON_CMDID || cmd_id == WMI_WLAN_OFF_CMDID) {
         wmi_msg.prot_flg = cmd_id;
     }
     log_printf("send WMI cmd=%d\n", wmi_msg.trans_wmi_message_id);
 #if CONFIG_LIBWIFIQCC730_SRC
-    qurt_pipe_send(msg_wfm_wmi_id, (void*)&wmi_msg);
+    qurt_pipe_send(msg_wfm_wmi_id, (void *)&wmi_msg);
 #endif
     log_printf("send WMI cmd=%d: Done\n", wmi_msg.trans_wmi_message_id);
     return QAPI_OK;
 }
 
-qapi_Status_t wmi_dev_cmd_send (WMI_COMMAND_ID cmd_id, uint8_t dev_id, void *p_data, uint32_t data_len)
+qapi_Status_t wmi_dev_cmd_send(WMI_COMMAND_ID cmd_id, uint8_t dev_id, void *p_data, uint32_t data_len)
 {
     wmi_msg_struct_t wmi_msg = {0};
 
@@ -961,18 +970,18 @@ qapi_Status_t wmi_dev_cmd_send (WMI_COMMAND_ID cmd_id, uint8_t dev_id, void *p_d
     wmi_msg.msg_struct.return_status = eWiFiNotSupported;
     wmi_msg.msg_struct.result_function = &wmi_cmd_result;
     wmi_msg.msg_struct.event_notify = &wmi_event_notify;
-    if (cmd_id==WMI_WLAN_ON_CMDID || cmd_id==WMI_WLAN_OFF_CMDID) {
+    if (cmd_id == WMI_WLAN_ON_CMDID || cmd_id == WMI_WLAN_OFF_CMDID) {
         wmi_msg.prot_flg = cmd_id;
     }
 #if defined(SUPPORT_RING_IF) || defined(CONFIG_WMI_EVENT)
     wmi_msg.msg_struct.netif_id = dev_id;
 #endif
     log_printf("send WMI cmd=%d\n", wmi_msg.trans_wmi_message_id);
-    qurt_pipe_send(msg_wfm_wmi_id, (void*)&wmi_msg);
+    qurt_pipe_send(msg_wfm_wmi_id, (void *)&wmi_msg);
     return QAPI_OK;
 }
 
-qapi_Status_t wmi_on (void)
+qapi_Status_t wmi_on(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -993,7 +1002,7 @@ qapi_Status_t wmi_on (void)
     return ret;
 }
 
-qapi_Status_t wmi_off (void)
+qapi_Status_t wmi_off(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -1008,8 +1017,8 @@ qapi_Status_t wmi_off (void)
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     ret = get_wlan_qapi_error();
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
-	if(p_cxt->opmode == DEV_MODE_STATION_E)
-		wlan_drv_roaming_stop();
+    if (p_cxt->opmode == DEV_MODE_STATION_E)
+        wlan_drv_roaming_stop();
 
     /* when disable wlan, clear some setting */
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
@@ -1023,12 +1032,12 @@ qapi_Status_t wmi_off (void)
     return ret;
 }
 
-qapi_Status_t wmi_add_device (uint8_t __attribute__((__unused__)) device_ID)
+qapi_Status_t wmi_add_device(uint8_t __attribute__((__unused__)) device_ID)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
 
-    //wmi_cmd_send(WMI_SET_MODE_CMDID, &p_cxt->connect_cmd, sizeof(WMI_IF_ADD_CMD));
+    // wmi_cmd_send(WMI_SET_MODE_CMDID, &p_cxt->connect_cmd, sizeof(WMI_IF_ADD_CMD));
     wmi_cmd_send(WMI_SET_MODE_CMDID, &p_cxt->connect_cmd, sizeof(WMI_CONNECT_CMD));
     if (p_cxt->wlan_if_add_block_mode) {
         qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_IF_ADDED, QURT_SIGNAL_ATTR_CLEAR_MASK);
@@ -1042,7 +1051,8 @@ qapi_Status_t wmi_add_device (uint8_t __attribute__((__unused__)) device_ID)
     return ret;
 }
 
-qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_ID, const qapi_WLAN_Start_Scan_Params_t *scan_Params)
+qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_ID,
+                             const qapi_WLAN_Start_Scan_Params_t *scan_Params)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -1068,7 +1078,8 @@ qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_ID, cons
     return ret;
 }
 
-qapi_Status_t wlan_get_scan_results (uint8_t __attribute__((__unused__)) device_ID, qapi_WLAN_Scan_Comp_Evt_t *scan_Res, int16_t *num_Bss)
+qapi_Status_t wlan_get_scan_results(uint8_t __attribute__((__unused__)) device_ID, qapi_WLAN_Scan_Comp_Evt_t *scan_Res,
+                                    int16_t *num_Bss)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -1084,13 +1095,14 @@ qapi_Status_t wlan_get_scan_results (uint8_t __attribute__((__unused__)) device_
         qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     }
     int16_t num_Bss_capacity = *num_Bss;
-    qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t*)p_cxt->pScanOut;
+    qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t *)p_cxt->pScanOut;
     int16_t num_Bss_real = scan_comp_evt->num_bss_cur;
     if (num_Bss_real > num_Bss_capacity) {
         num_Bss_real = num_Bss_capacity;
     }
     log_printf("copy scan results\n");
-    memscpy(scan_Res, sizeof(qapi_WLAN_Scan_Comp_Evt_t)+sizeof(qapi_WLAN_BSS_Scan_Info_t)*num_Bss_real, scan_comp_evt, sizeof(qapi_WLAN_Scan_Comp_Evt_t)+sizeof(qapi_WLAN_BSS_Scan_Info_t)*num_Bss_real);
+    memscpy(scan_Res, sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t) * num_Bss_real,
+            scan_comp_evt, sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t) * num_Bss_real);
     ret = get_wlan_qapi_error();
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
     *num_Bss = num_Bss_real;
@@ -1098,24 +1110,24 @@ qapi_Status_t wlan_get_scan_results (uint8_t __attribute__((__unused__)) device_
     return ret;
 }
 
-qapi_Status_t wmi_set_passphrase (void)
+qapi_Status_t wmi_set_passphrase(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
-	if(p_cxt->connect_cmd.networkType == AP_NETWORK)
-		wmi_cmd_send(WMI_CONFIG_AP_CMDID, &p_cxt->passphrase_cmd, sizeof(WMI_SET_PASSPHRASE_CMD));
-	else
-		wmi_cmd_send(WMI_SET_PASSPHRASE_CMDID, &p_cxt->passphrase_cmd, sizeof(WMI_SET_PASSPHRASE_CMD));
+    if (p_cxt->connect_cmd.networkType == AP_NETWORK)
+        wmi_cmd_send(WMI_CONFIG_AP_CMDID, &p_cxt->passphrase_cmd, sizeof(WMI_SET_PASSPHRASE_CMD));
+    else
+        wmi_cmd_send(WMI_SET_PASSPHRASE_CMDID, &p_cxt->passphrase_cmd, sizeof(WMI_SET_PASSPHRASE_CMD));
     log_printf("No specific event for WMI_SET_PASSPHRASE_CMDID, just go\n");
     return QAPI_OK;
 }
 
-qapi_Status_t wmi_connect (void)
+qapi_Status_t wmi_connect(void)
 {
     qapi_Status_t ret = QAPI_OK;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     WMI_COMMAND_ID cmd_id = WMI_AP_CONFIG_COMMIT_CMDID;
-    if(p_cxt->connect_cmd.networkType != AP_NETWORK)
+    if (p_cxt->connect_cmd.networkType != AP_NETWORK)
         cmd_id = WMI_CONNECT_CMDID;
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
@@ -1126,22 +1138,22 @@ qapi_Status_t wmi_connect (void)
     wmi_cmd_send(cmd_id, &p_cxt->connect_cmd, sizeof(WMI_CONNECT_CMD));
     if (p_cxt->wlan_connect_block_mode) {
         qurt_signal_wait(&p_cxt->wlan_cmd_done,
-            WLAN_WMI_CMD_SIG_MASK_CONNECT_COMPLETED|WLAN_WMI_CMD_SIG_MASK_DISCONNECTED,
-            QURT_SIGNAL_ATTR_CLEAR_MASK|QURT_SIGNAL_ATTR_WAIT_ANY);
+                         WLAN_WMI_CMD_SIG_MASK_CONNECT_COMPLETED | WLAN_WMI_CMD_SIG_MASK_DISCONNECTED,
+                         QURT_SIGNAL_ATTR_CLEAR_MASK | QURT_SIGNAL_ATTR_WAIT_ANY);
         log_printf("block mode, WMI cmd done\n");
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
 
-	if(p_cxt->wlan_connect_block_mode) {
-    	qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-    	ret = get_wlan_qapi_error();
-    	qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
-	}
+    if (p_cxt->wlan_connect_block_mode) {
+        qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+        ret = get_wlan_qapi_error();
+        qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    }
     return ret;
 }
 
-qapi_Status_t wmi_disconnect (void)
+qapi_Status_t wmi_disconnect(void)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -1150,14 +1162,13 @@ qapi_Status_t wmi_disconnect (void)
     p_cxt->disconnect_in_progress = true;
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 
-    if(p_cxt->opmode == DEV_MODE_AP_E) {
-		qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-		p_cxt->discon_cmd.sta_id = -1;
-		qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
-    	wmi_cmd_send(WMI_DISCONNECT_CMDID, &p_cxt->discon_cmd, sizeof(WLAN_WMI_DISCONN_t));
-	}
-    else
-        wmi_cmd_send(WMI_DISCONNECT_CMDID,NULL,0);
+    if (p_cxt->opmode == DEV_MODE_AP_E) {
+        qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+        p_cxt->discon_cmd.sta_id = -1;
+        qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+        wmi_cmd_send(WMI_DISCONNECT_CMDID, &p_cxt->discon_cmd, sizeof(WLAN_WMI_DISCONN_t));
+    } else
+        wmi_cmd_send(WMI_DISCONNECT_CMDID, NULL, 0);
     if (p_cxt->wlan_disconnect_block_mode) {
         qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_DISCONNECTED, QURT_SIGNAL_ATTR_CLEAR_MASK);
         log_printf("wmi_disconnect: block mode, WMI cmd done\n");
@@ -1168,8 +1179,8 @@ qapi_Status_t wmi_disconnect (void)
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     ret = get_wlan_qapi_error();
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
-    if(p_cxt->opmode == DEV_MODE_STATION_E)
-		wlan_drv_roaming_stop();
+    if (p_cxt->opmode == DEV_MODE_STATION_E)
+        wlan_drv_roaming_stop();
     return ret;
 }
 
@@ -1188,7 +1199,7 @@ qapi_Status_t wmi_set_op_mode(void)
 
     qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
     ret = get_wlan_qapi_error();
-	qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
     return ret;
 }
 
@@ -1213,7 +1224,7 @@ qapi_Status_t wmi_wlan_get_regulatory(void)
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
 
-    wmi_cmd_send(WMI_GET_REGULATORY_CMDID,NULL,0);
+    wmi_cmd_send(WMI_GET_REGULATORY_CMDID, NULL, 0);
     if (p_cxt->wlan_get_regulatory_block_mode) {
         qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_GET_REG, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
@@ -1224,7 +1235,7 @@ qapi_Status_t wmi_wlan_get_regulatory(void)
     return ret;
 }
 
-qapi_Status_t wmi_set_rate (void)
+qapi_Status_t wmi_set_rate(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -1240,7 +1251,7 @@ qapi_Status_t wmi_set_rate (void)
     return ret;
 }
 
-qapi_Status_t wmi_get_rate (void)
+qapi_Status_t wmi_get_rate(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -1272,7 +1283,7 @@ qapi_Status_t wmi_send_raw()
     return ret;
 }
 
-qapi_Status_t wmi_set_mgmt_filter (void)
+qapi_Status_t wmi_set_mgmt_filter(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_OK;
@@ -1283,12 +1294,12 @@ qapi_Status_t wmi_set_mgmt_filter (void)
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
-	
+
     ret = get_wlan_qapi_error();
     return ret;
 }
 
-qapi_Status_t wmi_get_tx_power (void)
+qapi_Status_t wmi_get_tx_power(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -1308,10 +1319,8 @@ qapi_Status_t wmi_get_tx_power (void)
 extern qapi_WLAN_WPS_Credentials_t gWpsCredentials;
 
 qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_ID,
-                             qapi_WLAN_WPS_Connect_Action_e connect_Action,
-                             qapi_WLAN_WPS_Mode_e mode,
-                             const char  *pin,
-                             uint8_t auth_floor)
+                                    qapi_WLAN_WPS_Connect_Action_e connect_Action, qapi_WLAN_WPS_Mode_e mode,
+                                    const char *pin, uint8_t auth_floor)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_OK;
@@ -1332,15 +1341,14 @@ qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_I
     }
 
     p_cxt->wps_param.ctl_flag = connect_Action;
-    if(gWpsCredentials.ssid_Length == 0)
-    {
+    if (gWpsCredentials.ssid_Length == 0) {
         p_cxt->wps_param.ssid_info.ssid_len = 0;
-    }
-    else
-    {
-        memscpy(p_cxt->wps_param.ssid_info.ssid, sizeof(p_cxt->wps_param.ssid_info.ssid), gWpsCredentials.ssid, sizeof(p_cxt->wps_param.ssid_info.ssid));
-        memscpy(p_cxt->wps_param.ssid_info.macaddress, sizeof(p_cxt->wps_param.ssid_info.macaddress), gWpsCredentials.mac_Addr, __QAPI_WLAN_MAC_LEN);
-        p_cxt->wps_param.ssid_info.channel  = gWpsCredentials.ap_Channel;
+    } else {
+        memscpy(p_cxt->wps_param.ssid_info.ssid, sizeof(p_cxt->wps_param.ssid_info.ssid), gWpsCredentials.ssid,
+                sizeof(p_cxt->wps_param.ssid_info.ssid));
+        memscpy(p_cxt->wps_param.ssid_info.macaddress, sizeof(p_cxt->wps_param.ssid_info.macaddress),
+                gWpsCredentials.mac_Addr, __QAPI_WLAN_MAC_LEN);
+        p_cxt->wps_param.ssid_info.channel = gWpsCredentials.ap_Channel;
         p_cxt->wps_param.ssid_info.ssid_len = gWpsCredentials.ssid_Length;
     }
 
@@ -1349,24 +1357,22 @@ qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_I
     wmi_cmd_send(cmd_id, &p_cxt->wps_param, sizeof(WMI_WPS_START_CMD));
 
     if (p_cxt->wlan_start_wps_block_mode) {
-        qurt_signal_wait(&p_cxt->wlan_cmd_done,
-            WLAN_WMI_CMD_SIG_MASK_STARTED_WPS_PROCESS,
-            QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_STARTED_WPS_PROCESS, QURT_SIGNAL_ATTR_CLEAR_MASK);
         log_printf("block mode, WMI cmd done\n");
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
 
-	if(p_cxt->wlan_start_wps_block_mode) {
-    	qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
-    	ret = get_wlan_qapi_error();
-    	qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
-	}
+    if (p_cxt->wlan_start_wps_block_mode) {
+        qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+        ret = get_wlan_qapi_error();
+        qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    }
 
     return ret;
 }
 
-qapi_Status_t wmi_stop_scan (void)
+qapi_Status_t wmi_stop_scan(void)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -1375,10 +1381,10 @@ qapi_Status_t wmi_stop_scan (void)
     p_cxt->stop_scan_in_progress = true;
     qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
 
-    if(p_cxt->opmode == DEV_MODE_AP_E)
-		return ret;
+    if (p_cxt->opmode == DEV_MODE_AP_E)
+        return ret;
     else
-        wmi_cmd_send(WMI_SCAN_STOP_CMDID,NULL,0);
+        wmi_cmd_send(WMI_SCAN_STOP_CMDID, NULL, 0);
     if (p_cxt->wlan_scan_stop_block_mode) {
         qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_STOPPED_SCAN, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
@@ -1393,22 +1399,21 @@ qapi_Status_t wmi_stop_scan (void)
 
 qapi_Status_t wlan_get_rts_rate(uint32_t *rate)
 {
-	int32_t ret_rate = wlan_hal_get_rts_rate();
-	
-	if (ret_rate==NT_FAIL) {
-		return QAPI_ERR_INVALID_PARAM;
-	}
-	*rate = (uint32_t)ret_rate;
-	return QAPI_OK;
+    int32_t ret_rate = wlan_hal_get_rts_rate();
+
+    if (ret_rate == NT_FAIL) {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+    *rate = (uint32_t)ret_rate;
+    return QAPI_OK;
 }
 
 qapi_Status_t wlan_get_edca_param(uint8_t qid, uint8_t *aifs, uint16_t *cw_min, uint16_t *cw_max, uint16_t *txop_limit)
 {
-	if (qid > 7 && qid != 0xff)
-		return QAPI_ERR_INVALID_PARAM;
+    if (qid > 7 && qid != 0xff)
+        return QAPI_ERR_INVALID_PARAM;
 
-	wlan_hal_get_edca_param(qid, aifs, cw_min, cw_max, txop_limit);
+    wlan_hal_get_edca_param(qid, aifs, cw_min, cw_max, txop_limit);
 
-	return QAPI_OK;
+    return QAPI_OK;
 }
-

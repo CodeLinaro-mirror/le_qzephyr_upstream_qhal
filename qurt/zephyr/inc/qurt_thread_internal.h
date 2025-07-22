@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef QURT_THREAD_INTERNAL_H
 #define QURT_THREAD_INTERNAL_H
@@ -9,10 +9,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/kernel/thread.h>
 
-typedef struct _qal_thread
-{
-    union
-    {
+typedef struct _qal_thread {
+    union {
         struct k_thread zthread;
         struct k_work_q z_work_q;
     };

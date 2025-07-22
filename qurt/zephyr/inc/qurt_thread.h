@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef QURT_THREAD_H
 #define QURT_THREAD_H
@@ -13,28 +13,28 @@
 /** @addtogroup thread_macros
 @{ */
 // TODO: Only Legacy behaviour is supported now
-#define QURT_THREAD_ATTR_CREATE_LEGACY               0
-#define QURT_THREAD_ATTR_CREATE_JOINABLE             1
-#define QURT_THREAD_ATTR_CREATE_DETACHED             2
+#define QURT_THREAD_ATTR_CREATE_LEGACY 0
+#define QURT_THREAD_ATTR_CREATE_JOINABLE 1
+#define QURT_THREAD_ATTR_CREATE_DETACHED 2
 /** @} */ /* end_addtogroup thread_macros */
 
-#define QURT_THREAD_ATTR_NAME_MAXLEN            16  /**< Maximum name length. */
-#define QURT_THREAD_ATTR_TCB_PARTITION_RAM      0  /**< Creates threads in RAM/DDR. */
-#define QURT_THREAD_ATTR_TCB_PARTITION_TCM      1  /**< Creates threads in TCM. */
+#define QURT_THREAD_ATTR_NAME_MAXLEN 16      /**< Maximum name length. */
+#define QURT_THREAD_ATTR_TCB_PARTITION_RAM 0 /**< Creates threads in RAM/DDR. */
+#define QURT_THREAD_ATTR_TCB_PARTITION_TCM 1 /**< Creates threads in TCM. */
 /** @cond rest_reg_dist */
 /** @addtogroup thread_macros
 @{ */
-#define QURT_THREAD_ATTR_TCB_PARTITION_DEFAULT  QURT_THREAD_ATTR_TCB_PARTITION_RAM  /**< Backward compatibility. */
-#define QURT_THREAD_ATTR_PRIORITY_MAX           (CONFIG_NUM_PREEMPT_PRIORITIES-1)
-#define QURT_THREAD_ATTR_PRIORITY_MIN           0
-#define QURT_THREAD_ATTR_PRIORITY_DEFAULT       CONFIG_NUM_PREEMPT_PRIORITIES - 1   /**< Priority.*/
-#define QURT_THREAD_ATTR_ASID_DEFAULT           0    /**< ASID. */
-#define QURT_THREAD_ATTR_AFFINITY_DEFAULT       (-1)  /**< Affinity. */
-#define QURT_THREAD_ATTR_BUS_PRIO_DEFAULT       CONFIG_NUM_PREEMPT_PRIORITIES  /**< Bus priority. */
-#define QURT_THREAD_ATTR_AUTOSTACK_DEFAULT      0    /**< Default autostack v2 disabled thread*/
-#define QURT_THREAD_ATTR_TIMETEST_ID_DEFAULT    (-2)  /**< Timetest ID. */
-#define QURT_THREAD_ATTR_STID_DEFAULT 0              /**< STID. */
-/** @} */ /* end_addtogroup thread_macros */
+#define QURT_THREAD_ATTR_TCB_PARTITION_DEFAULT QURT_THREAD_ATTR_TCB_PARTITION_RAM /**< Backward compatibility. */
+#define QURT_THREAD_ATTR_PRIORITY_MAX (CONFIG_NUM_PREEMPT_PRIORITIES - 1)
+#define QURT_THREAD_ATTR_PRIORITY_MIN 0
+#define QURT_THREAD_ATTR_PRIORITY_DEFAULT CONFIG_NUM_PREEMPT_PRIORITIES - 1 /**< Priority.*/
+#define QURT_THREAD_ATTR_ASID_DEFAULT 0                                     /**< ASID. */
+#define QURT_THREAD_ATTR_AFFINITY_DEFAULT (-1)                              /**< Affinity. */
+#define QURT_THREAD_ATTR_BUS_PRIO_DEFAULT CONFIG_NUM_PREEMPT_PRIORITIES     /**< Bus priority. */
+#define QURT_THREAD_ATTR_AUTOSTACK_DEFAULT 0                                /**< Default autostack v2 disabled thread*/
+#define QURT_THREAD_ATTR_TIMETEST_ID_DEFAULT (-2)                           /**< Timetest ID. */
+#define QURT_THREAD_ATTR_STID_DEFAULT 0                                     /**< STID. */
+/** @} */                                                                   /* end_addtogroup thread_macros */
 /** @endcond*/
 
 typedef unsigned int qurt_thread_t;
@@ -42,21 +42,21 @@ typedef unsigned int qurt_thread_t;
 /** @cond rest_reg_dist  */
 /** Thread attributes */
 typedef struct _qurt_thread_attr {
-    
+
     char name[QURT_THREAD_ATTR_NAME_MAXLEN]; /**< Thread name. */
-    unsigned char tcb_partition;  /**< Indicates whether the thread TCB resides in RAM or
-                                       on chip memory (in other words, TCM). */
-    unsigned char  stid;          /**< Software thread ID used to configure the stid register
-                                       for profiling pusposes. */
-    unsigned short priority;      /**< Thread priority. */
-    unsigned char  autostack:1;    /**< Autostack v2 enabled thread. */
-    unsigned char  reserved:7;     /**< Reserved bits. */
-    unsigned char  bus_priority;  /**< Internal bus priority. */
-    unsigned short timetest_id;   /**< Timetest ID. */
-    unsigned int   stack_size;    /**< Thread stack size. */
-    void *stack_addr;             /**< Pointer to the stack address base, the range of the stack is
-                                       (stack_addr, stack_addr+stack_size-1). */
-    unsigned short detach_state;  /**< Detach state of the thread */
+    unsigned char tcb_partition;             /**< Indicates whether the thread TCB resides in RAM or
+                                                  on chip memory (in other words, TCM). */
+    unsigned char stid;                      /**< Software thread ID used to configure the stid register
+                                                  for profiling pusposes. */
+    unsigned short priority;                 /**< Thread priority. */
+    unsigned char autostack : 1;             /**< Autostack v2 enabled thread. */
+    unsigned char reserved : 7;              /**< Reserved bits. */
+    unsigned char bus_priority;              /**< Internal bus priority. */
+    unsigned short timetest_id;              /**< Timetest ID. */
+    unsigned int stack_size;                 /**< Thread stack size. */
+    void *stack_addr;                        /**< Pointer to the stack address base, the range of the stack is
+                                                  (stack_addr, stack_addr+stack_size-1). */
+    unsigned short detach_state;             /**< Detach state of the thread */
 } qurt_thread_attr_t;
 /** @endcond */
 
@@ -81,7 +81,7 @@ typedef struct _qurt_thread_attr {
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_set_stack_size (qurt_thread_attr_t *attr, unsigned int stack_size)
+static inline void qurt_thread_attr_set_stack_size(qurt_thread_attr_t *attr, unsigned int stack_size)
 {
     attr->stack_size = stack_size;
 }
@@ -111,7 +111,7 @@ static inline void qurt_thread_attr_set_stack_size (qurt_thread_attr_t *attr, un
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_set_stack_addr (qurt_thread_attr_t *attr, void *stack_addr)
+static inline void qurt_thread_attr_set_stack_addr(qurt_thread_attr_t *attr, void *stack_addr)
 {
     attr->stack_addr = stack_addr;
 }
@@ -146,10 +146,9 @@ static inline void qurt_thread_attr_set_stack_addr (qurt_thread_attr_t *attr, vo
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_set_detachstate (qurt_thread_attr_t *attr, unsigned short detachstate)
+static inline void qurt_thread_attr_set_detachstate(qurt_thread_attr_t *attr, unsigned short detachstate)
 {
-    if(detachstate == QURT_THREAD_ATTR_CREATE_JOINABLE  || detachstate == QURT_THREAD_ATTR_CREATE_DETACHED)
-    {
+    if (detachstate == QURT_THREAD_ATTR_CREATE_JOINABLE || detachstate == QURT_THREAD_ATTR_CREATE_DETACHED) {
         attr->detach_state = detachstate;
     }
 }
@@ -172,7 +171,7 @@ static inline void qurt_thread_attr_set_detachstate (qurt_thread_attr_t *attr, u
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_set_priority (qurt_thread_attr_t *attr, unsigned short priority)
+static inline void qurt_thread_attr_set_priority(qurt_thread_attr_t *attr, unsigned short priority)
 {
     attr->priority = priority;
 }
@@ -197,9 +196,9 @@ static inline void qurt_thread_attr_set_priority (qurt_thread_attr_t *attr, unsi
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_set_name (qurt_thread_attr_t *attr, char *name)
+static inline void qurt_thread_attr_set_name(qurt_thread_attr_t *attr, char *name)
 {
-    strlcpy (attr->name, name, QURT_THREAD_ATTR_NAME_MAXLEN);
+    strlcpy(attr->name, name, QURT_THREAD_ATTR_NAME_MAXLEN);
     attr->name[QURT_THREAD_ATTR_NAME_MAXLEN - 1] = 0;
 }
 
@@ -250,7 +249,7 @@ int qurt_thread_get_thread_id(qurt_thread_t *thread_id, char *name);
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_init (qurt_thread_attr_t *attr)
+static inline void qurt_thread_attr_init(qurt_thread_attr_t *attr)
 {
     attr->name[0] = 0;
     attr->tcb_partition = QURT_THREAD_ATTR_TCB_PARTITION_DEFAULT;
@@ -328,8 +327,7 @@ void qurt_thread_exit(int status);
   @dependencies
   None.
  */
-int qurt_thread_create (qurt_thread_t *thread_id, qurt_thread_attr_t *attr, 
-                        void (*entrypoint) (void *), void *arg);
+int qurt_thread_create(qurt_thread_t *thread_id, qurt_thread_attr_t *attr, void (*entrypoint)(void *), void *arg);
 
 /**@ingroup func_qurt_thread_join
    @xreflabel{sec:thread_join}
@@ -372,7 +370,7 @@ int qurt_thread_join(unsigned int tid, int *status);
   @dependencies
   None.
 */
-void qurt_thread_get_name (char *name, unsigned char max_len);
+void qurt_thread_get_name(char *name, unsigned char max_len);
 
 /**@ingroup func_qurt_thread_get_id
    Gets the identifier of the current thread.\n
@@ -384,14 +382,14 @@ void qurt_thread_get_name (char *name, unsigned char max_len);
    @dependencies
    None.
  */
-qurt_thread_t qurt_thread_get_id (void);
+qurt_thread_t qurt_thread_get_id(void);
 
 /**@ingroup func_qurt_sleep
   Suspends the current thread for the specified amount of time.
 
   @param[in] duration  Duration (in microseconds) for which the thread is suspended.
 
-  @return 
+  @return
   None.
 
   @dependencies
@@ -422,7 +420,7 @@ void qurt_thread_sleep(TickType_t sleep_time);
    @dependencies
    None.
  */
-int qurt_thread_get_priority (qurt_thread_t threadid);
+int qurt_thread_get_priority(qurt_thread_t threadid);
 
 /**@ingroup func_qurt_thread_set_priority
    Sets the priority of the specified thread.\n
@@ -446,19 +444,17 @@ int qurt_thread_get_priority (qurt_thread_t threadid);
    @dependencies
    None.
  */
-int qurt_thread_set_priority (qurt_thread_t threadid, unsigned short newprio);
-
+int qurt_thread_set_priority(qurt_thread_t threadid, unsigned short newprio);
 
 #define configSTACK_DEPTH_TYPE uint16_t
 typedef qurt_thread_t TaskHandle_t;
-typedef void (*TaskFunction_t)( void * );
+typedef void (*TaskFunction_t)(void *);
 
-BaseType_t nt_qurt_thread_create(	TaskFunction_t pxTaskCode,
-		const char * const pcName,		/*lint !e971 Unqualified char types are allowed for strings and single characters only. */
-		const configSTACK_DEPTH_TYPE usStackDepth,
-		void * const pvParameters,
-		UBaseType_t uxPriority,
-		TaskHandle_t * const pxCreatedTask );
+BaseType_t nt_qurt_thread_create(
+    TaskFunction_t pxTaskCode,
+    const char *const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+    const configSTACK_DEPTH_TYPE usStackDepth, void *const pvParameters, UBaseType_t uxPriority,
+    TaskHandle_t *const pxCreatedTask);
 
 TaskHandle_t nt_qurt_thread_get_id(void);
 

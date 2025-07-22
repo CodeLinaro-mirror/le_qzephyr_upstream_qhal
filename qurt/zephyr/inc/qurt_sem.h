@@ -1,10 +1,10 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef QURT_SEM_H
-#define QURT_SEM_H 
+#define QURT_SEM_H
 
 #include "qurt_types.h"
 #include <zephyr/kernel.h>
@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /*=============================================================================
-												TYPEDEFS
+                                                TYPEDEFS
 =============================================================================*/
 /** @addtogroup semaphore_types
 @{ */
@@ -25,12 +25,12 @@ void qurt_sem_create(qurt_sem_t **sem);
 
 /** @} */ /* end_addtogroup semaphore_types */
 /*=============================================================================
-												FUNCTIONS
+                                                FUNCTIONS
 =============================================================================*/
 
-/**@ingroup func_qurt_sem_up  
+/**@ingroup func_qurt_sem_up
   Releases access to a shared resource. When a thread performs an up operation on a semaphore,
-  the semaphore count value is incremented. The result depends on the number of threads waiting 
+  the semaphore count value is incremented. The result depends on the number of threads waiting
   on the semaphore: \n
   - When no threads are waiting, the current thread releases access to the shared resource
      and continues executing.\n
@@ -41,19 +41,19 @@ void qurt_sem_create(qurt_sem_t **sem);
 
    @datatypes
    #qurt_sem_t
-   
+
    @param[in]  sem  Pointer to the semaphore object to access.
 
-   @return 
+   @return
    Unused integer value.
 
    @dependencies
-   None.  
+   None.
  */
 int qurt_sem_up(qurt_sem_t *sem);
 
-/**@ingroup func_qurt_sem_down  
-  Requests access to a shared resource. When a thread performs a down operation on a 
+/**@ingroup func_qurt_sem_down
+  Requests access to a shared resource. When a thread performs a down operation on a
   semaphore, the result depends on the semaphore count value: \n
   - When the count value is nonzero, it is decremented, and the thread gains access to the
      shared resource and continues executing.\n
@@ -61,13 +61,13 @@ int qurt_sem_up(qurt_sem_t *sem);
      semaphore. When the count value becomes nonzero (because another thread
      released the semaphore) it is decremented, and the suspended thread is awakened
      and gains access to the shared resource.
-  
+
    @datatypes
    #qurt_sem_t
-   
+
    @param[in]  sem  Pointer to the semaphore object to access.
 
-   @return 
+   @return
    Unused integer value.
 
    @dependencies
@@ -85,19 +85,19 @@ int qurt_sem_down(qurt_sem_t *sem);
   - The count value is not decremented when it is zero. The down operation returns -1
      as the function result, and the thread does not gain access to the shared resource
      and should not continue executing.
- 
+
    @datatypes
    #qurt_sem_t
-   
-   @param[in]  sem  Pointer to the semaphore object to access. 
 
-   @return 
+   @param[in]  sem  Pointer to the semaphore object to access.
+
+   @return
    0 -- Success. \n
-   -1 -- Failure. 
+   -1 -- Failure.
 
    @dependencies
    None.
-   
+
  */
 int qurt_sem_try_down(qurt_sem_t *sem);
 
@@ -111,8 +111,8 @@ int qurt_sem_try_down(qurt_sem_t *sem);
   @datatypes
   #qurt_sem_t
 
-  @param[in]  sem  Pointer to the semaphore object to destroy. 
- 
+  @param[in]  sem  Pointer to the semaphore object to destroy.
+
   @return
   None.
 
@@ -127,7 +127,7 @@ void qurt_sem_destroy(qurt_sem_t *sem);
 
   @datatypes
   #qurt_sem_t
-  
+
   @param[in]   sem Pointer to the semaphore object to access.
 
   @return
@@ -136,9 +136,9 @@ void qurt_sem_destroy(qurt_sem_t *sem);
   @dependencies
   None.
  */
-unsigned int qurt_sem_get_val(qurt_sem_t *sem );
+unsigned int qurt_sem_get_val(qurt_sem_t *sem);
 
-/**@ingroup func_qurt_sem_down_timed  
+/**@ingroup func_qurt_sem_down_timed
   When a thread performs a down operation on a semaphore, the result depends on the
   semaphore count value: \n
   - When the count value is nonzero, it is decremented, and the thread gains access to the
@@ -148,15 +148,15 @@ unsigned int qurt_sem_get_val(qurt_sem_t *sem );
      released the semaphore) it is decremented, and the suspended thread is awakened
      and gains access to the shared resource. Terminate the wait when the specified timeout expires.
    If timeout expires, terminate this wait and grant no access to the shared resource.
-  
+
    @datatypes
    #qurt_sem_t
-   
-   @param[in]  sem     Pointer to the semaphore object to access. 
-   @param[in] duration Interval (in microseconds) duration value must be between #QURT_TIMER_MIN_DURATION and
-                       #QURT_TIMER_MAX_DURATION 
 
-   @return 
+   @param[in]  sem     Pointer to the semaphore object to access.
+   @param[in] duration Interval (in microseconds) duration value must be between #QURT_TIMER_MIN_DURATION and
+                       #QURT_TIMER_MAX_DURATION
+
+   @return
    #QURT_EOK -- Success \n
    #QURT_ETIMEDOUT -- Timeout
 

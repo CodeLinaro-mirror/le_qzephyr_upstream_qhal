@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 #ifndef _QAPI_FIRMWARE_UPGRADE_H_
 #define _QAPI_FIRMWARE_UPGRADE_H_
@@ -16,37 +16,37 @@
  * Preprocessor Definitions and Constants
  * -------------------------------------------------------------------------------*/
 
- /** @addtogroup qapi_Fw_Upgrade
+/** @addtogroup qapi_Fw_Upgrade
 @{ */
 
 /**
  *  Definition used by the qapi_Fw_Upgrade() and qapi_Fw_Upgrade_done() APIs as a flag bit.
  *  The Fw_Upgrade and Fw_Upgrade_Done APIs automatically reboot if this flag bit is set.
  */
-#define QAPI_FW_UPGRADE_FLAG_AUTO_REBOOT            (1<<0)
+#define QAPI_FW_UPGRADE_FLAG_AUTO_REBOOT (1 << 0)
 
 /**
  *  Definition used by the qapi_Fw_Upgrade() API as a flag.
  *  Fw_Upgrade copies files from an active image file system to a trial image file system
  *  if this flag is set
  */
-#define QAPI_FW_UPGRADE_FLAG_DUPLICATE_ACTIVE_FS    (1<<1) 
- 
+#define QAPI_FW_UPGRADE_FLAG_DUPLICATE_ACTIVE_FS (1 << 1)
+
 /** @name FWD Bit Definition
  *  Definition used by the qapi_Fw_Upgrade_Get_Active_FWD() API as a return
  *  to indicate the FWD bit type.
 @{ */
-#define QAPI_FW_UPGRADE_FWD_BIT_GOLDEN   (0)
-#define QAPI_FW_UPGRADE_FWD_BIT_CURRENT  (1)
-#define QAPI_FW_UPGRADE_FWD_BIT_TRIAL    (2)
+#define QAPI_FW_UPGRADE_FWD_BIT_GOLDEN (0)
+#define QAPI_FW_UPGRADE_FWD_BIT_CURRENT (1)
+#define QAPI_FW_UPGRADE_FWD_BIT_TRIAL (2)
 /** @} */
 /** @name FWD Boot Type Definition
  *  Definition used by the qapi_Fw_Upgrade_Get_Active_FWD() API as a return
  *  to indicate the FWD type for booting.
 @{ */
-#define QAPI_FW_UPGRADE_FWD_BOOT_TYPE_GOLDEN	(1<<QAPI_FW_UPGRADE_FWD_BIT_GOLDEN)
-#define QAPI_FW_UPGRADE_FWD_BOOT_TYPE_CURRENT	(1<<QAPI_FW_UPGRADE_FWD_BIT_CURRENT)
-#define QAPI_FW_UPGRADE_FWD_BOOT_TYPE_TRIAL	    (1<<QAPI_FW_UPGRADE_FWD_BIT_TRIAL)
+#define QAPI_FW_UPGRADE_FWD_BOOT_TYPE_GOLDEN (1 << QAPI_FW_UPGRADE_FWD_BIT_GOLDEN)
+#define QAPI_FW_UPGRADE_FWD_BOOT_TYPE_CURRENT (1 << QAPI_FW_UPGRADE_FWD_BIT_CURRENT)
+#define QAPI_FW_UPGRADE_FWD_BOOT_TYPE_TRIAL (1 << QAPI_FW_UPGRADE_FWD_BIT_TRIAL)
 /** @} */
 
 /** @name FWUP Return Status Definition
@@ -54,112 +54,112 @@
  *  to indicate the status.
 @{ */
 /**< Operation failed. */
-#define QAPI_FW_UPGRADE_ERROR                              __QAPI_ERROR(QAPI_MOD_FWUP, 1)
+#define QAPI_FW_UPGRADE_ERROR __QAPI_ERROR(QAPI_MOD_FWUP, 1)
 /**< Invalid parameter. */
-#define QAPI_FW_UPGRADE_ERR_INVALID_PARAM                  __QAPI_ERROR(QAPI_MOD_FWUP, 2)
+#define QAPI_FW_UPGRADE_ERR_INVALID_PARAM __QAPI_ERROR(QAPI_MOD_FWUP, 2)
 /**< Firmware upgrade library is not initialized. */
-#define QAPI_FW_UPGRADE_ERR_NOT_INIT                       __QAPI_ERROR(QAPI_MOD_FWUP, 3)
+#define QAPI_FW_UPGRADE_ERR_NOT_INIT __QAPI_ERROR(QAPI_MOD_FWUP, 3)
 /**< Operation is incomplete. */
-#define QAPI_FW_UPGRADE_ERR_INCOMPLETE                     __QAPI_ERROR(QAPI_MOD_FWUP, 4)
+#define QAPI_FW_UPGRADE_ERR_INCOMPLETE __QAPI_ERROR(QAPI_MOD_FWUP, 4)
 /**< Firmware upgrade session is inprogress. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_IN_PROGRESS            __QAPI_ERROR(QAPI_MOD_FWUP, 5)
+#define QAPI_FW_UPGRADE_ERR_SESSION_IN_PROGRESS __QAPI_ERROR(QAPI_MOD_FWUP, 5)
 /**< Firmware upgrade session is not started. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_NOT_START              __QAPI_ERROR(QAPI_MOD_FWUP, 6)
+#define QAPI_FW_UPGRADE_ERR_SESSION_NOT_START __QAPI_ERROR(QAPI_MOD_FWUP, 6)
 /**< Firmware upgrade session is not ready to enter the Suspend state. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_NOT_READY_FOR_SUSPEND  __QAPI_ERROR(QAPI_MOD_FWUP, 7)
+#define QAPI_FW_UPGRADE_ERR_SESSION_NOT_READY_FOR_SUSPEND __QAPI_ERROR(QAPI_MOD_FWUP, 7)
 /**< Firmware upgrade session is not in the Suspend state. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_NOT_SUSPEND            __QAPI_ERROR(QAPI_MOD_FWUP, 8)
+#define QAPI_FW_UPGRADE_ERR_SESSION_NOT_SUSPEND __QAPI_ERROR(QAPI_MOD_FWUP, 8)
 /**< Firmware upgrade session resume is not supported by the plugin. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_RESUME_NOT_SUPPORT     __QAPI_ERROR(QAPI_MOD_FWUP, 9)
- /**< Firmware upgrade session was cancelled. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_CANCELLED              __QAPI_ERROR(QAPI_MOD_FWUP, 10)
+#define QAPI_FW_UPGRADE_ERR_SESSION_RESUME_NOT_SUPPORT __QAPI_ERROR(QAPI_MOD_FWUP, 9)
+/**< Firmware upgrade session was cancelled. */
+#define QAPI_FW_UPGRADE_ERR_SESSION_CANCELLED __QAPI_ERROR(QAPI_MOD_FWUP, 10)
 /**< Firmware upgrade session was suspended. */
-#define QAPI_FW_UPGRADE_ERR_SESSION_SUSPEND                __QAPI_ERROR(QAPI_MOD_FWUP, 11)
+#define QAPI_FW_UPGRADE_ERR_SESSION_SUSPEND __QAPI_ERROR(QAPI_MOD_FWUP, 11)
 /**< Interface name is too long. */
-#define QAPI_FW_UPGRADE_ERR_INTERFACE_NAME_TOO_LONG        __QAPI_ERROR(QAPI_MOD_FWUP, 12)
+#define QAPI_FW_UPGRADE_ERR_INTERFACE_NAME_TOO_LONG __QAPI_ERROR(QAPI_MOD_FWUP, 12)
 /**< URL is too long. */
-#define QAPI_FW_UPGRADE_ERR_URL_TOO_LONG                   __QAPI_ERROR(QAPI_MOD_FWUP, 13)
+#define QAPI_FW_UPGRADE_ERR_URL_TOO_LONG __QAPI_ERROR(QAPI_MOD_FWUP, 13)
 /**< Not supported firmware upgrade. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_NOT_SUPPORT_FW_UPGRADE   __QAPI_ERROR(QAPI_MOD_FWUP, 14)
+#define QAPI_FW_UPGRADE_ERR_FLASH_NOT_SUPPORT_FW_UPGRADE __QAPI_ERROR(QAPI_MOD_FWUP, 14)
 /**< Flash initialization timeout. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_INIT_TIMEOUT             __QAPI_ERROR(QAPI_MOD_FWUP, 15)
+#define QAPI_FW_UPGRADE_ERR_FLASH_INIT_TIMEOUT __QAPI_ERROR(QAPI_MOD_FWUP, 15)
 /**< Flash read failure. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_READ_FAIL                __QAPI_ERROR(QAPI_MOD_FWUP, 16)
+#define QAPI_FW_UPGRADE_ERR_FLASH_READ_FAIL __QAPI_ERROR(QAPI_MOD_FWUP, 16)
 /**< Flash write failure. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_WRITE_FAIL               __QAPI_ERROR(QAPI_MOD_FWUP, 17)
+#define QAPI_FW_UPGRADE_ERR_FLASH_WRITE_FAIL __QAPI_ERROR(QAPI_MOD_FWUP, 17)
 /**< Flash erase failure. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_ERASE_FAIL               __QAPI_ERROR(QAPI_MOD_FWUP, 18)
+#define QAPI_FW_UPGRADE_ERR_FLASH_ERASE_FAIL __QAPI_ERROR(QAPI_MOD_FWUP, 18)
 /**< Not enough free space in flash. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_NOT_ENOUGH_SPACE         __QAPI_ERROR(QAPI_MOD_FWUP, 19)
+#define QAPI_FW_UPGRADE_ERR_FLASH_NOT_ENOUGH_SPACE __QAPI_ERROR(QAPI_MOD_FWUP, 19)
 /**< Partition creation failure. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_CREATE_PARTITION         __QAPI_ERROR(QAPI_MOD_FWUP, 20)
+#define QAPI_FW_UPGRADE_ERR_FLASH_CREATE_PARTITION __QAPI_ERROR(QAPI_MOD_FWUP, 20)
 /**< Partition image was not found. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_IMAGE_NOT_FOUND          __QAPI_ERROR(QAPI_MOD_FWUP, 21)
+#define QAPI_FW_UPGRADE_ERR_FLASH_IMAGE_NOT_FOUND __QAPI_ERROR(QAPI_MOD_FWUP, 21)
 /**< Partition erase failure. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_ERASE_PARTITION          __QAPI_ERROR(QAPI_MOD_FWUP, 22)
+#define QAPI_FW_UPGRADE_ERR_FLASH_ERASE_PARTITION __QAPI_ERROR(QAPI_MOD_FWUP, 22)
 /**< Partition write failure. */
-#define QAPI_FW_UPGRADE_ERR_FLASH_WRITE_PARTITION          __QAPI_ERROR(QAPI_MOD_FWUP, 23)
+#define QAPI_FW_UPGRADE_ERR_FLASH_WRITE_PARTITION __QAPI_ERROR(QAPI_MOD_FWUP, 23)
 /**< NULL partition. */
-#define QAPI_FW_UPGRADE_ERR_GET_PARTITION_NULL             __QAPI_ERROR(QAPI_MOD_FWUP, 24)
+#define QAPI_FW_UPGRADE_ERR_GET_PARTITION_NULL __QAPI_ERROR(QAPI_MOD_FWUP, 24)
 /**< Reach max image entry. */
-#define QAPI_FW_UPGRADE_ERR_REACH_MAX_IMAGE_ENTRY          __QAPI_ERROR(QAPI_MOD_FWUP, 25)
+#define QAPI_FW_UPGRADE_ERR_REACH_MAX_IMAGE_ENTRY __QAPI_ERROR(QAPI_MOD_FWUP, 25)
 /**< Image Entry is not used */
-#define QAPI_FW_UPGRADE_ERR_IMAGE_UNUSED                   __QAPI_ERROR(QAPI_MOD_FWUP, 26)
+#define QAPI_FW_UPGRADE_ERR_IMAGE_UNUSED __QAPI_ERROR(QAPI_MOD_FWUP, 26)
 /**< Image not found failure. */
-#define QAPI_FW_UPGRADE_ERR_IMAGE_NOT_FOUND                __QAPI_ERROR(QAPI_MOD_FWUP, 27)
+#define QAPI_FW_UPGRADE_ERR_IMAGE_NOT_FOUND __QAPI_ERROR(QAPI_MOD_FWUP, 27)
 /**< Image download failure. */
-#define QAPI_FW_UPGRADE_ERR_IMAGE_DOWNLOAD_FAIL            __QAPI_ERROR(QAPI_MOD_FWUP, 28)
+#define QAPI_FW_UPGRADE_ERR_IMAGE_DOWNLOAD_FAIL __QAPI_ERROR(QAPI_MOD_FWUP, 28)
 /**< Incorrect image checksum failure. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_CHECKSUM       __QAPI_ERROR(QAPI_MOD_FWUP, 29)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_CHECKSUM __QAPI_ERROR(QAPI_MOD_FWUP, 29)
 /**< Server communication timeout. */
-#define QAPI_FW_UPGRADE_ERR_SERVER_RSP_TIMEOUT             __QAPI_ERROR(QAPI_MOD_FWUP, 30)
+#define QAPI_FW_UPGRADE_ERR_SERVER_RSP_TIMEOUT __QAPI_ERROR(QAPI_MOD_FWUP, 30)
 /**< Image file name is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INVALID_FILENAME               __QAPI_ERROR(QAPI_MOD_FWUP, 31)
+#define QAPI_FW_UPGRADE_ERR_INVALID_FILENAME __QAPI_ERROR(QAPI_MOD_FWUP, 31)
 /**< Firmware upgrade image header is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_HDR            __QAPI_ERROR(QAPI_MOD_FWUP, 32)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_HDR __QAPI_ERROR(QAPI_MOD_FWUP, 32)
 /**< Not enough memory. */
-#define QAPI_FW_UPGRADE_ERR_INSUFFICIENT_MEMORY            __QAPI_ERROR(QAPI_MOD_FWUP, 33)
+#define QAPI_FW_UPGRADE_ERR_INSUFFICIENT_MEMORY __QAPI_ERROR(QAPI_MOD_FWUP, 33)
 /**< Firmware upgrade image signature is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_SIGNATURE            __QAPI_ERROR(QAPI_MOD_FWUP, 34)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_SIGNATURE __QAPI_ERROR(QAPI_MOD_FWUP, 34)
 /**< Firmware upgrade image version is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRCT_VERSION               __QAPI_ERROR(QAPI_MOD_FWUP, 35)
+#define QAPI_FW_UPGRADE_ERR_INCORRCT_VERSION __QAPI_ERROR(QAPI_MOD_FWUP, 35)
 /**< Firmware upgrade image number of images is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_NUM_IMAGES           __QAPI_ERROR(QAPI_MOD_FWUP, 36)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_NUM_IMAGES __QAPI_ERROR(QAPI_MOD_FWUP, 36)
 /**< Firmware upgrade image length is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_LENGTH         __QAPI_ERROR(QAPI_MOD_FWUP, 37)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_LENGTH __QAPI_ERROR(QAPI_MOD_FWUP, 37)
 /**< Firmware upgrade image hash type is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_HASH_TYPE            __QAPI_ERROR(QAPI_MOD_FWUP, 38)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_HASH_TYPE __QAPI_ERROR(QAPI_MOD_FWUP, 38)
 /**< Firmware upgrade image ID is invalid. */
-#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_ID             __QAPI_ERROR(QAPI_MOD_FWUP, 39)
+#define QAPI_FW_UPGRADE_ERR_INCORRECT_IMAGE_ID __QAPI_ERROR(QAPI_MOD_FWUP, 39)
 /**< SBL upgrade only is not supported. */
-#define QAPI_FW_UPGRADE_ERR_SBL_ONLY_NOT_SUPPORT           __QAPI_ERROR(QAPI_MOD_FWUP, 40)
+#define QAPI_FW_UPGRADE_ERR_SBL_ONLY_NOT_SUPPORT __QAPI_ERROR(QAPI_MOD_FWUP, 40)
 /**< SBL upgrade not supported. */
-#define QAPI_FW_UPGRADE_ERR_SBL_NOT_SUPPORT_UPGRADE        __QAPI_ERROR(QAPI_MOD_FWUP, 41)
+#define QAPI_FW_UPGRADE_ERR_SBL_NOT_SUPPORT_UPGRADE __QAPI_ERROR(QAPI_MOD_FWUP, 41)
 /**< No enough memory for SBL upgrade. */
-#define QAPI_FW_UPGRADE_ERR_SBL_NOT_ENOUGH_SPACE           __QAPI_ERROR(QAPI_MOD_FWUP, 42)
+#define QAPI_FW_UPGRADE_ERR_SBL_NOT_ENOUGH_SPACE __QAPI_ERROR(QAPI_MOD_FWUP, 42)
 /**< Invalid FDT. */
-#define QAPI_FW_UPGRADE_ERR_INVALID_FDT                    __QAPI_ERROR(QAPI_MOD_FWUP, 43)
+#define QAPI_FW_UPGRADE_ERR_INVALID_FDT __QAPI_ERROR(QAPI_MOD_FWUP, 43)
 /**< Battery level is too low. */
-#define QAPI_FW_UPGRADE_ERR_BATTERY_LEVEL_TOO_LOW          __QAPI_ERROR(QAPI_MOD_FWUP, 44)
+#define QAPI_FW_UPGRADE_ERR_BATTERY_LEVEL_TOO_LOW __QAPI_ERROR(QAPI_MOD_FWUP, 44)
 /**< Crypto check failure. */
-#define QAPI_FW_UPGRADE_ERR_CRYPTO_FAIL                    __QAPI_ERROR(QAPI_MOD_FWUP, 45)
+#define QAPI_FW_UPGRADE_ERR_CRYPTO_FAIL __QAPI_ERROR(QAPI_MOD_FWUP, 45)
 /**< Firmware upgrade plugin callback is empty. */
-#define QAPI_FW_UPGRADE_ERR_PLUGIN_ENTRY_EMPTY             __QAPI_ERROR(QAPI_MOD_FWUP, 46)
+#define QAPI_FW_UPGRADE_ERR_PLUGIN_ENTRY_EMPTY __QAPI_ERROR(QAPI_MOD_FWUP, 46)
 /**< Trial image is running */
-#define QAPI_FW_UPGRADE_ERR_TRIAL_IS_RUNNING               __QAPI_ERROR(QAPI_MOD_FWUP, 47)
+#define QAPI_FW_UPGRADE_ERR_TRIAL_IS_RUNNING __QAPI_ERROR(QAPI_MOD_FWUP, 47)
 /**< File was not found. */
-#define QAPI_FW_UPGRADE_ERR_FILE_NOT_FOUND                 __QAPI_ERROR(QAPI_MOD_FWUP, 48)
+#define QAPI_FW_UPGRADE_ERR_FILE_NOT_FOUND __QAPI_ERROR(QAPI_MOD_FWUP, 48)
 /**< Open file failure. */
-#define QAPI_FW_UPGRADE_ERR_FILE_OPEN_ERROR                __QAPI_ERROR(QAPI_MOD_FWUP, 49)
+#define QAPI_FW_UPGRADE_ERR_FILE_OPEN_ERROR __QAPI_ERROR(QAPI_MOD_FWUP, 49)
 /**< File name is too long. */
-#define QAPI_FW_UPGRADE_ERR_FILE_NAME_TOO_LONG             __QAPI_ERROR(QAPI_MOD_FWUP, 50)
+#define QAPI_FW_UPGRADE_ERR_FILE_NAME_TOO_LONG __QAPI_ERROR(QAPI_MOD_FWUP, 50)
 /**< Write file failure. */
-#define QAPI_FW_UPGRADE_ERR_FILE_WRITE_ERROR               __QAPI_ERROR(QAPI_MOD_FWUP, 51)
+#define QAPI_FW_UPGRADE_ERR_FILE_WRITE_ERROR __QAPI_ERROR(QAPI_MOD_FWUP, 51)
 /**< Mount file system failure. */
-#define QAPI_FW_UPGRADE_ERR_MOUNT_FILE_SYSTEM_ERROR        __QAPI_ERROR(QAPI_MOD_FWUP, 52)
+#define QAPI_FW_UPGRADE_ERR_MOUNT_FILE_SYSTEM_ERROR __QAPI_ERROR(QAPI_MOD_FWUP, 52)
 /**< Firmware upgrade create thread failure. */
-#define QAPI_FW_UPGRADE_ERR_CREATE_THREAD_ERROR            __QAPI_ERROR(QAPI_MOD_FWUP, 53)
-#define QAPI_FW_UPGRADE_ERR_PRESERVE_LAST_FAILED           __QAPI_ERROR(QAPI_MOD_FWUP, 54)
+#define QAPI_FW_UPGRADE_ERR_CREATE_THREAD_ERROR __QAPI_ERROR(QAPI_MOD_FWUP, 53)
+#define QAPI_FW_UPGRADE_ERR_PRESERVE_LAST_FAILED __QAPI_ERROR(QAPI_MOD_FWUP, 54)
 /** @} */
 
 /*----------------------------------------------------------------------------------
@@ -187,8 +187,8 @@ typedef enum qapi_Fw_Upgrade_State {
     QAPI_FW_UPGRADE_STATE_PROCESS_IMAGE_E,       /**< Process the image. */
     QAPI_FW_UPGRADE_STATE_DUPLICATE_IMAGES_E,    /**< Duplicate the images from the current FWD. */
     QAPI_FW_UPGRADE_STATE_DUPLICATE_FS_E,        /**< Duplicate the file system. */
-	QAPI_FW_UPGRADE_STATE_FINISH_E,              /**< Firmware upgrade is done. */
-} /** @cond */ qapi_Fw_Upgrade_State_t           /** @endcond */;
+    QAPI_FW_UPGRADE_STATE_FINISH_E,              /**< Firmware upgrade is done. */
+} /** @cond */ qapi_Fw_Upgrade_State_t /** @endcond */;
 
 /**
  *  Defines an opaque Firmware Partition Handle type.
@@ -223,7 +223,7 @@ typedef void (*qapi_Fw_Upgrade_CB_t)(int32_t state, int32_t status);
  * @return
  * Status QAPI_OK or error code #QAPI_FW_UPGRADE_ERR_XXX.
  */
-typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Init_t)(const char* interface_Name, const char *url, void *init_Param);
+typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Init_t)(const char *interface_Name, const char *url, void *init_Param);
 
 /**
  * Declaration of a callback function called by the firmware upgrade state machine on upgrade completion.
@@ -249,7 +249,8 @@ typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Fin_t)(void);
  * @return
  * Status QAPI_OK or error code #QAPI_FW_UPGRADE_ERR_XXX.
  */
-typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Recv_Data_t)(uint8_t *buffer, uint32_t buf_len, uint32_t *ret_size, void *init_Param);
+typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Recv_Data_t)(uint8_t *buffer, uint32_t buf_len, uint32_t *ret_size,
+                                                            void *init_Param);
 
 /**
  * Declaration of a callback function called by the firmware upgrade state machine to abort a plugin operation.
@@ -273,7 +274,8 @@ typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Abort_t)(void);
  * @return
  * Status QAPI_OK or error code #QAPI_FW_UPGRADE_ERR_XXX.
  */
-typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Resume_t)(const char* interface_name, const char *url, const uint32_t offset);
+typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Resume_t)(const char *interface_name, const char *url,
+                                                         const uint32_t offset);
 
 /**
  * Represents a set of firmware upgrade plugin callbacks.
@@ -283,15 +285,15 @@ typedef qapi_Status_t (*qapi_Fw_Upgrade_Plugin_Resume_t)(const char* interface_n
  * these firmware upgrade plugin callbacks during different stages of an upgrade.
  */
 typedef struct {
-    qapi_Fw_Upgrade_Plugin_Init_t      fw_Upgrade_Plugin_Init;
+    qapi_Fw_Upgrade_Plugin_Init_t fw_Upgrade_Plugin_Init;
     /**< Callback to initialize a firmware upgrade. */
     qapi_Fw_Upgrade_Plugin_Recv_Data_t fw_Upgrade_Plugin_Recv_Data;
     /**< Callback to retrieve data. */
-    qapi_Fw_Upgrade_Plugin_Abort_t     fw_Upgrade_Plugin_Abort;
+    qapi_Fw_Upgrade_Plugin_Abort_t fw_Upgrade_Plugin_Abort;
     /**< Firmware upgrade plugin abort callback. */
-    qapi_Fw_Upgrade_Plugin_Resume_t    fw_Upgrade_Plugin_Resume;
+    qapi_Fw_Upgrade_Plugin_Resume_t fw_Upgrade_Plugin_Resume;
     /**< Firmware upgrade plugin resume callback. */
-    qapi_Fw_Upgrade_Plugin_Fin_t       fw_Upgrade_Plugin_Fin;
+    qapi_Fw_Upgrade_Plugin_Fin_t fw_Upgrade_Plugin_Fin;
     /**< Firmware upgrade plugin finish callback. */
 } qapi_Fw_Upgrade_Plugin_t;
 
@@ -325,7 +327,8 @@ typedef struct {
  *
  * @param[in] cfg_File      Image file information for a firmware upgrade.
  *
- * @param[in] flags         Flags with bits defined for a firmware upgrade. See the qapi_Fw_Upgrade flag for a definition.
+ * @param[in] flags         Flags with bits defined for a firmware upgrade. See the qapi_Fw_Upgrade flag for a
+ * definition.
  *
  * @param[in] cb            Optional callback function called by firmware upgrade engine to provide status information.
  *
@@ -335,7 +338,8 @@ typedef struct {
  * On success, QAPI_OK is returned. \n
  * On error, error code #QAPI_FW_UPGRADE_ERR_XXX is returned.
  */
-qapi_Status_t qapi_Fw_Upgrade(char *interface_Name, qapi_Fw_Upgrade_Plugin_t *plugin, char *url, char *cfg_File, uint32_t flags, qapi_Fw_Upgrade_CB_t cb, void *init_Param );
+qapi_Status_t qapi_Fw_Upgrade(char *interface_Name, qapi_Fw_Upgrade_Plugin_t *plugin, char *url, char *cfg_File,
+                              uint32_t flags, qapi_Fw_Upgrade_CB_t cb, void *init_Param);
 
 /**
  * @brief Cancels a firmware upgrade session.
@@ -606,7 +610,8 @@ qapi_Status_t qapi_Fw_Upgrade_Get_Partition_Size(qapi_Part_Hdl_t hdl, uint32_t *
 
  * @detdesc
  * Setting the size of an APP or SBL image is not allowed. Set size to non-zero value is not allowed.
- * Calling this function repeatedly will cause frequent flash writing, which reduces the life of flash (not recommended).
+ * Calling this function repeatedly will cause frequent flash writing, which reduces the life of flash (not
+ recommended).
  *
  * @return
  * On success, QAPI_OK is returned. \n
@@ -701,7 +706,8 @@ qapi_Status_t qapi_Fw_Upgrade_Write_Partition(qapi_Part_Hdl_t hdl, uint32_t offs
  * On success, QAPI_OK is returned. \n
  * On error, error code #QAPI_FW_UPGRADE_ERR_XXX is returned.
  */
-qapi_Status_t qapi_Fw_Upgrade_Read_Partition(qapi_Part_Hdl_t hdl, uint32_t offset, char *buf, uint32_t max_bytes, uint32_t *nbytes);
+qapi_Status_t qapi_Fw_Upgrade_Read_Partition(qapi_Part_Hdl_t hdl, uint32_t offset, char *buf, uint32_t max_bytes,
+                                             uint32_t *nbytes);
 
 /** @} */ /* end_addtogroup qapi_Fw_Upgrade */
-#endif /* _QAPI_FIRMWARE_UPGRADE_H_ */
+#endif    /* _QAPI_FIRMWARE_UPGRADE_H_ */

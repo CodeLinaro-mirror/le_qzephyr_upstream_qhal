@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 /** @file qapi_flash.h
    @brief Flash Services Interface definition.
 
@@ -43,14 +43,14 @@
 /** @addtogroup qapi_peripherals_flash
 @{ */
 
-#define QAPI_FLASH_DEVICE_FAIL                __QAPI_ERROR(QAPI_MOD_FLASH, 1) /**< Operation failed */
-#define QAPI_FLASH_DEVICE_NOT_SUPPORTED       __QAPI_ERROR(QAPI_MOD_FLASH, 2) /**< Device/operation not supported */
-#define QAPI_FLASH_DEVICE_INVALID_PARAMETER   __QAPI_ERROR(QAPI_MOD_FLASH, 3) /**< API parameters invalid */
-#define QAPI_FLASH_DEVICE_IMAGE_NOT_FOUND     __QAPI_ERROR(QAPI_MOD_FLASH, 4) /**< FW Image ID not found */
-#define QAPI_FLASH_DEVICE_NOT_FOUND           __QAPI_ERROR(QAPI_MOD_FLASH, 5) /**< Device not found on supported device list */
-#define QAPI_FLASH_DEVICE_PENDING             __QAPI_ERROR(QAPI_MOD_FLASH, 6) /** Flash non-blocking operation is ongoing. */
-#define QAPI_FLASH_DEVICE_NO_MEMORY           __QAPI_ERROR(QAPI_MOD_FLASH, 7) /**alloc memory failed */
-#define QAPI_FLASH_DEVICE_BUSY                __QAPI_ERROR(QAPI_MOD_FLASH, 8) /** flash device busy */
+#define QAPI_FLASH_DEVICE_FAIL __QAPI_ERROR(QAPI_MOD_FLASH, 1)              /**< Operation failed */
+#define QAPI_FLASH_DEVICE_NOT_SUPPORTED __QAPI_ERROR(QAPI_MOD_FLASH, 2)     /**< Device/operation not supported */
+#define QAPI_FLASH_DEVICE_INVALID_PARAMETER __QAPI_ERROR(QAPI_MOD_FLASH, 3) /**< API parameters invalid */
+#define QAPI_FLASH_DEVICE_IMAGE_NOT_FOUND __QAPI_ERROR(QAPI_MOD_FLASH, 4)   /**< FW Image ID not found */
+#define QAPI_FLASH_DEVICE_NOT_FOUND __QAPI_ERROR(QAPI_MOD_FLASH, 5) /**< Device not found on supported device list */
+#define QAPI_FLASH_DEVICE_PENDING __QAPI_ERROR(QAPI_MOD_FLASH, 6)   /** Flash non-blocking operation is ongoing. */
+#define QAPI_FLASH_DEVICE_NO_MEMORY __QAPI_ERROR(QAPI_MOD_FLASH, 7) /**alloc memory failed */
+#define QAPI_FLASH_DEVICE_BUSY __QAPI_ERROR(QAPI_MOD_FLASH, 8)      /** flash device busy */
 
 /*-------------------------------------------------------------------------
  * Type Declarations
@@ -59,8 +59,7 @@
 /**
    Enumeration of flash erase types.
 */
-typedef enum
-{
+typedef enum {
     QAPI_FLASH_BLOCK_ERASE_E, /**< Block erase. Block size is 4KB. */
     QAPI_FLASH_BULK_ERASE_E,  /**< Bulk erase. Bulk size is n*4Kb, for
                                    example 32Kb, 64Kb, and so on.
@@ -69,13 +68,12 @@ typedef enum
 } qapi_FLASH_Erase_Type_t;
 
 /** Flash client device data, should be same with drv_flash_info_t */
-typedef struct flash_info_s
-{
-  uint32_t  devicd_id;                     /**< Capacity ID + Memory Type ID + Manufacturer ID */
-  uint32_t  block_count;                  /**< Number of total blocks for this partition/image */
-  uint16_t  block_size_bytes;              /**< block size in bytes */
-  uint16_t  page_size_bytes;              /**< Page size in bytes */
-}flash_info_t;
+typedef struct flash_info_s {
+    uint32_t devicd_id;        /**< Capacity ID + Memory Type ID + Manufacturer ID */
+    uint32_t block_count;      /**< Number of total blocks for this partition/image */
+    uint16_t block_size_bytes; /**< block size in bytes */
+    uint16_t page_size_bytes;  /**< Page size in bytes */
+} flash_info_t;
 
 /*-------------------------------------------------------------------------
  * Function Declarations
@@ -151,4 +149,3 @@ qapi_Status_t qapi_Flash_Get_Info(flash_info_t *flash_info);
 /** @} */ /* end_addtogroup qapi_peripherals_flash */
 
 #endif
-

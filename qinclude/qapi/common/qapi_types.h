@@ -23,12 +23,11 @@
 typedef uint32_t qbool_t;
 
 #ifndef false
-   #define false     (0)
+#define false (0)
 #endif
 
 #ifndef true
-   #define true      (1)
+#define true (1)
 #endif
 
 #endif // ] #ifndef __QAPI_TYPES_H__
-

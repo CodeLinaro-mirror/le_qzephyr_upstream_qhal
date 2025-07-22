@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  * SPDX-License-Identifier: BSD-3-Clause*/
+ * SPDX-License-Identifier: BSD-3-Clause*/
 
 /** @file qapi_i2c.h
    @brief Inter-Integrated Circuit (I²C).
@@ -42,41 +42,47 @@
  *-----------------------------------------------------------------------*/
 
 /** Error codes returned by the I²C Master controller API */
-#define QAPI_I2CM_ERROR                                          __QAPI_ERROR(QAPI_MOD_I2C, 1)   /**< Common error */
-#define QAPI_I2CM_ERROR_INVALID_PARAM                            __QAPI_ERROR(QAPI_MOD_I2C, 2)   /**< Invalid input parameters. */
-#define QAPI_I2CM_ERROR_MEM_ALLOC                                __QAPI_ERROR(QAPI_MOD_I2C, 3)   /**< Alloc memory failed. */
-#define QAPI_I2CM_ERROR_TRANSFER_BUSY                            __QAPI_ERROR(QAPI_MOD_I2C, 4)   /**< Transaction busy. */
-#define QAPI_I2CM_ERROR_TRANSFER_TIMEOUT                         __QAPI_ERROR(QAPI_MOD_I2C, 5)   /**< Transaction timeout in blocking mode. */
-#define QAPI_I2CM_ERROR_INPUT_FIFO_UNDER_RUN                     __QAPI_ERROR(QAPI_MOD_I2C, 6)   /**< Software reads from an empty Rx FIFO. */
-#define QAPI_I2CM_ERROR_INPUT_FIFO_OVER_RUN                      __QAPI_ERROR(QAPI_MOD_I2C, 7)   /**< Hardware writes to a full Rx FIFO. */
-#define QAPI_I2CM_ERROR_OUTPUT_FIFO_UNDER_RUN                    __QAPI_ERROR(QAPI_MOD_I2C, 8)   /**< Software reads a new word from an empty Tx FIFO. */
-#define QAPI_I2CM_ERROR_OUTPUT_FIFO_OVER_RUN                     __QAPI_ERROR(QAPI_MOD_I2C, 9)   /**< Software writes a new word to a full Tx FIFO. */
-#define QAPI_I2CM_ERROR_COMMAND_OVER_RUN                         __QAPI_ERROR(QAPI_MOD_I2C, 10)  /**< A new command is initialized before the previous one is complete. */
-#define QAPI_I2CM_ERROR_TRANSFER_FORCE_TERMINATED                __QAPI_ERROR(QAPI_MOD_I2C, 11)  /**< Command abort, or cancel request by software. */
-#define QAPI_I2CM_ERROR_COMMAND_ILLEGAL                          __QAPI_ERROR(QAPI_MOD_I2C, 12)  /**< Command with an illegal opcode. */
-#define QAPI_I2CM_ERROR_COMMAND_FAIL                             __QAPI_ERROR(QAPI_MOD_I2C, 13)  /**< Command execution has been completed with a failure. */
-#define QAPI_I2CM_ERROR_BUS_CLK_ENABLE_FAIL                      __QAPI_ERROR(QAPI_MOD_I2C, 14)  /**< Setting the clock failed. */
-#define QAPI_I2CM_ERROR_BUS_GPIO_ENABLE_FAIL                     __QAPI_ERROR(QAPI_MOD_I2C, 15)  /**< Setting the GPIO failed. */
-#define QAPI_I2CM_ERROR_DMA_TX_BUS_ERROR                         __QAPI_ERROR(QAPI_MOD_I2C, 16)  /**< Bus error during DMA Tx transaction. */
-#define QAPI_I2CM_ERROR_DMA_RX_BUS_ERROR                         __QAPI_ERROR(QAPI_MOD_I2C, 17)  /**< Bus error during DMA Rx transaction. */
-#define QAPI_I2CM_DMA_TX_RESET_DONE                              __QAPI_ERROR(QAPI_MOD_I2C, 18)  /**< DMA TX reset done. */
-#define QAPI_I2CM_DMA_RX_RESET_DONE                              __QAPI_ERROR(QAPI_MOD_I2C, 19)  /**< DMA RX reset done. */
-#define QAPI_I2CM_CANCEL_TRANSFER_COMPLETED                      __QAPI_ERROR(QAPI_MOD_I2C, 20)  /**< Transfer complete when canceled. */
-#define QAPI_I2CM_CANCEL_TRANSFER_INVALID                        __QAPI_ERROR(QAPI_MOD_I2C, 21)  /**< No transfer to be canceled.  */
-#define QAPI_I2CM_ERROR_CANCEL_TRANSFER_FAIL					 __QAPI_ERROR(QAPI_MOD_I2C, 22)  /**< Transfer cancel failed */
-#define QAPI_I2CM_ERROR_BOOTSTRAP_CFG_FAIL						 __QAPI_ERROR(QAPI_MOD_I2C, 23)	 /**< Configure bootstrap for I2C module failed */
-#define	QAPI_I2CM_ERROR_DEVICE_STATE							 __QAPI_ERROR(QAPI_MOD_I2C, 24)	 /**< I2C instance device state error */
-#define	QAPI_I2CM_ERROR_INIT_XFR								 __QAPI_ERROR(QAPI_MOD_I2C, 25)	 /**< I2C initilize tranfer failed */
-#define	QAPI_I2CM_ERROR_IC_COMP									 __QAPI_ERROR(QAPI_MOD_I2C, 26)  /**< I2C component type error */
-#define	QAPI_I2CM_ERROR_TX_ABORT_INTR							 __QAPI_ERRPR(QAPI_MOD_I2C, 27)  /**< I2C received tx abort intrruption */
-
+#define QAPI_I2CM_ERROR __QAPI_ERROR(QAPI_MOD_I2C, 1)                  /**< Common error */
+#define QAPI_I2CM_ERROR_INVALID_PARAM __QAPI_ERROR(QAPI_MOD_I2C, 2)    /**< Invalid input parameters. */
+#define QAPI_I2CM_ERROR_MEM_ALLOC __QAPI_ERROR(QAPI_MOD_I2C, 3)        /**< Alloc memory failed. */
+#define QAPI_I2CM_ERROR_TRANSFER_BUSY __QAPI_ERROR(QAPI_MOD_I2C, 4)    /**< Transaction busy. */
+#define QAPI_I2CM_ERROR_TRANSFER_TIMEOUT __QAPI_ERROR(QAPI_MOD_I2C, 5) /**< Transaction timeout in blocking mode. */
+#define QAPI_I2CM_ERROR_INPUT_FIFO_UNDER_RUN                                                                           \
+    __QAPI_ERROR(QAPI_MOD_I2C, 6)                                         /**< Software reads from an empty Rx FIFO.   \
+                                                                           */
+#define QAPI_I2CM_ERROR_INPUT_FIFO_OVER_RUN __QAPI_ERROR(QAPI_MOD_I2C, 7) /**< Hardware writes to a full Rx FIFO. */
+#define QAPI_I2CM_ERROR_OUTPUT_FIFO_UNDER_RUN                                                                          \
+    __QAPI_ERROR(QAPI_MOD_I2C, 8) /**< Software reads a new word from an empty Tx FIFO. */
+#define QAPI_I2CM_ERROR_OUTPUT_FIFO_OVER_RUN                                                                           \
+    __QAPI_ERROR(QAPI_MOD_I2C, 9) /**< Software writes a new word to a full Tx FIFO. */
+#define QAPI_I2CM_ERROR_COMMAND_OVER_RUN                                                                               \
+    __QAPI_ERROR(QAPI_MOD_I2C, 10) /**< A new command is initialized before the previous one is complete. */
+#define QAPI_I2CM_ERROR_TRANSFER_FORCE_TERMINATED                                                                      \
+    __QAPI_ERROR(QAPI_MOD_I2C, 11) /**< Command abort, or cancel request by software. */
+#define QAPI_I2CM_ERROR_COMMAND_ILLEGAL __QAPI_ERROR(QAPI_MOD_I2C, 12) /**< Command with an illegal opcode. */
+#define QAPI_I2CM_ERROR_COMMAND_FAIL                                                                                   \
+    __QAPI_ERROR(QAPI_MOD_I2C, 13) /**< Command execution has been completed with a failure. */
+#define QAPI_I2CM_ERROR_BUS_CLK_ENABLE_FAIL __QAPI_ERROR(QAPI_MOD_I2C, 14)  /**< Setting the clock failed. */
+#define QAPI_I2CM_ERROR_BUS_GPIO_ENABLE_FAIL __QAPI_ERROR(QAPI_MOD_I2C, 15) /**< Setting the GPIO failed. */
+#define QAPI_I2CM_ERROR_DMA_TX_BUS_ERROR __QAPI_ERROR(QAPI_MOD_I2C, 16)     /**< Bus error during DMA Tx transaction. */
+#define QAPI_I2CM_ERROR_DMA_RX_BUS_ERROR __QAPI_ERROR(QAPI_MOD_I2C, 17)     /**< Bus error during DMA Rx transaction. */
+#define QAPI_I2CM_DMA_TX_RESET_DONE __QAPI_ERROR(QAPI_MOD_I2C, 18)          /**< DMA TX reset done. */
+#define QAPI_I2CM_DMA_RX_RESET_DONE __QAPI_ERROR(QAPI_MOD_I2C, 19)          /**< DMA RX reset done. */
+#define QAPI_I2CM_CANCEL_TRANSFER_COMPLETED __QAPI_ERROR(QAPI_MOD_I2C, 20)  /**< Transfer complete when canceled. */
+#define QAPI_I2CM_CANCEL_TRANSFER_INVALID __QAPI_ERROR(QAPI_MOD_I2C, 21)    /**< No transfer to be canceled.  */
+#define QAPI_I2CM_ERROR_CANCEL_TRANSFER_FAIL __QAPI_ERROR(QAPI_MOD_I2C, 22) /**< Transfer cancel failed */
+#define QAPI_I2CM_ERROR_BOOTSTRAP_CFG_FAIL                                                                             \
+    __QAPI_ERROR(QAPI_MOD_I2C, 23)                                   /**< Configure bootstrap for I2C module failed */
+#define QAPI_I2CM_ERROR_DEVICE_STATE __QAPI_ERROR(QAPI_MOD_I2C, 24)  /**< I2C instance device state error */
+#define QAPI_I2CM_ERROR_INIT_XFR __QAPI_ERROR(QAPI_MOD_I2C, 25)      /**< I2C initilize tranfer failed */
+#define QAPI_I2CM_ERROR_IC_COMP __QAPI_ERROR(QAPI_MOD_I2C, 26)       /**< I2C component type error */
+#define QAPI_I2CM_ERROR_TX_ABORT_INTR __QAPI_ERRPR(QAPI_MOD_I2C, 27) /**< I2C received tx abort intrruption */
 
 /** I²C transfer flags */
-#define QAPI_I2C_FLAG_START                                      0x00000001  /**< Specifies that the transfer begins with a START bit - S. */
-#define QAPI_I2C_FLAG_STOP                                       0x00000002  /**< Specifies that the transfer ends with a STOP bit - P. */
-#define QAPI_I2C_FLAG_WRITE                                      0x00000004  /**< Must be set to indicate a WRITE transfer. */
-#define QAPI_I2C_FLAG_READ                                       0x00000008  /**< Must be set to indicate a READ transfer. */
-
+#define QAPI_I2C_FLAG_START 0x00000001 /**< Specifies that the transfer begins with a START bit - S. */
+#define QAPI_I2C_FLAG_STOP 0x00000002  /**< Specifies that the transfer ends with a STOP bit - P. */
+#define QAPI_I2C_FLAG_WRITE 0x00000004 /**< Must be set to indicate a WRITE transfer. */
+#define QAPI_I2C_FLAG_READ 0x00000008  /**< Must be set to indicate a READ transfer. */
 
 /*-------------------------------------------------------------------------
  * Type Declarations
@@ -84,37 +90,33 @@
 
 /** Instance of the I²C Master core that the client wants to use. This instance
     is passed in qapi_I2CM_Open(). */
-typedef enum
-{
-    QAPI_I2C_INSTANCE_SE0_E,  /**< GENI I²C controller 0. */
-	QAPI_I2C_INSTANCE_NUM,
+typedef enum {
+    QAPI_I2C_INSTANCE_SE0_E, /**< GENI I²C controller 0. */
+    QAPI_I2C_INSTANCE_NUM,
 } qapi_I2CM_Instance_t;
 
 /** I²C Master configuration parameters. */
-typedef struct qapi_I2CM_Config_s
-{
-    qbool_t Blocking;  /**< 1: Blocking mode, 0: Nonblocking mode. */
-    qbool_t Dma;       /**< TRUE: DMA, FALSE: FIFO. */
+typedef struct qapi_I2CM_Config_s {
+    qbool_t Blocking; /**< 1: Blocking mode, 0: Nonblocking mode. */
+    qbool_t Dma;      /**< TRUE: DMA, FALSE: FIFO. */
 } qapi_I2CM_Config_t;
 
 /** I²C Master client configuration parameters that the client uses to communicate
   to an I²C slave. */
-typedef struct qapi_I2CM_Transfer_Config_s
-{
-    uint32_t BusFreqKHz;              /**< I²C Master bus speed in kHz. */
-    uint32_t SlaveAddress;            /**< 7-bit I²C slave address. */
-    uint32_t SlaveMaxClockStretchUs;  /**< Maximum slave clock stretch in µs.*/
-    uint32_t Delay;                   /**< Delay before the start and at the end of a command. Recommended 0.*/
-    uint32_t NoiseReject;             /**< Noise reject. Recommended 0. */
+typedef struct qapi_I2CM_Transfer_Config_s {
+    uint32_t BusFreqKHz;             /**< I²C Master bus speed in kHz. */
+    uint32_t SlaveAddress;           /**< 7-bit I²C slave address. */
+    uint32_t SlaveMaxClockStretchUs; /**< Maximum slave clock stretch in µs.*/
+    uint32_t Delay;                  /**< Delay before the start and at the end of a command. Recommended 0.*/
+    uint32_t NoiseReject;            /**< Noise reject. Recommended 0. */
 } qapi_I2CM_Transfer_Config_t;
 
 /** I²C Master transfer descriptor. */
-typedef struct qapi_I2CM_Descriptor_s
-{
-    uint8_t  *Buffer;      /**< Buffer for the data transfer. */
-    uint32_t Length;       /**< Length of the data to be transferred in bytes. */
-    uint32_t Transferred;  /**< Number of bytes transferred. */
-    uint32_t Flags;        /**< I²C Master flags for the transfer. */
+typedef struct qapi_I2CM_Descriptor_s {
+    uint8_t *Buffer;      /**< Buffer for the data transfer. */
+    uint32_t Length;      /**< Length of the data to be transferred in bytes. */
+    uint32_t Transferred; /**< Number of bytes transferred. */
+    uint32_t Flags;       /**< I²C Master flags for the transfer. */
 } qapi_I2CM_Descriptor_t;
 
 /**
@@ -218,7 +220,9 @@ qapi_Status_t qapi_I2CM_Close(qapi_I2CM_Instance_t Instance);
    QAPI_I2CM_ERROR_OUTPUT_FIFO_OVER_RUN -- Software writes a new word to a full Tx FIFO.\n
    QAPI_I2CM_ERROR_TRANSFER_FORCE_TERMINATED -- Transfer abort or cancel request by software.\n
 */
-qapi_Status_t qapi_I2CM_Transfer(qapi_I2CM_Instance_t Instance, qapi_I2CM_Transfer_Config_t *Config, qapi_I2CM_Descriptor_t *Desc, uint32_t NumDesc, qapi_I2CM_Transfer_CB_t CBFunction, void *CBParameter);
+qapi_Status_t qapi_I2CM_Transfer(qapi_I2CM_Instance_t Instance, qapi_I2CM_Transfer_Config_t *Config,
+                                 qapi_I2CM_Descriptor_t *Desc, uint32_t NumDesc, qapi_I2CM_Transfer_CB_t CBFunction,
+                                 void *CBParameter);
 
 /**
    @brief Cancels a transfer.
@@ -240,4 +244,3 @@ qapi_Status_t qapi_I2CM_Cancel_Transfer(qapi_I2CM_Instance_t Instance);
 /** @} */ /* end_addtogroup qapi_peripherals_I2C */
 
 #endif
-
