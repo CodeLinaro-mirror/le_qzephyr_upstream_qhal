@@ -13,9 +13,6 @@
 #include "qurt_mutex.h"
 // #include "FreeRTOS.h"
 #include "nt_socpm_sleep.h"
-#if CONFIG_LIBWIFIQCC730_SRC
-#include "mlme_api.h"
-#endif
 #include "nt_common.h"
 #include "wifi_cmn.h"
 #include "fwconfig_cmn.h"

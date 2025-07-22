@@ -1,9 +1,8 @@
 # Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-3-Clause
 
-
 config QHW_SUPPORT
 	bool
 	default n
-	depends on QURT_ABSTRACTION_LAYER && QSYSTEM && LIBPOWERQCC730_SRC && LIBWIFIQCC730_SRC && QPOWER
+	depends on QURT_ABSTRACTION_LAYER && QSYSTEM && LIBPOWERQCC730_SRC && QPOWER
 

@@ -21,9 +21,6 @@
 #include "nt_socpm_sleep.h"
 #include "nt_common.h"
 #include "nt_logger_api.h"
-#include "phyCalUtils.h"
-#include "hal_int_sys.h"
-#include "nt_timer.h"
 #ifdef FEATURE_FPCI
 #include "wifi_fw_pwr_cb_infra.h"
 #endif
@@ -31,7 +28,6 @@
 // #include "nt_wfm_wmi_interface.h"
 #include "nt_devcfg.h"
 #include "wifi_fw_pmu_ts_cfg.h"
-#include "wlan_power.h"
 #include "nt_hw_support.h"
 #include "qurt_isr.h"
 #include "qcc730v2.h"

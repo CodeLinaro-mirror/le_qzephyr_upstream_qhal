@@ -15,11 +15,10 @@ zephyr_library_sources(src/wlan_drv/qapi_wlan_param_group.c)
 zephyr_library_sources(src/wlan_drv/wlan_qapi_helper.c)
 zephyr_library_sources(src/wlan_drv/wmi_api.c)
 zephyr_library_sources(src/wlan_drv/wlan_drv.c)
-
-if(NOT CONFIG_LIBWIFIQCC730_SRC)
-	message("CONFIG_LIBWIFIQCC730_SRC not enabled, use stub in qwifi")
-	zephyr_library_sources(zephyr/libwifi_stub.c)
-	return()
-endif()
-
 zephyr_library_sources(zephyr/libwifi.c)
+
+zephyr_link_libraries_ifdef(
+    CONFIG_QWIFI_BUILD_WITH_BLOBS
+    wifiqcc730
+    -L${CMAKE_CURRENT_SOURCE_DIR}/../zephyr/blobs/
+)

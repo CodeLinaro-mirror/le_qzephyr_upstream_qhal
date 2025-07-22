@@ -22,3 +22,7 @@ config QWIFI
 	select LIBPOWERQCC730_SRC if SOC_QCC730
 	#select LIBCRYPTOQCC730_SRC if SOC_QCC730
 	#select LIBSENSORQCC730_SRC if SOC_QCC730
+
+config QWIFI_BUILD_WITH_BLOBS
+  bool "qwifi build with blobs"
+  default n

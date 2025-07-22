@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
-*/
+ */
 
 /*========================================================================
  *
@@ -35,7 +35,6 @@
 #if defined(SUPPORT_RING_IF) || defined(SUPPORT_RING_IF_ONLY)
 #include "wifi_fw_cmn_api.h"
 #endif
-#include "wlan_power.h"
 #include "wifi_fw_ext_intr.h"
 #include "wifi_fw_internal_api.h"
 #if defined(SUPPORT_HIGH_RES_TIMER)

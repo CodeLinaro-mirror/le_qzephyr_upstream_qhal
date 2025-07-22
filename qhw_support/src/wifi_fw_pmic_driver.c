@@ -22,9 +22,6 @@
 #include "Fermion_seq_hwioreg.h"
 #include "nt_logger_api.h"
 #include "nt_devcfg.h"
-#if CONFIG_LIBWIFIQCC730_SRC
-#include "hal_int_modules.h"
-#endif
 #include "fermion_hw_reg.h"
 #include "libwifi.h"
 

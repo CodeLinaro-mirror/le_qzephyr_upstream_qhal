@@ -126,14 +126,8 @@ int wlan_qapi_init(void)
     qurt_signal_create(&p_cxt->wlan_cmd_done);
     qurt_mutex_create(&p_cxt->wlan_qapi_block_mutex);
     p_cxt->network_id = __QAPI_NETWORK_ID_UNSPECIFIED;
-#if CONFIG_LIBWIFIQCC730_SRC
-    log_printf("CONFIG_LIBWIFIQCC730_SRC is enabled\n");
     p_cxt->wlan_enable_block_mode = true;
-#else
-    /* When libwifi is not enabled, no enable event, then should be non-block-mode */
-    log_printf("CONFIG_LIBWIFIQCC730_SRC is disabled\n");
-    p_cxt->wlan_enable_block_mode = false;
-#endif
+
     p_cxt->wlan_scan_start_block_mode = true;
     p_cxt->wlan_disable_block_mode = true;
     p_cxt->wlan_if_add_block_mode = true;

@@ -14,8 +14,6 @@
 
 LOG_MODULE_DECLARE(soc, CONFIG_SOC_LOG_LEVEL);
 
-#if CONFIG_LIBWIFIQCC730_SRC
-
 // reference: BACKUP_SRAM
 
 // OTP total LEN=0X1000
@@ -105,13 +103,11 @@ static void libwifi_kconfig_install(void)
     g_libwifi_kconfig.srrc_band_edge_enable = FALSE;
 #endif
 }
-#endif
 
 void qwifi_init(void)
 {
     PRINT_LOG_FUNC_LINE_ENTRY;
 
-#if CONFIG_LIBWIFIQCC730_SRC
     uint32_t is_ftm = 0;
 
 #if CONFIG_FTM_MODE
@@ -137,7 +133,6 @@ void qwifi_init(void)
 #endif
 #endif /* PHY_POWER_SWITCH */
     PRINT_LOG_FUNC_LINE;
-#endif
 
     wlan_qapi_init();
     PRINT_LOG_FUNC_LINE_EXIT;
