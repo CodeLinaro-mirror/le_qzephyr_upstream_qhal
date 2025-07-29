@@ -14,7 +14,6 @@
 #include "autoconf.h"
 #endif
 #include "wifi_fw_logger.h"
-#include "wmi.h"
 extern uint8_t set_host_loglvl[NT_MAX_MODULE_ID];
 /*!< Log level and module id declared through cli*/
 extern uint8_t set_loglvl[NT_MAX_MODULE_ID];
@@ -1149,13 +1148,6 @@ uint32_t nt_calc_for_num_blocks(log_ringdesc_t *log_buffer);
  *   @return      : Null
  */
 void nt_log_lvl_read(uint8_t moduleid, uint8_t loglevel);
-
-WIFIReturnCode_t _nt_log_lvl_clr(void);
-WIFIReturnCode_t _nt_log_lvl_get(void);
-// WIFIReturnCode_t _nt_log_lvl_set (void*);
-// WIFIReturnCode_t _nt_log_lvl_read (void *);
-// WIFIReturnCode_t _nt_log_read (void *);
-WIFIReturnCode_t _nt_log_buffer_clr(void);
 
 #endif // NT_FN_LOGGER
 

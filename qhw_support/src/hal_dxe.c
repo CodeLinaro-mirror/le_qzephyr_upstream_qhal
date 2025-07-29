@@ -21,7 +21,6 @@
 #endif
 // #include "hal_int_powersave.h"
 #include <assert.h>
-#include <libwifi.h>
 #include "nt_hw_support.h"
 #include "qurt_isr.h"
 #include "qcc730v2.h"
@@ -175,7 +174,9 @@ void nt_ndxe_deinit(void)
                 for (j = 0; j < pDxeCCB->nDescs; j++) {
                     if (desc_cb->StagingBuffer) {
                         if (pDxeCCB->buffer_type == NT_DXE_BUF_PBUF) {
+#if  CONFIG_QWIFI
                             nt_dpm_free_network_buffer((void *)desc_cb->StagingBuffer);
+#endif
                         } else {
                             nt_osal_free_memory((void *)desc_cb->StagingBuffer);
                         }
@@ -684,8 +685,7 @@ static void nt_dxe_update_descctrl_in_lst(volatile DxeCCB_t *pDxeCCB)
 #endif /* DXE_WAR_FOR_DATA_STALL */
 
 /* Write frame for transfer from the Host. Used for H2B and H2H transfer */
-eRet_t __attribute__((section(".after_ram_vectors")))
-nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void *frame, uint32_t length, void *h2hdst)
+eRet_t nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void *frame, uint32_t length, void *h2hdst)
 {
     DescCB_t *pDCB;
     DescCB_t *pCurrDCB;
@@ -1060,7 +1060,7 @@ eRet_t nt_ndxe_init()
     eRet_t status;
 
     if ((halDxe) && (halDxe->Configured)) {
-        NT_LOG_DPM_INFO("DXE init done", 0, 0, 0);
+        //NT_LOG_DPM_INFO("DXE init done", 0, 0, 0);
         return NDXE_SUCCESS;
     }
 

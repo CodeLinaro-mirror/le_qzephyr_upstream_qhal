@@ -7,7 +7,6 @@ if(NOT CONFIG_SOC_FAMILY_QUALCOMM)
 endif()
 
 zephyr_compile_options(-DZEPHYR)
-zephyr_compile_options(-DQPOWER)
 
 add_subdirectory_ifdef(CONFIG_QTEST tests)
 add_subdirectory_ifdef(CONFIG_QWIFI qwifi)

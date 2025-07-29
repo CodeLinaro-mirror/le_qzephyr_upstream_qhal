@@ -11,58 +11,9 @@
 
 #include <zephyr/logging/log.h>
 #include "printfext.h"
+#include "nt_mem.h"
 
 LOG_MODULE_DECLARE(soc, CONFIG_SOC_LOG_LEVEL);
-
-// reference: BACKUP_SRAM
-
-// OTP total LEN=0X1000
-#define __OTP_REGION_START_ADDR 0X001A0000
-#define __OTP_REGION_END_ADDR 0X001A1000
-
-// RRAM total LEN=0X180000
-#define __RRAM_REGION_START_ADDR 0X00200000
-#define __RRAM_REGION_END_ADDRESS 0X00380000
-
-// RRAM from end to start
-#define BDF_LEN 0x6000
-#define BDF_END_ADDR __RRAM_REGION_END_ADDRESS
-#define BDF_START_ADDR (BDF_END_ADDR - BDF_LEN) // 0x37a000
-
-#define _LN_CAL_DATA_LENGTH 0x3000
-#define _LN_CAL_END_ADDR BDF_START_ADDR
-#define _LN_CAL_START_ADDR (_LN_CAL_END_ADDR - _LN_CAL_DATA_LENGTH) // 0x377000
-
-#define _LN_REGDB_DATA_LENGTH 0x4000 // read len 0X000036E0
-#define _LN_REGDB_END_ADDR _LN_CAL_START_ADDR
-#define _LN_REGDB_START_ADDR (_LN_REGDB_END_ADDR - _LN_REGDB_DATA_LENGTH) // 0x373000
-
-// SRAM total LEN=0xA0000
-#define SRAM_END_ADDR 0xA0000
-
-// SRAM from end to start
-#define _LN_RAM_HW_DESC__LEN 0x6000 // real len 0X57E8
-#define _LN_RAM_END_ADDR_HW_DESC_ SRAM_END_ADDR
-#define _LN_RAM_START_ADDR_HW_DESC__ (_LN_RAM_END_ADDR_HW_DESC_ - _LN_RAM_HW_DESC__LEN)
-
-#define _LN_RAM_HW_PKTMEM__LEN 0X8000
-#define _LN_RAM_END_ADDR_HW_PKTMEM__ _LN_RAM_START_ADDR_HW_DESC__
-#define _LN_RAM_START_ADDR_HW_PKTMEM__ (_LN_RAM_END_ADDR_HW_PKTMEM__ - _LN_RAM_HW_PKTMEM__LEN)
-
-const uint32_t g__OTP_region_st_addr = __OTP_REGION_START_ADDR;        // 0x001a0000
-const uint32_t g__OTP_region_end_addr = __OTP_REGION_END_ADDR;         // 0x001a1000, len=0x1000
-const uint32_t g__rram_region_start_addr = __RRAM_REGION_START_ADDR;   // 0x00200000
-const uint32_t g__rram_region_end_address = __RRAM_REGION_END_ADDRESS; // 0x00380000, len=0x180000
-const uint32_t g_ln_REGDB_Start_Addr = _LN_REGDB_START_ADDR;           // 0x0021a600
-const uint32_t g_ln_REGDB_Data_length = _LN_REGDB_DATA_LENGTH;         // 0x000036e0
-const uint32_t g_ln_CAL_Start_Addr = _LN_CAL_START_ADDR;               // 0x0021dce0
-const uint32_t g_ln_CAL_Data_length = _LN_CAL_DATA_LENGTH;             // 0x3000
-const uint32_t g_ln_RAM_start_addr_hw_desc__ =
-    _LN_RAM_START_ADDR_HW_DESC__; // base address for hardware descriptors, 0x0002f780
-const uint32_t g_ln_RAM_end_addr_hw_desc__ = _LN_RAM_END_ADDR_HW_DESC_; // 0x00034f68, len=0x57e8
-const uint32_t g_ln_RAM_start_addr_hw_pktmem__ =
-    _LN_RAM_START_ADDR_HW_PKTMEM__; // base address for packet memory, 0x00027780
-const uint32_t g_ln_RAM_end_addr_hw_pktmem__ = _LN_RAM_END_ADDR_HW_PKTMEM__; // 0x0002f780, len=0x8000
 
 struct libwifi_kconfig_t g_libwifi_kconfig;
 struct libwifi_qos_null_kconfig_t g_libwifi_qos_null_kconfig_t;

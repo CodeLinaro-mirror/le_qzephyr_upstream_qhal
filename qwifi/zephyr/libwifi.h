@@ -7,19 +7,7 @@
 
 #include <nt_common.h>
 #include <wmi.h>
-
-extern const uint32_t g__OTP_region_st_addr;           // 0x001a0000
-extern const uint32_t g__OTP_region_end_addr;          // 0x001a1000, len=0x1000
-extern const uint32_t g__rram_region_start_addr;       // 0x00200000
-extern const uint32_t g__rram_region_end_address;      // 0x00380000, len=0x180000
-extern const uint32_t g_ln_REGDB_Start_Addr;           // 0x0021a600
-extern const uint32_t g_ln_REGDB_Data_length;          // 0x000036e0
-extern const uint32_t g_ln_CAL_Start_Addr;             // 0x0021dce0
-extern const uint32_t g_ln_CAL_Data_length;            // 0x3000
-extern const uint32_t g_ln_RAM_start_addr_hw_desc__;   // base address for hardware descriptors, 0x0002f780
-extern const uint32_t g_ln_RAM_end_addr_hw_desc__;     // 0x00034f68, len=0x57e8
-extern const uint32_t g_ln_RAM_start_addr_hw_pktmem__; // base address for packet memory, 0x00027780
-extern const uint32_t g_ln_RAM_end_addr_hw_pktmem__;   // 0x0002f780, len=0x8000
+#include <nt_mem.h>
 
 /* enum application mode */
 typedef enum app_mode_id {
@@ -88,8 +76,6 @@ uint32_t dev_get_per_upper_threshold(void);
 void dev_set_ba_win_size(uint16_t ack_timeout, uint16_t delay);
 void dev_set_slot_time(uint32_t slot_time);
 void dev_get_beacon_threshold_ext(uint8_t *count);
-void hal_mac_sw_powerup(void);
-void hal_mac_hw_ctrl(void);
 
 // API called by libwifi
 void wmi_unit_test_cmd_handler(WMI_UNIT_TEST_CMD *cmd);
@@ -100,20 +86,12 @@ void nt_socpm_nop_delay(uint64_t n_nops);
 void _socpm_slptmr_off(void);
 void nt_socpm_mtusr_restore_mtu_time(void);
 void nt_socpm_mtusr_save_mtu_time(void);
-int nt_socpm_sleep_lst_delete(volatile int List_to_Del);
-void nt_socpm_sleep_deregister(int list_idx);
 #include "nt_socpm_sleep.h" //for nt_socpm_sleep_t & sleep_mode
-int nt_socpm_sleep_register(nt_socpm_sleep_t *FunctionToRegister, volatile int List_no);
-uint32_t get_sleep_exit_hw_delay(sleep_mode slp_mode);
 void nt_socpm_enable(uint8_t socpm_state);
-nt_status_t nt_update_clk_latency(void *buffer);
 // low power end
 
 int8_t nt_rram_write(uint32_t address, const void *wdata, uint32_t length);
 int8_t nt_rram_read(uint32_t address, void *rdata, uint32_t length);
-#ifdef RRAM_WRITE_VIA_DXE
-extern uint8_t dxe_deinit;
-#endif
 int8_t nt_get_macid(uint8_t *macid);
 
 nt_status_t nt_dpm_forward_eth_packet_to_stack_ext(void *rx_buf, void *eth_frame, uint32_t length, void *ext);
@@ -149,10 +127,5 @@ typedef enum {
 
 #define PROF_IRQ_ENTER()
 #define PROF_IRQ_EXIT()
-
-// TickType_t
-void hres_timer_us_delay(uint32_t time_us);
-uint64_t hres_timer_curr_time_us(void);
-uint32_t hres_timer_curr_time_ms(void);
 
 app_mode_id_t nt_get_app_mode(void);

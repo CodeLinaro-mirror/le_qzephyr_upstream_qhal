@@ -21,6 +21,13 @@
 #define NT_MS_TO_TICKS(ms) Z_TIMEOUT_MS_TICKS(ms)
 #define TICKS_TO_MS(ticks) k_ticks_to_ms_ceil32(ticks)
 
+#define MS_TO_US(x) ((x) * 1000)    /* millisecond to microsecond */
+#define US_TO_MS(x) ((x) / 1000)    /* microsecond to millisecond */
+#define MS_TO_TU(x) (((x) * 1000) >> 10)
+#define TU_TO_MS(x) ((x) * 1024 / 1000)
+#define TU_TO_US(x) ((x) << 10)
+#define SEC_TO_MSEC(x)        (x * 1000)
+
 /** qurt_time_unit_t types  */
 typedef enum {
     QURT_TIME_TICK,             // return time in ticks
@@ -88,3 +95,9 @@ TimerHandle_t nt_qurt_timer_create(char *pcTimerName, const TickType_t xTimerPer
 
 int nt_timer_change_time_period(TimerHandle_t timer_handle, TickType_t new_period);
 void *nt_get_timeout_arg(TimerHandle_t timer_handle);
+
+// TickType_t
+void hres_timer_us_delay(uint32_t time_us);
+uint64_t hres_timer_curr_time_us(void);
+uint32_t hres_timer_curr_time_ms(void);
+

@@ -91,10 +91,9 @@ qapi_Status_t qapi_pmu_init(void)
     wifi_fw_cpr_init();
     PRINT_LOG_FUNC_LINE;
 #endif /*CBC_CX_VOLTAGE_WAR */
-#ifdef QPOWER
+
     nt_socpm_init();
     PRINT_LOG_FUNC_LINE;
-#endif
 
 #if defined(SUPPORT_HIGH_RES_TIMER)
     hres_timer_init_setup();

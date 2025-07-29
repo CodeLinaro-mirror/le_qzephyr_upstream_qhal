@@ -306,3 +306,41 @@ void *nt_get_timeout_arg(TimerHandle_t timer_handle)
         return NULL;
     }
 }
+
+#if 0
+void hres_timer_us_delay(uint32_t time_us)
+{
+    uint64_t curr_time = hres_timer_curr_time_us();
+    uint64_t target_time = (curr_time + time_us);
+
+    while(curr_time < target_time)
+    {
+        curr_time = hres_timer_curr_time_us();
+    }
+}
+#else
+void hres_timer_us_delay(uint32_t time_us) { k_busy_wait(time_us); }
+#endif
+
+uint64_t hres_timer_curr_time_us(void)
+{
+#ifdef SUPPORT_HIGH_RES_TIMER
+    uint64_t curr_time_us;
+    timer_cvt_from_tick64(hres_timer_timetick_get(), T_USEC, &curr_time_us);
+    return curr_time_us;
+#else  /* SUPPORT_HIGH_RES_TIMER */
+    return k_uptime_get()*1000;
+#endif /* SUPPORT_HIGH_RES_TIMER */
+}
+
+uint32_t hres_timer_curr_time_ms(void)
+{
+#ifdef SUPPORT_HIGH_RES_TIMER
+    uint64_t curr_time_ms;
+    timer_cvt_from_tick64(hres_timer_timetick_get(), T_MSEC, &curr_time_ms);
+    return curr_time_ms;
+#else  /* SUPPORT_HIGH_RES_TIMER */
+     return k_uptime_get_32();
+#endif /* SUPPORT_HIGH_RES_TIMER */
+}
+

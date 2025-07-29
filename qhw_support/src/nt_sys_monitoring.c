@@ -13,7 +13,6 @@
 #include "nt_devcfg.h"
 #include "qcc730v2.h"
 #include "qurt_isr.h"
-#include "libwifi.h"
 
 static TaskHandle_t nt_sysmon_hnd;
 
@@ -206,7 +205,6 @@ void nt_sysmon_clk_cyc_delay(uint32_t clk_cyc)
 
 void pmu_ccpu_vbat_low_hit_int_p(void)
 {
-    PROF_IRQ_ENTER();
 #ifdef NT_DEBUG
     // dbg_port
     uart_hal_poll_out_str_ext("Vth reached,strt cnt\r\n");
@@ -218,8 +216,6 @@ void pmu_ccpu_vbat_low_hit_int_p(void)
     // dbg_port
     uart_hal_poll_out_str_ext("BROUT int clrd\r\n");
 #endif
-
-    PROF_IRQ_EXIT();
 }
 
 /**

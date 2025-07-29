@@ -953,9 +953,7 @@ qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_le
         wmi_msg.prot_flg = cmd_id;
     }
     log_printf("send WMI cmd=%d\n", wmi_msg.trans_wmi_message_id);
-#if CONFIG_LIBWIFIQCC730_SRC
     qurt_pipe_send(msg_wfm_wmi_id, (void *)&wmi_msg);
-#endif
     log_printf("send WMI cmd=%d: Done\n", wmi_msg.trans_wmi_message_id);
     return QAPI_OK;
 }

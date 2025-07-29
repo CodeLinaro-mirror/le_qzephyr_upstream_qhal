@@ -23,6 +23,12 @@
 #define SOCPM_UNUSED(x) (void)(x)
 #endif /* SOCPM_UNUSED */
 
+//wifi power call in syspm
+//#define WIFI_POWER
+
+//qccsdk power call in wifi
+//#define QCCSDK_POWER
+
 #define NT_NVIC_ICPR1 0xE000E284
 /*
 //equivalent count for 1 milliseconds =(1000e-6/1 count) 1 count = 30 e-6 seconds
@@ -165,42 +171,12 @@ enum nt_slp_dbg_unit_test_type {
 
 extern uint8_t ignore_bcmc_in_bmps;
 
-extern uint8_t _socpm_slp_exit;
-extern int _socpm_last_slp_count;
-
-extern uint8_t _socpm_mcu_sleep_wake;
-
 extern uint8_t _socpm_slp_clk_src;
-extern uint8_t _socpm_slp_time_supp_min_ms;
 
-// variables  for Silent app
-extern uint8_t _socpm_rram_ctl_f;
-
-extern volatile int nt_socpm_resume_f;
 // Variable to store stack pointer of current task
-extern volatile uint32_t nt_socpm_m4_regs[15];
 extern volatile uint64_t nt_socpm_slp_time_total;
 extern uint32_t nt_socpm_slp_time_min;
 extern uint32_t nt_socpm_slp_time_sby;
-extern int nt_socpm_sby_force;
-
-// xo settle timeout
-extern uint8_t xo_settle_time;
-extern uint8_t xo_trim_time;
-extern uint8_t son_en_wait_mcu;
-extern uint8_t son_en_wait_light;
-extern uint8_t son_en_wait_sby;
-// aon sm delay
-extern uint8_t mx_settle_time;
-extern uint8_t p8v_smps_settle_time;
-extern uint8_t pmic_slp_exit_time;
-extern uint8_t pmic_slp_entry_time;
-
-// Sleep HW delay, fixed part
-extern uint32_t slp_exit_hw_delay_fixed;
-extern uint32_t cpu_boot_bcn_rx_delay;
-
-#define NT_CHECK_BIT_STATE(_value, _pos) (_value & (1 << _pos))
 
 /* Time taken from end of min cb to context restore */
 #define MINCB_END_TO_CTXT_RESTORE_US 70
@@ -220,8 +196,6 @@ typedef enum sleep_types { clk_gtd_sleep = 1, mcu_sleep, Standby, Active, Lights
 // Sleep modes types
 typedef enum sleep_types { clk_gtd_sleep = 1, mcu_sleep, Standby, Active } sleep_mode;
 #endif /* PLATFORM_FERMION */
-
-extern sleep_mode _socpm_slp_mode;
 
 typedef enum cpr_types { cpr_openloop = 0, cpr_closeloop = 1 } cpr_mode_e;
 
@@ -538,14 +512,7 @@ void nt_socpm_ctxt_restore(void) __attribute__((naked));
 
 // deprecated, do not use
 uint8_t mem_bank_check(uint32_t bank, Mem_Control type, sleep_mode mode);
-
-int nt_socpm_sleep_register(
-    nt_socpm_sleep_t *FunctionToRegister,
-    volatile int List_no); // int nt_socpm_sleep_register(nt_socpm_sleep_t * FunctionToRegister,int List_no) ;
-
 bool nt_socpm_sleep_lst_update(uint64_t sleep_time, bool serve_multi_node_wkup);
-int nt_socpm_sleep_lst_delete(volatile int List_to_Del);
-void nt_socpm_sleep_deregister(volatile int List_to_Del);
 void nt_socpm_sleep_lst_reorder(volatile int modified, uint64_t head_prev_sleep_time);
 
 int Sleep_time_update_list(uint64_t sleep_time);
@@ -778,15 +745,6 @@ void nt_cpr_disable();
 /* Funtion to reset the io debug count */
 void socpm_reset_io_debug_count();
 #endif /*IO_DEBUG*/
-
-/*
- * @brief  : update clk latency(in us).it could be 3ms or 32us. default clk_latency is 3ms.
- *         : When WiFi is connected with handset/home AP and active audio streaming is about to start:clk_latency = 32us
- *         : Rest all cases: clk_latency = 3ms
- * @param  : buffer - pointer which contains information related to WMI_CLK_LATENCY_CMD command
- * @return : nt_status_t
- */
-nt_status_t nt_update_clk_latency(void *buffer);
 
 void nt_socpm_soc_sleep_processing(uint64_t slp_val);
 

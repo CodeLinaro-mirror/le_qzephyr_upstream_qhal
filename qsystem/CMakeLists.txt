@@ -24,8 +24,6 @@ zephyr_include_directories(common_inc/hwio/TAPEOUT_07)
 
 zephyr_library_sources(src/nt_devcfg_parser.c)
 
-if(CONFIG_LIBWIFIQCC730_SRC)
-	zephyr_library_sources(src/unpa.c)
-	zephyr_library_sources(src/unpa_resource.c)
-	zephyr_library_sources(src/unpa_client.c)
-endif()
+zephyr_library_sources(src/unpa.c)
+zephyr_library_sources(src/unpa_resource.c)
+zephyr_library_sources(src/unpa_client.c)

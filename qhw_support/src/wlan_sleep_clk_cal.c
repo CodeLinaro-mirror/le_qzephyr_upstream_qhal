@@ -24,7 +24,6 @@
 #ifdef FEATURE_FPCI
 #include "wifi_fw_pwr_cb_infra.h"
 #endif
-#include "wmi.h"
 // #include "nt_wfm_wmi_interface.h"
 #include "nt_devcfg.h"
 #include "wifi_fw_pmu_ts_cfg.h"
@@ -201,9 +200,11 @@ nt_status_t socpm_slp_clk_cal_get_hbin(void)
 void socpm_sleep_clk_cal_timer_cb(void)
 {
     socpm_sleep_clk_cal_t *p_slp_clk_cal_params = &(g_socpm_struct.slp_clk_cal_params);
+#if WIFI_POWER
     if (nt_pm_get_pre_slp_cb_complete_status() == TRUE) {
         return;
     }
+#endif
     nt_timer_change_time_period(p_slp_clk_cal_params->slp_clk_cal_poll_timer,
                                 p_slp_clk_cal_params->slp_clk_cal_poll_period);
     if (nt_start_timer(p_slp_clk_cal_params->slp_clk_cal_poll_timer) != NT_TIMER_SUCCESS) {
@@ -498,7 +499,7 @@ nt_status_t socpm_slp_clk_cal_enable(slp_clk_cal_mode_t mode)
         }
         if (NULL != p_slp_clk_cal_params->slp_clk_cal_poll_timer) {
             /* Delete the timer */
-            if (nt_delete_timer(p_slp_clk_cal_params->slp_clk_cal_poll_timer) != NT_TIMER_SUCCESS) {
+            if (qurt_timer_delete(p_slp_clk_cal_params->slp_clk_cal_poll_timer, 0) != NT_TIMER_SUCCESS) {
                 NT_LOG_PRINT(SOCPM, ERR, "SOCPM slp clk cal disable - Poll timer delete failed");
                 return NT_FAIL;
             }

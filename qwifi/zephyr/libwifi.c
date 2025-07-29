@@ -12,9 +12,6 @@
 #include <stdarg.h>
 #include <nt_logger_api.h>
 
-#ifndef QPOWER
-#include "nt_socpm_sleep.h"
-#endif
 #include <zephyr/sys/printk.h>
 
 // API called by libwifi
@@ -92,117 +89,6 @@ void nt_dpm_notify_network_to_set_linkdown(struct netif *netif)
 
 nt_status_t get_netif_hwaddr_from_netif_id(uint8_t netif_id, uint8_t *addr) { return NT_OK; }
 
-#if 0
-void hres_timer_us_delay(uint32_t time_us)
-{
-    uint64_t curr_time = hres_timer_curr_time_us();
-    uint64_t target_time = (curr_time + time_us);
-
-    while(curr_time < target_time)
-    {
-        curr_time = hres_timer_curr_time_us();
-    }
-}
-#else
-void hres_timer_us_delay(uint32_t time_us) { k_busy_wait(time_us); }
-#endif
-
-uint32_t nt_hal_get_curr_time(void);
-
-uint64_t hres_timer_curr_time_us(void)
-{
-#ifdef SUPPORT_HIGH_RES_TIMER
-    uint64_t curr_time_us;
-    timer_cvt_from_tick64(hres_timer_timetick_get(), T_USEC, &curr_time_us);
-    return curr_time_us;
-#else  /* SUPPORT_HIGH_RES_TIMER */
-    return nt_hal_get_curr_time();
-#endif /* SUPPORT_HIGH_RES_TIMER */
-}
-
-uint32_t hres_timer_curr_time_ms(void)
-{
-#ifdef SUPPORT_HIGH_RES_TIMER
-    uint64_t curr_time_ms;
-    timer_cvt_from_tick64(hres_timer_timetick_get(), T_MSEC, &curr_time_ms);
-    return curr_time_ms;
-#else  /* SUPPORT_HIGH_RES_TIMER */
-    return (nt_hal_get_curr_time() / 1000);
-#endif /* SUPPORT_HIGH_RES_TIMER */
-}
-
-// NT_LOG_LVL_WARN
-extern uint8_t min_loglvl;
-
-uint8_t nt_log_write(
-    /*!@module id like SME,MLME,HAL.etc...*/
-    uint8_t mod_id,
-    /*!@ loglevel like info,warning.etc...*/
-    uint8_t loglvl,
-    /*@ for file name*/
-    char *fn,
-    /*@ for line number*/
-    uint16_t ln,
-    /*!@ data */
-    const char *msg,
-    /* user provided parameters */
-    uint32_t p1, uint32_t p2, uint32_t p3
-
-)
-{
-    (void)mod_id;
-
-#if 1
-
-    if (loglvl < min_loglvl) {
-        return NT_ECANCELED;
-    }
-
-    printk("[%s %d]: %s [%d] [%d] [%d]\r\n", fn, ln, msg, p1, p2, p3);
-#endif
-    return NT_OK;
-}
-
-#define MSGBUF_LEN 200
-char my1pbuf[MSGBUF_LEN];
-
-uint8_t nt_log_printf(uint8_t mod_id, uint8_t loglvl, char *func_name,
-                      /*@ for line number*/
-                      uint16_t ln, const char *fmt, uint8_t num, ...)
-{
-#if 1
-    va_list argp;
-    (void)mod_id;
-
-    if (loglvl < min_loglvl) {
-        return NT_ECANCELED;
-    }
-
-    memset(my1pbuf, 0, MSGBUF_LEN);
-    va_start(argp, num);
-    vsnprintf(my1pbuf, sizeof(my1pbuf), fmt, argp);
-    va_end(argp);
-    printk("[%s %d]: ", func_name, ln);
-    uart_hal_poll_out_str_ext(my1pbuf);
-    uart_hal_poll_out_str_ext("\r\n");
-#endif
-    return NT_OK;
-}
-
-uint8_t nt_log_array_printf(uint8_t mod_id, uint8_t loglvl, char *func_name,
-                            /*@ for line number*/
-                            uint16_t ln, const char *s, const uint8_t *ptr, const uint16_t len)
-{
-    (void)mod_id;
-    (void)loglvl;
-    (void)func_name;
-    (void)ln;
-    (void)s;
-    (void)ptr;
-    (void)len;
-    return NT_OK;
-}
-
 app_mode_id_t nt_get_app_mode(void) { return APP_MODE_MM; }
 
 int32_t pmu_ts_get_current_temperature(void)
@@ -211,50 +97,3 @@ int32_t pmu_ts_get_current_temperature(void)
     return 25;
 }
 
-#ifndef QPOWER
-void nt_socpm_nop_delay(uint64_t n_nops)
-{
-    for (uint64_t i = 0; i < n_nops; i++)
-        __asm volatile(" nop \n");
-}
-
-uint32_t get_sleep_exit_hw_delay(sleep_mode slp_mode)
-{
-    (void)slp_mode;
-    return 0;
-}
-
-int nt_socpm_sleep_register(nt_socpm_sleep_t *FunctionToRegister, volatile int List_no)
-{
-    (void)FunctionToRegister;
-    (void)List_no;
-    return -1;
-}
-
-void nt_socpm_sleep_deregister(int list_idx) { (void)list_idx; }
-
-int nt_socpm_sleep_lst_delete(volatile int List_to_Del)
-{
-    (void)List_to_Del;
-    return 0;
-}
-
-void _socpm_slptmr_off(void) {}
-
-void nt_socpm_mtusr_save_mtu_time(void) {}
-
-void nt_socpm_mtusr_restore_mtu_time(void) {}
-
-uint64_t freertosdefaultminimum(uint32_t wkup_delay_us)
-{
-    (void)wkup_delay_us;
-    return 0;
-}
-
-void nt_socpm_enable(uint8_t socpm_state) { (void)socpm_state; }
-nt_status_t nt_update_clk_latency(void *buffer)
-{
-    (void)buffer;
-    return 0;
-}
-#endif

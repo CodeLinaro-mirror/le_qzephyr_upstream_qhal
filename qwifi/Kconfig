@@ -6,9 +6,6 @@ config QWIFI
 	bool "QUALCOMM wifi HAL"
 	default n
 	select QURT_ABSTRACTION_LAYER
-	select QSYSTEM
-	select QHW_SUPPORT
-	select QPOWER
 	select LIBWIFIQCC730_SRC if SOC_QCC730
 	select MBEDTLS
 	select MBEDTLS_CMAC
