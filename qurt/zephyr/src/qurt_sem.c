@@ -26,39 +26,49 @@ INITIALIZATION AND SEQUENCING REQUIREMENTS
 ==============================================================================*/
 
 #include <assert.h>
-
+#include <zephyr/kernel.h>
 #include <qurt_error.h>
-#include <qurt_sclk.h>
+#include <qurt_clock.h>
 #include <qurt_sem.h>
 
-void qurt_sem_create(qurt_sem_t **sem)
+void qurt_sem_create(qurt_sem_t **qsem)
 {
-    qurt_sem_t *qsem = NULL;
+    struct k_sem *sem = NULL;
 
-    if (!sem) {
-        return;
-    }
-
-    qsem = k_calloc(sizeof(qurt_sem_t), 1);
     if (!qsem) {
         return;
     }
 
-    k_sem_init(qsem, 0, 1);
-    k_sem_give(qsem);
-    *sem = qsem;
+    sem = k_calloc(sizeof(*sem), 1);
+    if (!sem) {
+        return;
+    }
+
+    k_sem_init(sem, 0, 1);
+    k_sem_give(sem);
+
+    *qsem = (qurt_sem_t *)sem;
 }
 
-int qurt_sem_up(qurt_sem_t *sem)
+int qurt_sem_up(qurt_sem_t *qsem)
 {
+    struct k_sem *sem = (struct k_sem *)qsem;
+
     k_sem_give(sem);
     return 0;
 }
 
-int qurt_sem_down(qurt_sem_t *sem) { return k_sem_take(sem, K_FOREVER); }
-
-int qurt_sem_try_down(qurt_sem_t *sem)
+int qurt_sem_down(qurt_sem_t *qsem)
 {
+    struct k_sem *sem = (struct k_sem *)qsem;
+
+    return k_sem_take(sem, K_FOREVER);
+}
+
+int qurt_sem_try_down(qurt_sem_t *qsem)
+{
+    struct k_sem *sem = (struct k_sem *)qsem;
+
     int ret = k_sem_take(sem, K_NO_WAIT);
     if (ret == -EBUSY) {
         // setting same return value as QuRT
@@ -68,16 +78,25 @@ int qurt_sem_try_down(qurt_sem_t *sem)
     return ret;
 }
 
-void qurt_sem_destroy(qurt_sem_t *sem)
+void qurt_sem_destroy(qurt_sem_t *qsem)
 {
+    struct k_sem *sem = (struct k_sem *)qsem;
+
     k_sem_reset(sem);
     k_free(sem);
 }
 
-unsigned int qurt_sem_get_val(qurt_sem_t *sem) { return k_sem_count_get(sem); }
-
-int qurt_sem_down_timed(qurt_sem_t *sem, TickType_t block_time)
+unsigned int qurt_sem_get_val(qurt_sem_t *qsem)
 {
+    struct k_sem *sem = (struct k_sem *)qsem;
+
+    return k_sem_count_get(sem);
+}
+
+int qurt_sem_down_timed(qurt_sem_t *qsem, TickType_t block_time)
+{
+    struct k_sem *sem = (struct k_sem *)qsem;
+
     int ret = QURT_EOK;
     int ret_val = k_sem_take(sem, K_TICKS(block_time));
     switch (ret_val) {

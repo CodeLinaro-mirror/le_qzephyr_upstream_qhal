@@ -132,7 +132,7 @@ typedef struct unpa_resource {
     unpa_resource_state active_max;
 
     /* In multi-threaded operating modes, serialises requests to the resource */
-    qurt_mutex_t lock;
+    qurt_mutex_t *lock;
 
     /* Allows resource authors to associate any user data with this resource */
     void *user_data;

@@ -16,6 +16,7 @@ config QURT_ISR
 	bool
 	default n
 	select QURT_THREAD
+	select DYNAMIC_INTERRUPTS
 	prompt "QuRT Style ISR APIs"
 	help
 	  QuRT Style ISR APIs

@@ -33,7 +33,7 @@ pdc_resource *nt_pdc_create_resource(pdc_resource_definition *definition, pdc_re
     CORE_VERIFY_PTR(definition);
     CORE_VERIFY(strlen(definition->name) < PDC_MAX_NAME_LEN);
 
-    qurt_mutex_lock(&pdc_.lock);
+    qurt_mutex_lock(pdc_.lock);
 
     /* Verify that no resource with the given name is already defined/stubbed */
     resource = pdc_get_resource(definition->name);
@@ -48,7 +48,7 @@ pdc_resource *nt_pdc_create_resource(pdc_resource_definition *definition, pdc_re
     resource->active_vote_max = definition->max_state;
 
     /* Initialize the resource's own lock */
-    qurt_mutex_create(&resource->lock);
+    qurt_mutex_create(resource->lock);
 
     resource->active_state = initial_state;
     // definition->driver_fcn( initial_state );
@@ -57,7 +57,7 @@ pdc_resource *nt_pdc_create_resource(pdc_resource_definition *definition, pdc_re
     resource->next = pdc_.resources;
     pdc_.resources = resource;
 
-    qurt_mutex_unlock(&pdc_.lock);
+    qurt_mutex_unlock(pdc_.lock);
 
     return resource;
 }
@@ -79,7 +79,7 @@ void nt_pdc_update_resource(pdc_client *client, pdc_resource_state vote)
         }
     }
 
-    qurt_mutex_unlock(&resource->lock);
+    qurt_mutex_unlock(resource->lock);
 }
 
 /**
@@ -146,12 +146,12 @@ pdc_client *pdc_create_client(char *client_name, char *resource_name, uint8_t cl
         start->next = resource_client_votes;
     }
 
-    qurt_mutex_lock(&resource->lock);
+    qurt_mutex_lock(resource->lock);
 
     client->next = resource->clients;
     resource->clients = client;
 
-    qurt_mutex_unlock(&resource->lock);
+    qurt_mutex_unlock(resource->lock);
 
     return client;
 }
@@ -167,7 +167,7 @@ pdc_resource *pdc_get_resource(char *resource_name)
 {
     pdc_resource *resource;
 
-    qurt_mutex_lock(&pdc_.lock);
+    qurt_mutex_lock(pdc_.lock);
 
     resource = pdc_.resources;
 
@@ -178,7 +178,7 @@ pdc_resource *pdc_get_resource(char *resource_name)
         resource = resource->next;
     }
 
-    qurt_mutex_unlock(&pdc_.lock);
+    qurt_mutex_unlock(pdc_.lock);
 
     return resource;
 }
@@ -198,7 +198,7 @@ void pdc_issue_request(pdc_client *client, pdc_resource_state vote)
     if (vote > client->resource->active_vote_max) {
         return;
     }
-    qurt_mutex_lock(&client->resource->lock);
+    qurt_mutex_lock(client->resource->lock);
 
     nt_pdc_update_resource(client, vote);
 }

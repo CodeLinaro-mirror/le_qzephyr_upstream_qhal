@@ -221,3 +221,8 @@ unsigned int qurt_interrupt_enable(int int_num)
     irq_enable(int_num);
     return QURT_EOK;
 }
+
+void qurt_isr_register_3(unsigned int irq_p, qurt_isr_fn isr_p)
+{
+    irq_connect_dynamic(irq_p, 1, (void (*)(const void *))isr_p, NULL, 0);
+}

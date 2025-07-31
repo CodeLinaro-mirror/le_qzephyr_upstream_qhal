@@ -69,7 +69,7 @@ unpa_client *unpa_create_client(const char *client_name, uint32_t client_type, c
     client->resource = resource;
     client->request_attr = UNPA_REQUEST_DEFAULT;
 
-    qurt_mutex_lock(&resource->lock);
+    qurt_mutex_lock(resource->lock);
 
     client->next = resource->clients;
     resource->clients = client;
@@ -79,7 +79,7 @@ unpa_client *unpa_create_client(const char *client_name, uint32_t client_type, c
         resource->definition->driver_fcn(resource, client, 0);
     }
 
-    qurt_mutex_unlock(&resource->lock);
+    qurt_mutex_unlock(resource->lock);
 
     return client;
 }
@@ -101,7 +101,7 @@ void unpa_destroy_client(unpa_client *client)
     /* Cancel any active request from client */
     unpa_cancel_request(client);
 
-    qurt_mutex_lock(&resource->lock);
+    qurt_mutex_lock(resource->lock);
 
     for (prevc = NULL, c = client->resource->clients; c != NULL; prevc = c, c = c->next) {
         if (c == client) {
@@ -123,7 +123,7 @@ void unpa_destroy_client(unpa_client *client)
         resource->definition->driver_fcn(resource, client, 0);
     }
 
-    qurt_mutex_unlock(&resource->lock);
+    qurt_mutex_unlock(resource->lock);
 
     memset(client, 0, sizeof(unpa_client));
     free(client);
@@ -145,7 +145,7 @@ void unpa_issue_request(unpa_client *client, unpa_resource_state request)
         // UNPA_LOG( &unpa.log, "issue_request (client: XXX) (type: XXX) (resource: XXX) (request: XXX) (req_attr: XXX)"
         // );
 
-        qurt_mutex_lock(&client->resource->lock);
+        qurt_mutex_lock(client->resource->lock);
 
         client->pending_request.val = request;
 
@@ -194,7 +194,7 @@ int32_t unpa_try_issue_request(unpa_client *client, unpa_resource_state request)
         // UNPA_LOG( &unpa.log, "try_issue_request (client: XXX) (type: XXX) (resource: XXX) (request: XXX) (req_attr:
         // XXX)" );
 
-        err = qurt_mutex_try_lock(&client->resource->lock);
+        err = qurt_mutex_try_lock(client->resource->lock);
         if (err == 0) {
             unpa_update_resource(client);
             /* Resource is unlocked in above routine */

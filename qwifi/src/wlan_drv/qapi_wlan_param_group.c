@@ -42,9 +42,9 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                     break;
                 }
             }
-            qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             wlan_set_connect_ssid((unsigned char *)data, (uint8_t)length);
-            qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_SSID */
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_BSSID: {
@@ -57,9 +57,9 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                     break;
                 }
             }
-            qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             wlan_set_connect_bssid((uint8_t *)data, (uint8_t)length);
-            qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_BSSID */
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_CHANNEL: {
@@ -199,9 +199,9 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                     break;
                 }
             }
-            qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             wlan_set_passphrase((uint8_t *)data, (uint8_t)length);
-            qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_PASSPHRASE */
         }
         case __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE: {
@@ -209,7 +209,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 warn_printf("clear authMode\n");
             }
             WMI_CONNECT_CMD *p_cmd = &p_cxt->connect_cmd;
-            qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             if (!data || !length) {
                 wlan_clear_privacy();
                 info_printf("clear dot11AuthMode/authMode as open\n");
@@ -245,7 +245,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                     break;
                 }
             }
-            qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE */
         }
         case __QAPI_WLAN_PARAM_GROUP_SECURITY_ENCRYPTION_TYPE: {
@@ -261,7 +261,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 break;
             }
             WMI_CONNECT_CMD *p_cmd = &p_cxt->connect_cmd;
-            qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             info_printf("set e_cipher=%d\n", e_cipher);
             switch (e_cipher) {
             case QAPI_WLAN_CRYPT_NONE_E:
@@ -283,7 +283,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 ret = QAPI_WLAN_ERR_EINVAL;
                 break;
             }
-            qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+            qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_ENCRYPTION_TYPE */
         }
 #ifdef CONFIG_WPS

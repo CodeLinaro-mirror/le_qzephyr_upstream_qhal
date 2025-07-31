@@ -6,11 +6,9 @@
 #ifndef OS_INC_NT_OSAL_H_
 #define OS_INC_NT_OSAL_H_
 
-#include <zephyr/kernel.h>
-#include <string.h>
+#include <assert.h>
 #include "qurt_ext.h"
-#include "zephyr/sys/__assert.h"
-#include "zephyr/kernel/thread.h"
+#include "qurt_signal.h"
 
 /*Semaphore ID identifies the semaphore*/
 typedef qurt_sem_t *nt_osal_semaphore_handle_t;
@@ -73,11 +71,11 @@ typedef TickType_t nt_osal_tick_type_t;
 #define nt_osal_timer_change_period(timer_handle, period) qurt_timer_change_period(timer_handle, period, 0)
 
 /*allocating heap memory*/
-#define nt_osal_allocate_memory(size) k_malloc(size)
+void *nt_osal_allocate_memory(size_t size);
 
-#define nt_osal_free_memory(ptr) k_free(ptr)
+void nt_osal_free_memory(void *ptr);
 
-#define nt_osal_calloc(count, size) k_calloc(count, size)
+void *nt_osal_calloc(size_t nmemb, size_t size);
 
 /*to check is timer active or not*/
 #define nt_osal_is_timer_active(timer_handle) qurt_timer_Is_Active(timer_handle)
@@ -85,23 +83,15 @@ typedef TickType_t nt_osal_tick_type_t;
 /*to get timer period*/
 #define nt_osal_get_time_period(timer_handle) qurt_get_time_period(timer_handle)
 
-#define nt_osal_get_current_task_name() k_thread_name_get(k_current_get())
+const char *nt_osal_get_current_task_name();
 
 /*Release a Semaphore token from isr*/
 #define nt_osal_semaphore_give_from_isr(sem, target_task) qurt_sem_up(sem, target_task)
 
-#define taskENTER_CRITICAL()                                                                                           \
-    do {                                                                                                               \
-        k_sched_lock();                                                                                                \
-    } while (0)
+void taskENTER_CRITICAL();
+void taskEXIT_CRITICAL();
 
-#define taskEXIT_CRITICAL()                                                                                            \
-    do {                                                                                                               \
-        k_sched_unlock();                                                                                              \
-    } while (0)
-
-/* expr == 0, trigger assert action*/
-#define configASSERT(expr) __ASSERT(expr, "")
+#define configASSERT(expr) assert(expr)
 
 /**
  * <!-- nt_normal_delay -->
@@ -115,7 +105,7 @@ int tickless_idle_enabled(void);
 
 #define xTaskNotify2evt(xTaskToNotify) evt##xTaskToNotify
 
-#define xTaskNotify(xTaskToNotify, ulValue, eAction) qurt_signal_set(&(xTaskNotify2evt(xTaskToNotify)), (ulValue))
+#define xTaskNotify(xTaskToNotify, ulValue, eAction) qurt_signal_set((xTaskNotify2evt(xTaskToNotify)), (ulValue))
 #define xTaskNotifyFromISR(xTaskToNotify, ulValue, eAction, pxHigherPriorityTaskWoken)                                 \
     do {                                                                                                               \
         xTaskNotify(xTaskToNotify, (ulValue), (eAction));                                                              \

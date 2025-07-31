@@ -61,7 +61,7 @@ typedef struct unpa_struct {
     const char *stubs[UNPA_MAX_STUBS];
 
     /* Mutex to serialise access to the above lists */
-    qurt_mutex_t lock;
+    qurt_mutex_t *lock;
 
     /* UNPA activity is logged into this log */
     UNPA_LOG_T log;

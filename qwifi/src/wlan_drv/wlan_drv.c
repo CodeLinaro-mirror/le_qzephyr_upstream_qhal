@@ -28,7 +28,7 @@ qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_C
     if (!callback) {
         warn_printf("clear call back\n");
     }
-    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     if (callback && p_cxt->qapi_event_handler) {
         PRINT_ERR_ALREADY_EXIST;
         ret = QAPI_WLAN_ERR_EEXIST;
@@ -37,7 +37,7 @@ qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_C
         p_cxt->event_application_Context = application_Context;
         ret = QAPI_OK;
     }
-    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     return ret;
 }
 
@@ -46,7 +46,7 @@ void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     static uint8_t cnt_for_current_time_period = 1;
 
-    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 
     if (cnt_for_current_time_period >= WLAN_ROAMING_CNT_FOR_NXT_TIMER_PERIOD) {
         cnt_for_current_time_period = 0;
@@ -78,7 +78,7 @@ void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
         nt_stop_timer(p_cxt->roaming_timer);
     }
 
-    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
     return;
 }
@@ -177,9 +177,9 @@ void wlan_qapi_exit(void)
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
     PRINT_LOG_FUNC_LINE;
-    qurt_mutex_delete(&p_cxt->wlan_qapi_cxt_mutex);
-    qurt_signal_delete(&p_cxt->wlan_cmd_done);
-    qurt_mutex_delete(&p_cxt->wlan_qapi_block_mutex);
+    qurt_mutex_delete(p_cxt->wlan_qapi_cxt_mutex);
+    qurt_signal_delete(p_cxt->wlan_cmd_done);
+    qurt_mutex_delete(p_cxt->wlan_qapi_block_mutex);
     free(p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf);
     free(p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf);
     free(p_cxt->pScanOut);

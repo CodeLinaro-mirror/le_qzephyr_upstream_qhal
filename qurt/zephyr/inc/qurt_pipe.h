@@ -10,7 +10,8 @@
 #define QURT_PIPE_ATTR_OBJ_SIZE_BYTES 16
 
 /* Represents pipes  */
-typedef struct k_msgq *qurt_pipe_t;
+struct qurt_pipe;
+typedef struct qurt_pipe *qurt_pipe_t;
 
 /* Represents pipe attributes */
 typedef struct qurt_pipe_attr /* 8 byte aligned */

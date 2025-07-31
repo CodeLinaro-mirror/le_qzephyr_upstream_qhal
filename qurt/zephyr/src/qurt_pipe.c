@@ -49,10 +49,13 @@ void qurt_pipe_attr_set_element_size(qurt_pipe_attr_t *attr, uint32 element_size
 int qurt_pipe_create(qurt_pipe_t *pipe, qurt_pipe_attr_t *attr)
 {
     _qurt_pipe_attr *pattr = (_qurt_pipe_attr *)attr;
-    struct k_msgq *msg_q = k_calloc(sizeof(struct k_msgq), 1);
-
-    if (NULL == pattr || !msg_q) {
+    if (!pattr) {
         return QURT_EINVALID;
+    }
+
+    struct k_msgq *msg_q = k_calloc(sizeof(*msg_q), 1);
+    if (!msg_q) {
+        return QURT_EMEM;
     }
 
     int ret = k_msgq_alloc_init(msg_q, pattr->element_size, pattr->elements);
@@ -61,49 +64,57 @@ int qurt_pipe_create(qurt_pipe_t *pipe, qurt_pipe_attr_t *attr)
         return QURT_EFAILED;
     }
 
-    *pipe = msg_q;
+    *pipe = (qurt_pipe_t)msg_q;
 
     return ret;
 }
 
 void qurt_pipe_delete(qurt_pipe_t pipe)
 {
-    if (NULL != pipe) {
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+    if (!msg_q) {
         return;
     }
 
-    k_msgq_purge(pipe);
-    k_msgq_cleanup(pipe);
-    k_free(pipe);
+    k_msgq_purge(msg_q);
+    k_msgq_cleanup(msg_q);
+    k_free(msg_q);
 }
 
 int qurt_pipe_send_timed(qurt_pipe_t pipe, void *data, qurt_time_t q_timeout)
 {
     int ret;
-    if (NULL == pipe) {
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+
+    if (!msg_q) {
         return QURT_EINVALID;
     }
 
     /* send an item over pipe is not supported from ISR */
-    ret = k_msgq_put(pipe, (const void *)data, K_TICKS(q_timeout));
+    ret = k_msgq_put(msg_q, (const void *)data, K_TICKS(q_timeout));
     if (ret) {
         return QURT_EFAILED_TIMEOUT;
     }
     return QURT_EOK;
 }
 
-void qurt_pipe_send(qurt_pipe_t pipe, void *data) { k_msgq_put(pipe, data, K_NO_WAIT); }
+void qurt_pipe_send(qurt_pipe_t pipe, void *data)
+{
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+    k_msgq_put(msg_q, data, K_NO_WAIT);
+}
 
 int qurt_pipe_try_send(qurt_pipe_t pipe, void *data, BaseType_t *timeout)
 {
     int ret;
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
     (void)timeout;
 
-    if (NULL == pipe) {
+    if (!msg_q) {
         return QURT_EINVALID;
     }
 
-    ret = k_msgq_put((struct k_msgq *)pipe, (const void *)data, K_NO_WAIT);
+    ret = k_msgq_put(msg_q, (const void *)data, K_NO_WAIT);
     if (ret) {
         return QURT_EFAILED;
     }
@@ -114,13 +125,14 @@ int qurt_pipe_try_send(qurt_pipe_t pipe, void *data, BaseType_t *timeout)
 int qurt_pipe_receive_timed(qurt_pipe_t pipe, void *const data, qurt_time_t q_timeout)
 {
     int ret;
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
 
-    if (NULL == pipe) {
+    if (!msg_q) {
         return QURT_EINVALID;
     }
 
     /* receive an item over pipe is not supported from ISR */
-    ret = k_msgq_get(pipe, data, K_TICKS(q_timeout));
+    ret = k_msgq_get(msg_q, data, K_TICKS(q_timeout));
     if (ret) {
         return QURT_EFAILED_TIMEOUT;
     }
@@ -128,18 +140,24 @@ int qurt_pipe_receive_timed(qurt_pipe_t pipe, void *const data, qurt_time_t q_ti
     return QURT_EOK;
 }
 
-void qurt_pipe_receive(qurt_pipe_t pipe, void *data) { k_msgq_get(pipe, data, K_FOREVER); }
+void qurt_pipe_receive(qurt_pipe_t pipe, void *data)
+{
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+    k_msgq_get(msg_q, data, K_FOREVER);
+}
 
 int qurt_pipe_try_receive(qurt_pipe_t pipe, void *const data, BaseType_t *q_timeout)
 {
     int ret;
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+
     (void)q_timeout;
 
-    if (NULL == pipe) {
+    if (!msg_q) {
         return QURT_EINVALID;
     }
 
-    ret = k_msgq_get(pipe, data, K_NO_WAIT);
+    ret = k_msgq_get(msg_q, data, K_NO_WAIT);
     if (ret) {
         return QURT_EFAILED;
     }

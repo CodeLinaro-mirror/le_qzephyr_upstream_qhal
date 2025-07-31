@@ -7,7 +7,6 @@
 #define QURT_SEM_H
 
 #include "qurt_types.h"
-#include <zephyr/kernel.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +18,8 @@ extern "C" {
 /** @addtogroup semaphore_types
 @{ */
 
-typedef struct k_sem qurt_sem_t;
+struct qurt_sem;
+typedef struct qurt_sem qurt_sem_t;
 
 void qurt_sem_create(qurt_sem_t **sem);
 

@@ -6,8 +6,6 @@
 #pragma once
 
 #include "qurt_types.h"
-#include <zephyr/kernel.h>
-#include <zephyr/sys_clock.h>
 
 #define QURT_TIMER_OBJ_SIZE_BYTES 128
 
@@ -18,8 +16,7 @@
 #define QURT_TIMER_NO_AUTO_START 0x04 /**< no Auto deactivate  .*/
 #define QURT_TIMER_AUTO_START 0x08    /**< Default, Auto Activate  .*/
 
-#define NT_MS_TO_TICKS(ms) Z_TIMEOUT_MS_TICKS(ms)
-#define TICKS_TO_MS(ticks) k_ticks_to_ms_ceil32(ticks)
+#define NT_MS_TO_TICKS(ms) qurt_timer_ms_to_ticks(ms)
 
 #define MS_TO_US(x) ((x) * 1000)    /* millisecond to microsecond */
 #define US_TO_MS(x) ((x) / 1000)    /* microsecond to millisecond */
@@ -48,6 +45,8 @@ typedef struct qurt_timer_attr /* 8 byte aligned */
 
 typedef struct k_timer *TimerHandle_t;
 typedef void (*TimerCallbackFunction_t)(TimerHandle_t timer);
+
+TickType_t qurt_timer_ms_to_ticks(uint32_t ms);
 
 int qurt_get_expiry_time(TimerHandle_t timer);
 int qurt_timer_Is_Active(TimerHandle_t timer);

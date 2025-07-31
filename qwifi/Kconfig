@@ -16,7 +16,3 @@ config QWIFI
 	select MBEDTLS_MD
 	select MBEDTLS_SHA1
 	select MBEDTLS_CIPHER
-
-config QWIFI_BUILD_WITH_BLOBS
-  bool "qwifi build with blobs"
-  default n

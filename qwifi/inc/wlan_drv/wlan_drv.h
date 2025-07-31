@@ -38,9 +38,9 @@ typedef struct wlan_qapi_cxt_s {
     qbool_t wlanEnabled;
     qapi_WLAN_Callback_t qapi_event_handler;
     void *event_application_Context;
-    qurt_mutex_t wlan_qapi_cxt_mutex; /* protect wlan_qapi_cxt_t safe in multi-thread */
-    qurt_signal_t wlan_cmd_done;      /* will be ready if wlan cmd is done */
-    qurt_mutex_t wlan_qapi_block_mutex;
+    qurt_mutex_t *wlan_qapi_cxt_mutex; /* protect wlan_qapi_cxt_t safe in multi-thread */
+    qurt_signal_t *wlan_cmd_done;      /* will be ready if wlan cmd is done */
+    qurt_mutex_t *wlan_qapi_block_mutex;
     uint32_t wlan_enable_block_mode : 1;
     uint32_t wlan_disable_block_mode : 1;
     uint32_t wlan_if_add_block_mode : 1;
@@ -114,8 +114,8 @@ extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;
 #define CONFIG_WLAN_QAPI_BLOCK_ENABLE 1
 
 #if CONFIG_WLAN_QAPI_BLOCK_ENABLE
-#define WLAN_QAPI_LOCK() qurt_mutex_lock(&gp_wlan_qapi_cxt->wlan_qapi_block_mutex)
-#define WLAN_QAPI_UNLOCK() qurt_mutex_unlock(&gp_wlan_qapi_cxt->wlan_qapi_block_mutex)
+#define WLAN_QAPI_LOCK() qurt_mutex_lock(gp_wlan_qapi_cxt->wlan_qapi_block_mutex)
+#define WLAN_QAPI_UNLOCK() qurt_mutex_unlock(gp_wlan_qapi_cxt->wlan_qapi_block_mutex)
 #else
 #define WLAN_QAPI_LOCK()
 #define WLAN_QAPI_UNLOCK()

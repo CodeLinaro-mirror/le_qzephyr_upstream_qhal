@@ -24,19 +24,30 @@ INITIALIZATION AND SEQUENCING REQUIREMENTS
 
 ==============================================================================*/
 
-#include <string.h>
-
+#include <zephyr/kernel.h>
 #include <qurt_error.h>
-#include <qurt_sclk.h>
+#include <qurt_clock.h>
 #include <qurt_signal.h>
+#include "qurt_error.h"
 
-void qurt_signal_init(qurt_signal_t *signal) { k_event_init(signal); }
+void qurt_signal_init(qurt_signal_t *signal)
+{
+    struct k_event *event = (struct k_event *)signal;
+    k_event_init(event);
+}
 
-void qurt_signal_destroy(qurt_signal_t *signal) { k_event_clear(signal, UINT32_MAX); }
+void qurt_signal_destroy(qurt_signal_t *signal)
+{
+    struct k_event *event = (struct k_event *)signal;
+    k_event_clear(event, UINT32_MAX);
+    k_free(event);
+}
 
 static inline int qurt_signal_wait_impl(qurt_signal_t *signal, unsigned int mask, unsigned int attribute,
                                         unsigned int *out_signals, k_timeout_t timeout)
 {
+    struct k_event *event = (struct k_event *)signal;
+
     if (mask == 0) {
         *out_signals = 0;
         return 0;
@@ -45,9 +56,9 @@ static inline int qurt_signal_wait_impl(qurt_signal_t *signal, unsigned int mask
     uint32_t signals_received;
     const bool auto_reset = false;
     if (attribute & QURT_SIGNAL_ATTR_WAIT_ALL) {
-        signals_received = k_event_wait_all(signal, mask, auto_reset, timeout);
+        signals_received = k_event_wait_all(event, mask, auto_reset, timeout);
     } else {
-        signals_received = k_event_wait(signal, mask, auto_reset, timeout);
+        signals_received = k_event_wait(event, mask, auto_reset, timeout);
     }
 
     // if signals_received == 0 => timedout
@@ -56,7 +67,7 @@ static inline int qurt_signal_wait_impl(qurt_signal_t *signal, unsigned int mask
         return -ETIMEDOUT;
     } else {
         if (attribute & QURT_SIGNAL_ATTR_CLEAR_MASK) {
-            k_event_clear(signal, signals_received);
+            k_event_clear(event, signals_received);
         }
         *out_signals = signals_received;
         return 0;
@@ -74,10 +85,6 @@ unsigned int qurt_signal_wait(qurt_signal_t *signal, unsigned int mask, unsigned
 int qurt_signal_wait_timed(qurt_signal_t *signal, unsigned int mask, unsigned int attribute, unsigned int *out_signals,
                            unsigned long long int duration_in_us)
 {
-    if (QURT_TIMER_IS_DURATION_VALID(duration_in_us) != QURT_EOK) {
-        return QURT_EINVALID;
-    }
-
     int ret_val = qurt_signal_wait_impl(signal, mask, attribute, out_signals, K_USEC(duration_in_us));
     switch (ret_val) {
     case 0: {
@@ -94,11 +101,24 @@ int qurt_signal_wait_timed(qurt_signal_t *signal, unsigned int mask, unsigned in
     }
 }
 
-void qurt_signal_set(qurt_signal_t *signal, unsigned int mask) { k_event_post(signal, mask); }
+void qurt_signal_set(qurt_signal_t *signal, unsigned int mask)
+{
+    struct k_event *event = (struct k_event *)signal;
 
-inline unsigned int qurt_signal_get(qurt_signal_t *signal) { return signal->events; }
+    k_event_post(event, mask);
+}
 
-void qurt_signal_clear(qurt_signal_t *signal, unsigned int mask) { k_event_clear(signal, mask); }
+unsigned int qurt_signal_get(qurt_signal_t *signal)
+{
+    struct k_event * event = (struct k_event *)signal;
+    return event->events;
+}
+
+void qurt_signal_clear(qurt_signal_t *signal, unsigned int mask)
+{
+    struct k_event * event = (struct k_event *)signal;
+    k_event_clear(event, mask);
+}
 
 unsigned int qurt_anysignal_set(qurt_anysignal_t *signal, unsigned int mask)
 {
@@ -114,8 +134,15 @@ unsigned int qurt_anysignal_clear(qurt_anysignal_t *signal, unsigned int mask)
     return prev_signals;
 }
 
-int qurt_signal_create(qurt_signal_t *signal)
+int qurt_signal_create(qurt_signal_t **signal)
 {
-    qurt_signal_init(signal);
+    struct k_event *event = k_calloc(1, sizeof(*event));
+    if (!event) {
+        return QURT_EMEM;
+    }
+
+    *signal = (qurt_signal_t *)event;
+    qurt_signal_init(*signal);
+
     return QURT_EOK;
 }

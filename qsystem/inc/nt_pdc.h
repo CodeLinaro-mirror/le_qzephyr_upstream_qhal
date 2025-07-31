@@ -114,7 +114,7 @@ typedef struct pdc_resource {
     pdc_resource_state active_vote_max;
 
     /* In multi-threaded operating modes, serializes requests to the resource */
-    qurt_mutex_t lock;
+    qurt_mutex_t *lock;
 
     /* Allows resource authors to associate any user data with this resource */
     //  void *user_data;

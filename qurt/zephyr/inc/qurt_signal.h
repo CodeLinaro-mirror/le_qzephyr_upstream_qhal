@@ -6,24 +6,22 @@
 #ifndef QURT_SIGNAL_H
 #define QURT_SIGNAL_H
 
-#include <zephyr/kernel.h>
-
 // It is default actions, just for compatibility,
-#define QURT_SIGNAL_ATTR_CLEAR_MASK                                                                                    \
-    0x00000004 /**< Clear the                                                                                          \
-specified signals after a wait. */
+#define QURT_SIGNAL_ATTR_CLEAR_MASK   0x00000004 /**< Clear the specified signals after a wait. */
+#define QURT_SIGNAL_ATTR_WAIT_ANY     0x00000000 /**< Wait any. */
+#define QURT_SIGNAL_ATTR_WAIT_ALL     0x00000001 /**< Wait all. */
+#define QURT_SIGNAL_MAX               32
+#define QAL_SIGNAL_FUTEX_EXP          0x005164A1
 
-#define QURT_SIGNAL_ATTR_WAIT_ANY 0x00000000 /**< Wait any. */
-#define QURT_SIGNAL_ATTR_WAIT_ALL 0x00000001 /**< Wait all. */
-#define QURT_SIGNAL_MAX 32
-#define QAL_SIGNAL_FUTEX_EXP 0x005164A1
 /*=====================================================================
  Typedefs
  ======================================================================*/
 
 /** QuRT signal type.
  */
-typedef struct k_event qurt_signal_t;
+struct qurt_signal;
+
+typedef struct qurt_signal qurt_signal_t;
 
 /*=====================================================================
  Functions
@@ -289,149 +287,7 @@ void qurt_signal_clear(qurt_signal_t *signal, unsigned int mask);
 
 typedef qurt_signal_t qurt_anysignal_t;
 
-/*=====================================================================
- Functions
-======================================================================*/
-
-/*======================================================================*/
-/**@ingroup func_qurt_anysignal_init
-  Initializes an any-signal object.\n
-  The any-signal object is initially cleared.
-
-  @datatypes
-  #qurt_anysignal_t
-
-  @param[out] signal	Pointer to the initialized any-signal object.
-
-  @return
-  None.
-
-  @dependencies
-  None.
- */
-/* ======================================================================*/
-static inline void qurt_anysignal_init(qurt_anysignal_t *signal) { qurt_signal_init(signal); }
-
-/*======================================================================*/
-/**@ingroup func_qurt_anysignal_destroy
-  Destroys the specified any-signal object.
-
-  @note1hang Any-signal objects must be destroyed when they are no longer in use. Failure
-             to do this causes resource leaks in the QuRT kernel.\n
-  @note1cont Any-signal objects must not be destroyed while they are still in use. If this
-             happens the behavior of QuRT is undefined.
-
-  @datatypes
-  #qurt_anysignal_t
-
-  @param[in] signal Pointer to the any-signal object to destroy.
-
-  @return
-  None.
-
-  @dependencies
-  None.
- */
-/* ======================================================================*/
-static inline void qurt_anysignal_destroy(qurt_anysignal_t *signal) { qurt_signal_destroy(signal); }
-
-/*======================================================================*/
-/**@ingroup func_qurt_anysignal_wait
-  Wait on the any-signal object. \n
-  Suspends the current thread until any one of the specified signals is set.
-
-  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1
-  indicates that a signal must be waited on, and 0 indicates not to wait on the signal.
-  If a signal is set in an any-signal object, and a thread is waiting on the any-signal object for
-  that signal, the thread is awakened. If the awakened thread has higher priority than
-  the current thread, a context switch can occur.
-
-  @note1hang At most, one thread can wait on an any-signal object at any given time.
-
-  @datatypes
-  #qurt_anysignal_t
-
-  @param[in] signal Pointer to the any-signal object to wait on.
-  @param[in] mask   Signal mask value, which specifies the individual signals in the any-signal
-                      object to wait on.
-
-  @return
-  Bitmask of current signal values.
-
-  @dependencies
-  None.
- */
-/* ======================================================================*/
-static inline unsigned int qurt_anysignal_wait(qurt_anysignal_t *signal, unsigned int mask)
-{
-    return qurt_signal_wait(signal, mask, QURT_SIGNAL_ATTR_WAIT_ANY);
-}
-
-/*======================================================================*/
-/**@ingroup func_qurt_anysignal_set
-  Sets signals in the specified any-signal object. \n
-  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1
-  indicates that a signal must be set, and 0 indicates not to set the sigmal.
-
-  @datatypes
-  #qurt_anysignal_t
-
-  @param[in] signal Pointer to the any-signal object to modify.
-  @param[in]  mask  Signal mask value identifying the individual signals to
-                       set in the any-signal object.
-
-  @return
-  Bitmask of old signal values (before set).
-
-  @dependencies
-  None.
- */
-/* ======================================================================*/
-unsigned int qurt_anysignal_set(qurt_anysignal_t *signal, unsigned int mask);
-
-/*======================================================================*/
-/**@ingroup func_qurt_anysignal_get
-  Gets signal values from the any-signal object.\n
-  Returns the current signal values of the specified any-signal object.
-
-  @datatypes
-  #qurt_anysignal_t
-
-  @param[in] signal Pointer to the any-signal object to access.
-
-  @return
-  A bitmask with the current signal values of the specified any-signal object.
-
-  @dependencies
-  None.
- */
-/* ======================================================================*/
-static inline unsigned int qurt_anysignal_get(qurt_anysignal_t *signal) { return qurt_signal_get(signal); }
-
-/*======================================================================*/
-/**@ingroup func_qurt_anysignal_clear
-   @xreflabel{sec:anysignal_clear}
-  Clears signals in the specified any-signal object.\n
-  Signals are represented as bits 0 through 31 in the 32-bit mask value. A mask bit value of 1
-  indicates that a signal must be cleared, and 0 indicates not to clear the signal.
-
-  @datatypes
-  #qurt_anysignal_t
-
-  @param[in] signal Pointer to the any-signal object, which specifies the any-signal object to modify.
-  @param[in] mask   Signal mask value identifying the individual signals to
-                    clear in the any-signal object.
-
-  @return
-  Bitmask -- Old signal values (before clear).
-
-  @dependencies
-  None.
- */
-/* ======================================================================*/
-unsigned int qurt_anysignal_clear(qurt_anysignal_t *signal, unsigned int mask);
-
-int qurt_signal_create(qurt_signal_t *signal);
+int qurt_signal_create(qurt_signal_t **signal);
 
 #if 0
 void qurt_signal_delete(qurt_signal_t *signal)

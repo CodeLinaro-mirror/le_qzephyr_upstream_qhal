@@ -25,12 +25,9 @@
 /** @addtogroup thread_macros
 @{ */
 #define QURT_THREAD_ATTR_TCB_PARTITION_DEFAULT QURT_THREAD_ATTR_TCB_PARTITION_RAM /**< Backward compatibility. */
-#define QURT_THREAD_ATTR_PRIORITY_MAX (CONFIG_NUM_PREEMPT_PRIORITIES - 1)
 #define QURT_THREAD_ATTR_PRIORITY_MIN 0
-#define QURT_THREAD_ATTR_PRIORITY_DEFAULT CONFIG_NUM_PREEMPT_PRIORITIES - 1 /**< Priority.*/
 #define QURT_THREAD_ATTR_ASID_DEFAULT 0                                     /**< ASID. */
 #define QURT_THREAD_ATTR_AFFINITY_DEFAULT (-1)                              /**< Affinity. */
-#define QURT_THREAD_ATTR_BUS_PRIO_DEFAULT CONFIG_NUM_PREEMPT_PRIORITIES     /**< Bus priority. */
 #define QURT_THREAD_ATTR_AUTOSTACK_DEFAULT 0                                /**< Default autostack v2 disabled thread*/
 #define QURT_THREAD_ATTR_TIMETEST_ID_DEFAULT (-2)                           /**< Timetest ID. */
 #define QURT_THREAD_ATTR_STID_DEFAULT 0                                     /**< STID. */
@@ -249,19 +246,7 @@ int qurt_thread_get_thread_id(qurt_thread_t *thread_id, char *name);
   @dependencies
   None.
 */
-static inline void qurt_thread_attr_init(qurt_thread_attr_t *attr)
-{
-    attr->name[0] = 0;
-    attr->tcb_partition = QURT_THREAD_ATTR_TCB_PARTITION_DEFAULT;
-    attr->priority = QURT_THREAD_ATTR_PRIORITY_DEFAULT;
-    attr->autostack = QURT_THREAD_ATTR_AUTOSTACK_DEFAULT; /*autostackv2 attr*/
-    attr->bus_priority = QURT_THREAD_ATTR_BUS_PRIO_DEFAULT;
-    attr->timetest_id = QURT_THREAD_ATTR_TIMETEST_ID_DEFAULT;
-    attr->stack_size = 0;
-    attr->stack_addr = 0;
-    attr->detach_state = QURT_THREAD_ATTR_CREATE_LEGACY;
-    attr->stid = QURT_THREAD_ATTR_STID_DEFAULT;
-}
+void qurt_thread_attr_init(qurt_thread_attr_t *attr);
 
 /**@ingroup func_qurt_thread_attr_get
   Gets the attributes of the specified thread.
@@ -397,7 +382,7 @@ qurt_thread_t qurt_thread_get_id(void);
  */
 void qurt_thread_sleep(TickType_t sleep_time);
 
-#define qurt_thread_sleep_ms(ms) qurt_thread_sleep(Z_TIMEOUT_MS_TICKS(ms))
+void qurt_thread_sleep_ms(uint32_t ms);
 
 /**@ingroup func_qurt_thread_get_priority
    Gets the priority of the specified thread. \n

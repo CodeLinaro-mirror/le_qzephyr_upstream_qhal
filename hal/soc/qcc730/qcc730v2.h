@@ -19,6 +19,7 @@
 
 #ifndef QCC730V2_H
 #define QCC730V2_H
+#include <stdint.h>
 
 // reference in qccsdk: ExceptionHandlers.h
 typedef enum IRQn {

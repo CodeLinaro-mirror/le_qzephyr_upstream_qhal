@@ -47,7 +47,7 @@ void unpa_update_resource(unpa_client *client)
 
     // UNPA_LOG( &unpa.log, "\trequest processed (client: XXX) (active_state: XXX) (sleep_state: XXX)" );
 
-    qurt_mutex_unlock(&resource->lock);
+    qurt_mutex_unlock(resource->lock);
 }
 
 /*----------------------------------------------------------------------------

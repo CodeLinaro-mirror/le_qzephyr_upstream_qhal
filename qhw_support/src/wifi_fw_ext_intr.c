@@ -30,6 +30,7 @@
 #include "nt_socpm_sleep.h"
 // #include "nt_timer.h"
 #include "nt_logger_api.h"
+#include "qcc730v2.h"
 
 #include "wifi_fw_logger.h"
 #if defined(SUPPORT_RING_IF) || defined(SUPPORT_RING_IF_ONLY)

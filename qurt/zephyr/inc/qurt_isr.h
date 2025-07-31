@@ -6,7 +6,6 @@
 #ifndef QAL_ISR_H
 #define QAL_ISR_H
 
-#include "zephyr/kernel.h"
 #include "qurt_thread.h"
 
 #define QURT_INT_NON_DELAYED_ACK 0
@@ -152,6 +151,8 @@ unsigned int qurt_interrupt_disable(int int_num);
 */
 unsigned int qurt_interrupt_enable(int int_num);
 
-#define qurt_isr_register_3(irq_p, isr_p) IRQ_CONNECT(irq_p, 1, isr_p, NULL, 0)
+typedef void (*qurt_isr_fn)();
+
+void qurt_isr_register_3(unsigned int irq_p, qurt_isr_fn isr_p);
 
 #endif

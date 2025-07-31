@@ -34,18 +34,18 @@ INITIALIZATION AND SEQUENCING REQUIREMENTS
 
 ==============================================================================*/
 
+#include <zephyr/kernel.h>
 #include <qurt_error.h>
-#include <qurt_sclk.h>
+#include <qurt_clock.h>
 #include <qurt_mutex.h>
+#include "qurt_error.h"
 
 static int qurt_mutex_lock_timed_impl(qurt_mutex_t *lock, unsigned long long int duration_in_us)
 {
     int ret = QURT_EOK;
-    if (QURT_TIMER_IS_DURATION_VALID(duration_in_us) != QURT_EOK) {
-        return QURT_EINVALID;
-    }
+    struct k_mutex *mutex = (struct k_mutex *)lock;
 
-    int retVal = k_mutex_lock(lock, K_USEC(duration_in_us));
+    int retVal = k_mutex_lock(mutex, K_USEC(duration_in_us));
     switch (retVal) {
     case 0: {
         ret = QURT_EOK;
@@ -64,22 +64,27 @@ static int qurt_mutex_lock_timed_impl(qurt_mutex_t *lock, unsigned long long int
 
 void qurt_rmutex_init(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_init(lock);
-    ARG_UNUSED(ret_val);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+
+    k_mutex_init(mutex);
 }
 
-void qurt_rmutex_destroy(qurt_mutex_t *lock) { lock->lock_count = 0; }
+void qurt_rmutex_destroy(qurt_mutex_t *lock)
+{
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    k_free(mutex);
+}
 
 void qurt_rmutex_lock(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_lock(lock, K_FOREVER);
-    ARG_UNUSED(ret_val);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    k_mutex_lock(mutex, K_FOREVER);
 }
 
 void qurt_rmutex_unlock(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_unlock(lock);
-    ARG_UNUSED(ret_val);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    k_mutex_unlock(mutex);
 }
 
 int qurt_rmutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_in_us)
@@ -89,15 +94,22 @@ int qurt_rmutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_i
 
 void qurt_mutex_init(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_init(lock);
-    ARG_UNUSED(ret_val);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+
+    k_mutex_init(mutex);
 }
 
-void qurt_mutex_destroy(qurt_mutex_t *lock) { lock->lock_count = 0; }
+void qurt_mutex_destroy(qurt_mutex_t *lock)
+{
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    k_free(mutex);
+}
 
 void qurt_mutex_lock(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_lock(lock, K_FOREVER);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+
+    int ret_val = k_mutex_lock(mutex, K_FOREVER);
     ARG_UNUSED(ret_val);
 }
 
@@ -108,21 +120,28 @@ int qurt_mutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_in
 
 void qurt_mutex_unlock(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_unlock(lock);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    int ret_val = k_mutex_unlock(mutex);
     ARG_UNUSED(ret_val);
 }
 
 void qurt_pimutex_init(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_init(lock);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    int ret_val = k_mutex_init(mutex);
     ARG_UNUSED(ret_val);
 }
 
-void qurt_pimutex_destroy(qurt_mutex_t *lock) { lock->lock_count = 0; }
+void qurt_pimutex_destroy(qurt_mutex_t *lock)
+{
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    mutex->lock_count = 0;
+}
 
 void qurt_pimutex_lock(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_lock(lock, K_FOREVER);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    int ret_val = k_mutex_lock(mutex, K_FOREVER);
     ARG_UNUSED(ret_val);
 }
 
@@ -133,12 +152,20 @@ int qurt_pimutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_
 
 void qurt_pimutex_unlock(qurt_mutex_t *lock)
 {
-    int ret_val = k_mutex_unlock(lock);
+    struct k_mutex *mutex = (struct k_mutex *)lock;
+    int ret_val = k_mutex_unlock(mutex);
     ARG_UNUSED(ret_val);
 }
 
-int qurt_mutex_create(qurt_mutex_t *lock)
+int qurt_mutex_create(qurt_mutex_t **lock)
 {
-    qurt_mutex_init(lock);
+    struct k_mutex *mutex = k_calloc(sizeof(*mutex), 1);
+    if (!mutex) {
+        return QURT_EMEM;
+    }
+
+    *lock = (qurt_mutex_t *)mutex;
+    qurt_mutex_init(*lock);
+
     return QURT_EOK;
 }

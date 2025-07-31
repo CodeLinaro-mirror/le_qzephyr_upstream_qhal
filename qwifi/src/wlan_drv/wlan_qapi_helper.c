@@ -202,7 +202,7 @@ qapi_Status_t wlan_set_channel(uint8_t device_id, uint16_t channel, qbool_t is_6
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_PDEV_CHANNEL;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -227,7 +227,7 @@ qapi_Status_t wlan_set_country_code(uint8_t device_id, uint8_t *country_code)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_PDEV_COUNTRY_CODE;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -249,7 +249,7 @@ qapi_Status_t wlan_set_phy_mode(uint8_t device_id, uint32_t phy_mode)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_PHYMODE;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -307,7 +307,7 @@ qapi_Status_t wlan_set_op_mode(uint8_t mode)
     p_connect_cmd->networkType = mode;
     status = wmi_set_op_mode();
     if (status == QAPI_OK) {
-        qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+        qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 #ifdef NT_FN_CONCURRENCY
         if (mode == DEV_MODE_AP_STA_E) {
             p_cxt->conc_mode = DEV_MODE_AP_STA_E;
@@ -319,7 +319,7 @@ qapi_Status_t wlan_set_op_mode(uint8_t mode)
             p_cxt->opmode = DEV_MODE_AP_E;
         else if (mode == DEV_MODE_STATION_E)
             p_cxt->opmode = DEV_MODE_STATION_E;
-        qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+        qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     }
     return status;
 }
@@ -386,7 +386,7 @@ qapi_Status_t wlan_set_ap_beacon_inteval(uint8_t device_ID, uint32_t beacon_inte
     wmi_dev_cmd_send(WMI_SET_PDEV_PARAM_CMDID, device_ID, cmd, sizeof(WMI_SET_PDEV_PARAM_CMD));
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_AP_BCN_INTERVAL;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -407,7 +407,7 @@ qapi_Status_t wlan_set_ap_dtim_period(uint8_t device_ID, uint32_t dtim_period)
     wmi_dev_cmd_send(WMI_SET_PDEV_PARAM_CMDID, device_ID, cmd, sizeof(WMI_SET_PDEV_PARAM_CMD));
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_AP_DTIM;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -428,7 +428,7 @@ qapi_Status_t wlan_set_ap_inactivity(uint8_t device_ID, uint32_t inactivity_time
     wmi_dev_cmd_send(WMI_SET_PDEV_PARAM_CMDID, device_ID, cmd, sizeof(WMI_SET_PDEV_PARAM_CMD));
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_AP_INACTIVITY;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -449,7 +449,7 @@ qapi_Status_t wlan_set_ap_hidden(uint8_t device_ID, uint8_t hidden)
     wmi_dev_cmd_send(WMI_SET_PDEV_PARAM_CMDID, device_ID, cmd, sizeof(WMI_SET_PDEV_PARAM_CMD));
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_AP_HIDDEN;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -471,7 +471,7 @@ qapi_Status_t wlan_set_agg_cfg(uint8_t device_ID, uint16_t tx_tid_mask, uint16_t
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_ALLOW_AGGR;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -492,7 +492,7 @@ qapi_Status_t wlan_set_amsdu_rx(uint8_t device_ID, uint8_t enable)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_AMSDU_RX;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -513,7 +513,7 @@ qapi_Status_t wlan_set_sta_slptime(uint8_t device_ID, uint16_t time, uint16_t ro
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_STA_DTIM;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -601,26 +601,26 @@ qapi_Status_t wlan_set_appie(qapi_WLAN_App_Ie_Params_t *ie_params)
         log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
         return QAPI_ERROR;
     }
-    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     cmd->mgmtFrmType = ie_params->mgmt_Frame_Type;
     cmd->ieLen = ie_params->ie_Len;
 
     memscpy(cmd->ieInfo, ie_params->ie_Len, ie_params->ie_Info, ie_params->ie_Len);
-    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
     wmi_cmd_send(WMI_SET_APPIE_CMDID, cmd, sizeof(WMI_SET_APPIE_CMD));
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_APP_IE;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
         log_printf("set appie: block mode, WMI cmd done\n");
     } else {
         log_printf("set appie: unblock mode, should check WMI cmd done in event cb\n");
     }
 
-    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     error = get_wlan_qapi_error();
-    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
     return error;
 }
@@ -641,7 +641,7 @@ qapi_Status_t wlan_set_rts_cts(uint8_t device_ID, uint32_t enable)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_RTS_CTS;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -668,7 +668,7 @@ qapi_Status_t wlan_set_rts_rate(uint8_t device_ID, uint32_t rate)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_RTS_RATE_2G;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -703,7 +703,7 @@ qapi_Status_t wlan_set_edca_param(uint8_t device_ID, uint8_t qid, uint8_t aifsn,
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_EDCA;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -730,7 +730,7 @@ qapi_Status_t wlan_set_per_upper_threshold(uint8_t device_ID, uint32_t threshold
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_PER_UPPER_THRESHOLD;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -763,7 +763,7 @@ qapi_Status_t wlan_set_ba_win_size(uint8_t device_ID, uint16_t ack_timeout, uint
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_BA_WIN_SIZE;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -789,7 +789,7 @@ qapi_Status_t wlan_set_slot_time(uint8_t device_ID, uint32_t slot_time)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_SLOT_TIME;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -815,7 +815,7 @@ qapi_Status_t wlan_set_edcca_threshold(uint8_t device_ID, uint8_t edcca_threshol
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_EDCCA_THRESHOLD;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
@@ -841,14 +841,14 @@ qapi_Status_t wlan_set_tx_power(qapi_WLAN_Set_Txpower_Params_t txpower_params)
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_TX_POWER;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
 
-    qurt_mutex_lock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     error = get_wlan_qapi_error();
-    qurt_mutex_unlock(&p_cxt->wlan_qapi_cxt_mutex);
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
     return error;
 }
@@ -883,7 +883,7 @@ qapi_Status_t wlan_set_bmiss_threshold(uint8_t device_ID, uint8_t bmiss_threshol
 
     if (p_cxt->wlan_set_param_block_mode) {
         p_cxt->param_id = WIFI_PARAM_SET_BMISS_THRESHOLD;
-        qurt_signal_wait(&p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }

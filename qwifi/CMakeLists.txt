@@ -17,8 +17,7 @@ zephyr_library_sources(src/wlan_drv/wmi_api.c)
 zephyr_library_sources(src/wlan_drv/wlan_drv.c)
 zephyr_library_sources(zephyr/libwifi.c)
 
-zephyr_link_libraries_ifdef(
-    CONFIG_QWIFI_BUILD_WITH_BLOBS
+zephyr_link_libraries(
     wifiqcc730
     -L${CMAKE_CURRENT_SOURCE_DIR}/../zephyr/blobs/
 )

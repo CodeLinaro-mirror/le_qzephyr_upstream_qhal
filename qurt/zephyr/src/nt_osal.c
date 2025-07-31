@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "nt_osal.h"
 #include <zephyr/autoconf.h>
+#include <zephyr/kernel.h>
 
 /**
  * <!-- nt_delay -->
@@ -107,3 +108,32 @@ uint8_t nt_log_array_printf(uint8_t mod_id, uint8_t loglvl, char *func_name,
     return NT_OK;
 }
 
+void *nt_osal_allocate_memory(size_t size)
+{
+    return k_malloc(size);
+}
+
+void nt_osal_free_memory(void *ptr)
+{
+    k_free(ptr);
+}
+
+void *nt_osal_calloc(size_t nmemb, size_t size)
+{
+    return k_calloc(nmemb, size);
+}
+
+const char *nt_osal_get_current_task_name()
+{
+    return k_thread_name_get(k_current_get());
+}
+
+void taskENTER_CRITICAL()
+{
+    k_sched_lock();
+}
+
+void taskEXIT_CRITICAL()
+{
+    k_sched_unlock();
+}

@@ -38,6 +38,12 @@ typedef struct _qurt_timer_t {
     _qurt_timer_attr_t qurt_timer_info;
 } _qurt_timer_t;
 
+
+TickType_t qurt_timer_ms_to_ticks(uint32_t ms)
+{
+    return Z_TIMEOUT_MS_TICKS(ms);
+}
+
 void qurt_timer_attr_init(qurt_timer_attr_t *attr) { memset(attr, 0, QURT_TIMER_OBJ_SIZE_BYTES); }
 
 void qurt_timer_attr_set_duration(qurt_timer_attr_t *attr, qurt_time_t duration)
@@ -103,6 +109,7 @@ int qurt_timer_start(TimerHandle_t qtimer, TickType_t block_time)
 
     return QURT_EOK;
 }
+
 int qurt_timer_start_frm_isr(TimerHandle_t timer, long *const port_yield)
 {
     (void)port_yield;

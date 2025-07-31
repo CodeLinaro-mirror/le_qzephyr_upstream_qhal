@@ -7,7 +7,9 @@
 
 /* Define __ATTRIB_PACK in a compiler-specific way */
 #if defined(__GNUC__)
-#define __ATTRIB_PACK __attribute__((packed))
+    #ifndef __ATTRIB_PACK
+    #define __ATTRIB_PACK __attribute__((packed))
+    #endif
 #endif
 
 /* Choose whether compiler expects attribute before or after structure declaration */

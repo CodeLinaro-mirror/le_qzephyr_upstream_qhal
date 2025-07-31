@@ -23,10 +23,14 @@ INITIALIZATION AND SEQUENCING REQUIREMENTS
 #include <zephyr/init.h>
 
 #include <qurt_error.h>
-#include <qurt_sclk.h>
+#include <qurt_clock.h>
 #include <qurt_thread.h>
 
 #include "qurt_thread_internal.h"
+
+#define QURT_THREAD_ATTR_PRIORITY_MAX (CONFIG_NUM_PREEMPT_PRIORITIES - 1)
+#define QURT_THREAD_ATTR_PRIORITY_DEFAULT CONFIG_NUM_PREEMPT_PRIORITIES - 1 /**< Priority.*/
+#define QURT_THREAD_ATTR_BUS_PRIO_DEFAULT CONFIG_NUM_PREEMPT_PRIORITIES     /**< Bus priority. */
 
 static sys_slist_t qal_thread_slist;
 static struct k_spinlock qal_thread_slist_lock;
@@ -45,6 +49,20 @@ static int qal_thread_init()
     sys_slist_init(&qal_thread_slist);
     sys_slist_init(&qal_freethread_slist);
     return QURT_EOK;
+}
+
+void qurt_thread_attr_init(qurt_thread_attr_t *attr)
+{
+    attr->name[0] = 0;
+    attr->tcb_partition = QURT_THREAD_ATTR_TCB_PARTITION_DEFAULT;
+    attr->priority = QURT_THREAD_ATTR_PRIORITY_DEFAULT;
+    attr->autostack = QURT_THREAD_ATTR_AUTOSTACK_DEFAULT; /*autostackv2 attr*/
+    attr->bus_priority = QURT_THREAD_ATTR_BUS_PRIO_DEFAULT;
+    attr->timetest_id = QURT_THREAD_ATTR_TIMETEST_ID_DEFAULT;
+    attr->stack_size = 0;
+    attr->stack_addr = 0;
+    attr->detach_state = QURT_THREAD_ATTR_CREATE_LEGACY;
+    attr->stid = QURT_THREAD_ATTR_STID_DEFAULT;
 }
 
 static inline qal_thread_t *_qal_get_current_thread()
@@ -355,6 +373,12 @@ int _qal_thread_delete(qal_thread_t *thread_node)
 }
 
 void qurt_thread_sleep(TickType_t sleep_time) { k_sleep(K_TICKS(sleep_time)); }
+
+void qurt_thread_sleep_ms(uint32_t ms)
+{
+    uint32_t ticks = Z_TIMEOUT_MS_TICKS(ms);
+    k_sleep(K_TICKS(ticks));
+}
 
 int qurt_thread_get_priority(qurt_thread_t qurt_tid)
 {

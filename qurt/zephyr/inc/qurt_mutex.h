@@ -6,10 +6,11 @@
 #ifndef QURT_MUTEX_H
 #define QURT_MUTEX_H
 
-#include <zephyr/kernel.h>
 #include "qurt_types.h"
 
-typedef struct k_mutex qurt_mutex_t;
+struct qurt_mutex;
+
+typedef struct qurt_mutex qurt_mutex_t;
 
 /**@ingroup func_qurt_rmutex_init
    Initializes a recursive mutex object.
@@ -142,7 +143,7 @@ void qurt_pimutex_lock(qurt_mutex_t *lock);
 int qurt_pimutex_lock_timed(qurt_mutex_t *lock, unsigned long long int duration_in_us);
 void qurt_pimutex_unlock(qurt_mutex_t *lock);
 
-int qurt_mutex_create(qurt_mutex_t *lock);
+int qurt_mutex_create(qurt_mutex_t **lock);
 
 #if 0
 void qurt_mutex_delete(qurt_mutex_t *lock);

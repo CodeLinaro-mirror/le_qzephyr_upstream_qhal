@@ -29,9 +29,6 @@ unpa_struct unpa;
 void unpa_init(void)
 {
     qurt_mutex_create(&unpa.lock);
-
-    // Init log
-
     unpa.resources = NULL;
 }
 
@@ -85,7 +82,7 @@ unpa_resource *unpa_get_resource(const char *resource_name)
 {
     unpa_resource *resource;
 
-    qurt_mutex_lock(&unpa.lock);
+    qurt_mutex_lock(unpa.lock);
 
     resource = unpa.resources;
 
@@ -107,7 +104,7 @@ unpa_resource *unpa_get_resource(const char *resource_name)
         }
     }
 #endif
-    qurt_mutex_unlock(&unpa.lock);
+    qurt_mutex_unlock(unpa.lock);
 
     return resource;
 }
@@ -137,7 +134,7 @@ unpa_resource *unpa_create_resource(unpa_resource_definition *definition, unpa_r
     CORE_VERIFY_PTR(definition);
     CORE_VERIFY(strlen(definition->name) < UNPA_MAX_NAME_LEN);
 
-    qurt_mutex_lock(&unpa.lock);
+    qurt_mutex_lock(unpa.lock);
 
     /* Verify that no resource with the given name is already defined/stubbed */
     resource = unpa_get_resource(definition->name);
@@ -145,7 +142,7 @@ unpa_resource *unpa_create_resource(unpa_resource_definition *definition, unpa_r
 
     resource = (unpa_resource *)nt_osal_calloc(1, sizeof(unpa_resource));
     if (resource == NULL) {
-        qurt_mutex_unlock(&unpa.lock);
+        qurt_mutex_unlock(unpa.lock);
         return NULL;
     }
     memset(resource, 0, sizeof(unpa_resource));
@@ -167,7 +164,7 @@ unpa_resource *unpa_create_resource(unpa_resource_definition *definition, unpa_r
     resource->next = unpa.resources;
     unpa.resources = resource;
 
-    qurt_mutex_unlock(&unpa.lock);
+    qurt_mutex_unlock(unpa.lock);
 
     return resource;
 }
@@ -192,7 +189,7 @@ void unpa_stub_resource(const char *resource_name)
     CORE_VERIFY_PTR(resource_name);
     CORE_VERIFY(strlen(resource_name) < UNPA_MAX_NAME_LEN);
 
-    qurt_mutex_lock(&unpa.lock);
+    qurt_mutex_lock(unpa.lock);
 
     /* Verify that no such resource is already defined/stubbed */
     resource = unpa_get_resource(resource_name);
@@ -208,5 +205,5 @@ void unpa_stub_resource(const char *resource_name)
     /* If we didn't find a slot, we have too many stubs */
     CORE_VERIFY(i != UNPA_MAX_STUBS);
 
-    qurt_mutex_unlock(&unpa.lock);
+    qurt_mutex_unlock(unpa.lock);
 }
