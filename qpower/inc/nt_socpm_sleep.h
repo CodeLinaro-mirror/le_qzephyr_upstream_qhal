@@ -387,8 +387,6 @@ void nt_socpm_enable(uint8_t socpm_state);
 
 void nlp_config(void);
 
-void nt_socpm_slp_tmr_set(uint64_t sleep_time);
-
 uint64_t nt_socpm_min_slp_time_us();
 sleep_mode nt_socpm_curr_slp_mode();
 uint32_t get_sleep_exit_hw_delay(sleep_mode slp_mode);
@@ -521,8 +519,6 @@ void sleep_deregister(volatile int List_to_Del);
 void reorder_list(volatile int modified);
 
 void Aon_cmnss_wlan_slp_tmr_int(void);
-/*function to clear the sleep timer interrupt*/
-void _socpm_slptmr_off(void);
 
 #ifdef NT_TST_HEAP_COMP_CODE
 extern unsigned int _ln_bss_end__;
@@ -747,8 +743,5 @@ void socpm_reset_io_debug_count();
 #endif /*IO_DEBUG*/
 
 void nt_socpm_soc_sleep_processing(uint64_t slp_val);
-
-void _tst_sleep_enter(void);
-void _socpm_slpcfg_mcuslp(void);
 
 #endif /* _NT_SOCPM_SLEEP_H_ */

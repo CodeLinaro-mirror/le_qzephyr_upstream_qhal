@@ -14,7 +14,6 @@
 
 #pragma once
 
-#include <zephyr/sys/util_macro.h>
 #include "qapi_status.h"
 
 typedef enum {
@@ -22,6 +21,10 @@ typedef enum {
     WKUP_EXT_PIN = 2,
     WKUP_UNKNOWN = 3,
 } wkup_src_t;
+
+#ifndef BIT
+#define BIT(x) (1<<(x))
+#endif
 
 #define DEFAULT_SOFTOFF_DURATION_MS 5000
 #define DEFAULT_SOFTOFF_WAKEUP_SRC (BIT(WKUP_AON_TIMER) | BIT(WKUP_EXT_PIN))

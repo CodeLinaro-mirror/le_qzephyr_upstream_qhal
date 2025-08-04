@@ -6,11 +6,6 @@
 #ifndef QCC_UTIL_H_
 #define QCC_UTIL_H_
 
-#include <zephyr/irq.h>
-extern SCB_Type *g_SCB;
-extern NVIC_Type *g_NVIC;
-extern SysTick_Type *g_SysTick;
-
 #include <stdint.h>
 extern volatile uint32_t g32_dead_loop_1;
 extern volatile uint32_t g32_dead_loop_2;
