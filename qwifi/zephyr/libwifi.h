@@ -83,7 +83,6 @@ NT_BOOL wmi_pdev_utf_cmd(wmi_msg_struct_t *msg);
 
 // low power start
 void nt_socpm_nop_delay(uint64_t n_nops);
-void _socpm_slptmr_off(void);
 void nt_socpm_mtusr_restore_mtu_time(void);
 void nt_socpm_mtusr_save_mtu_time(void);
 #include "nt_socpm_sleep.h" //for nt_socpm_sleep_t & sleep_mode

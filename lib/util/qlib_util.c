@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <qlib_util.h>
+#include <zephyr/irq.h>
 
 SCB_Type *g_SCB = SCB;
 NVIC_Type *g_NVIC = NVIC;

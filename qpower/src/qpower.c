@@ -11,6 +11,8 @@
  */
 
 #include "printfext.h"
+#include "zephyr/sys/util_macro.h"
+
 #include "qpower.h"
 #include "qpower_internal.h"
 
@@ -48,6 +50,30 @@
 #include <zephyr/pm/policy.h>
 #include <zephyr/arch/cpu.h>
 #include <zephyr/arch/common/pm_s2ram.h>
+#include <zephyr/linker/sections.h>
+#include <zephyr/linker/linker-defs.h>
+#include <zephyr/drivers/timer/system_timer.h>
+#include <zephyr/sys_clock.h>
+#include <zephyr/sys/util.h>
+#include <zephyr/irq.h>
+#include "uart_hal.h"
+#include "nt_hw_support.h"
+#include "pmu_ll.h"
+
+#define NVIC_MEMBER_SIZE(member) ARRAY_SIZE(((NVIC_Type *)0)->member)
+
+typedef struct {
+    /* NVIC components stored into RAM. */
+    uint32_t ISER[NVIC_MEMBER_SIZE(ISER)];
+    uint32_t ISPR[NVIC_MEMBER_SIZE(ISPR)];
+    uint8_t IP[NVIC_MEMBER_SIZE(IP)];
+} _nvic_context_t;
+
+struct backup {
+    _nvic_context_t nvic_context;
+};
+
+static __noinit struct backup backup_data;
 
 qpower_param_t gs_qpower_param;
 
@@ -258,6 +284,111 @@ exit:
     __enable_fault_irq();
 }
 
+static void nvic_suspend(_nvic_context_t *backup)
+{
+    memcpy(backup->ISER, (uint32_t *)NVIC->ISER, sizeof(NVIC->ISER));
+    memcpy(backup->ISPR, (uint32_t *)NVIC->ISPR, sizeof(NVIC->ISPR));
+    memcpy(backup->IP, (uint32_t *)NVIC->IP, sizeof(NVIC->IP));
+}
+
+static void nvic_resume(_nvic_context_t *backup)
+{
+    memcpy((uint32_t *)NVIC->ISER, backup->ISER, sizeof(NVIC->ISER));
+    memcpy((uint32_t *)NVIC->ISPR, backup->ISPR, sizeof(NVIC->ISPR));
+    memcpy((uint32_t *)NVIC->IP, backup->IP, sizeof(NVIC->IP));
+}
+
+static void mcusleep_init_vector_table(void)
+{
+#define VECTOR_ADDRESS 0
+
+    size_t vector_size = (size_t)_vector_end - (size_t)_vector_start;
+    (void)memcpy(VECTOR_ADDRESS, _vector_start, vector_size);
+    SCB->VTOR = VECTOR_ADDRESS & SCB_VTOR_TBLOFF_Msk;
+}
+
+static void mcusleep_restore_vector_table(void) { SCB->VTOR = ((size_t)_vector_start) & SCB_VTOR_TBLOFF_Msk; }
+
+/* Function called during local domain suspend to RAM. */
+static int mcu_sleep_enter(void)
+{
+    early_printk("%s %d entry\r\n", __FUNCTION__, __LINE__);
+    g_socpm_struct.aon_cmnss_wlan_slp_tmr_int_processed = 0;
+#ifdef FIRMWARE_APPS_INFORMED_WAKE
+    aon_ext_interrupt_wake_up_processed = 0;
+#endif
+    g_socpm_struct.woken_src = WKUP_UNKNOWN;
+    g_socpm_struct.slept_time_ms = 0;
+    nvic_suspend(&backup_data.nvic_context);
+    mcusleep_init_vector_table();
+    sys_clock_set_timeout(
+        K_TICKS_FOREVER,
+        true); // to stop systick. sys tick will be enabled in pm_system_resume() => sys_clock_idle_exit()
+    early_printk("vecotr pointed to SRAM 0\r\n");
+    dead_loop_cond1();
+
+    // test_sleep_cb
+    q_sleep_wifi_enter(NT_PMU_CFG_WIFI_SLEEP_OFFSET);
+
+    if (gs_qpower_param.s2ram_duration_ms) {
+        early_printk("To set sleep timer=%d ms\r\n", gs_qpower_param.s2ram_duration_ms);
+        nt_socpm_slp_tmr_set(((uint64_t)gs_qpower_param.s2ram_duration_ms) * 1000);
+    }
+
+    /* This function performs sleep recipe as per the sleep mode specified */
+#ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
+    socpm_slp_clk_cal_presleep_activites(((uint64_t)gs_qpower_param.s2ram_duration_ms) * 1000);
+#endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
+
+    _socpm_slpcfg_mcuslp();
+
+    dead_loop_cond1();
+    _tst_sleep_enter();
+    dead_loop();
+    // CODE_UNREACHABLE;
+    /*
+     * We might reach this point is k_cpu_idle returns (there is a pre sleep hook that
+     * can abort sleeping.
+     */
+    return NT_FAIL;
+}
+
+static void mcu_sleep_wakeup(void)
+{
+    if (gs_qpower_param.s2ram_duration_ms) {
+        _socpm_slptmr_off();
+        _socpm_slptmr_set_max_expire();
+    }
+
+#ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
+    socpm_slp_clk_cal_postawake_activities();
+#endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
+
+    // TODO: add ticks to cycles by enable CONFIG_CORTEX_M_SYSTICK_IDLE_TIMER
+#if 0
+    uint64_t measurement_diff_us = nt_socpm_slp_time_total*1000;
+    cycle_t missed_cycles = (sys_clock_hw_cycles_per_sec() * measurement_diff_us) /USEC_PER_SEC;
+    cycle_count += missed_cycles;
+    uint32_t dcycles = cycle_count + elapsed() - announced_cycles;
+    announced_cycles += dcycles;
+#endif
+    // enable systick int
+    SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+    // sys_clock_announce(Z_TIMEOUT_MS_TICKS(nt_socpm_slp_time_total));
+
+    // hres_timer_post_sleep();
+
+    // request xip
+    g_pmu_hal->PMU_CFG_AON_CNTL_MCU_SYSTEM_BOOT_COMPLETE_STATE_RESOURCE_REQ.bit.PD_XIP_CNTL_BIT = 1;
+
+    uart_hal_enable_intr_rx_ext();
+
+    mcusleep_restore_vector_table();
+    nvic_resume(&backup_data.nvic_context);
+
+    early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
+}
+
 void qapi_enter_suspend2ram(void)
 {
     qpower_param_t *p_qpower_param = &gs_qpower_param;
@@ -292,3 +423,4 @@ void qapi_suspend2ram_exit_post_ops(void)
     dead_loop_cond2();
     irq_unlock(0);
 }
+
