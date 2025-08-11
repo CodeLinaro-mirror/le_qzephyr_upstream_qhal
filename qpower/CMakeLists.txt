@@ -1,5 +1,5 @@
-# Copyright (c) 2025 River <riverh@qti.qualcomm.com>
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
 
 zephyr_library_named(qpower)
 zephyr_include_directories(inc)

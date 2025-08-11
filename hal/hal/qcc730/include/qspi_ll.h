@@ -15,7 +15,7 @@
  * Include Files
  *-----------------------------------------------------------------------*/
 
-#include "qualcomm_soc.h"
+#include "qcom_soc.h"
 
 typedef __IOM QSPI_BASE_qspi_Type qspi_hal;
 

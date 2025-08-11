@@ -6,7 +6,7 @@
 #ifndef UART_HAL_TYPES_H
 #define UART_HAL_TYPES_H
 
-#include <qualcomm_soc.h>
+#include <qcom_soc.h>
 
 typedef enum {
     UART_STOP_BITS_1,

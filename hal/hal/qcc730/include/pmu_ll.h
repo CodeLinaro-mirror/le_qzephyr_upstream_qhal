@@ -6,7 +6,7 @@
 #ifndef QCC730_PMU_LL_H
 #define QCC730_PMU_LL_H
 
-#include <qualcomm_soc.h>
+#include <qcom_soc.h>
 
 typedef volatile PMU_BASE_pmu_Type pmu_hal;
 extern pmu_hal *g_pmu_hal;

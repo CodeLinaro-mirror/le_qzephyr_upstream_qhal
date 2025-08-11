@@ -1,1 +1,1 @@
-# qualcomm system service head files
+# qcom system service head files

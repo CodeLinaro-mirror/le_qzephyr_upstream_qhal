@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-if(NOT CONFIG_SOC_FAMILY_QUALCOMM)
+if(NOT CONFIG_SOC_FAMILY_QCOM)
 	return()
 endif()
 

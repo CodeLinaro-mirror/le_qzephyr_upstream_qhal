@@ -1,2 +1,2 @@
 # qhal
-# qualcomm hal module for Zephyr 
+# qcom hal module for Zephyr 

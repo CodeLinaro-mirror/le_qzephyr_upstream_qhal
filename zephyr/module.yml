@@ -1,4 +1,4 @@
-name: hal_qualcomm
+name: hal_qcom
 build:
   cmake: zephyr/..
   kconfig: zephyr/../Kconfig

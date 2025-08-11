@@ -3,7 +3,7 @@
 
 
 config QWIFI
-	bool "QUALCOMM wifi HAL"
+	bool "QCOM wifi HAL"
 	default n
 	select QURT_ABSTRACTION_LAYER
 	select LIBWIFIQCC730_SRC if SOC_QCC730

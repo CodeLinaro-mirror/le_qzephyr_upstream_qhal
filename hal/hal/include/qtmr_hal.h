@@ -5,7 +5,7 @@
 
 #ifndef _FERM_I2C_HAL_
 #define _FERM_I2C_HAL_
-#include "qualcomm_soc.h"
+#include "qcom_soc.h"
 
 typedef volatile QTMR_AC_BASE_qtmr_ac_Type qtmr_ac_hal;
 typedef volatile QTMR_V1_T0_BASE_qtmr_v1_t0_Type qtmr_tmr_hal;

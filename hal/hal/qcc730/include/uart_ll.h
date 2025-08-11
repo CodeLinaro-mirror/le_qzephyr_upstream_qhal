@@ -6,7 +6,7 @@
 #ifndef UART_LL_H
 #define UART_LL_H
 
-#include <qualcomm_soc.h>
+#include <qcom_soc.h>
 #include <uart_hal_types.h>
 
 /* ======= UART_RBR_THR_DLL_REG ======== */

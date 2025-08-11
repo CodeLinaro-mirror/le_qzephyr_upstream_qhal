@@ -1,2 +1,2 @@
-# qualcomm system service source files
+# qcom system service source files
 
