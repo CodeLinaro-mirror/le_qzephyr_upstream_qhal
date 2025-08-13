@@ -1,2 +1,6 @@
 blobs/libwifiqcc730.a
 blobs/libpowerqcc730.a
+blobs/libcryptoqcc730.a
+blobs/libsensorqcc730.a
+blobs/*.bin
+
