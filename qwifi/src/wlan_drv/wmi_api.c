@@ -157,7 +157,11 @@ static void _wlan_fill_scan_info(qapi_WLAN_BSS_Scan_Info_t *dst, const ap_info *
 {
     uint16_t channel = src->chan_freq;
     uint8_t rsn_Cipher, rsn_Auth, wpa_Cipher, wpa_Auth;
+
     extern int32_t wlan_freq_to_channel(uint16_t * channel);
+    extern int32_t wlan_freq_to_band(uint16_t channel);
+
+    dst->band = wlan_freq_to_band(src->chan_freq);
     wlan_freq_to_channel(&channel);
     dst->channel = channel;
     memscpy(dst->bssid, __QAPI_WLAN_MAC_LEN, src->bssid, __QAPI_WLAN_MAC_LEN);
@@ -334,6 +338,8 @@ static void wmi_ip_addr_ready_event(void *msg)
 #endif
 }
 
+extern int32_t wlan_freq_to_band(uint16_t freq);
+
 static void _wlan_fill_join_event(qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOIN_EVT *src)
 {
     uint8_t mac_addr[__QAPI_WLAN_MAC_LEN];
@@ -360,7 +366,7 @@ static void _wlan_fill_join_event(qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOIN
     dst->assoc_id = src->assoc_id;
     // dst->host_initiated = src->host_initiated; //host can judge this
     dst->reason_code = src->reason_code;
-    dst->channel_frequency = src->channel_frequency;
+    dst->band = wlan_freq_to_band(src->channel_frequency);
     dst->channel = src->channel_frequency;
     wlan_freq_to_channel(&dst->channel);
 }

@@ -103,7 +103,8 @@ typedef struct // qapi_WLAN_BSS_Scan_Info_s
     uint8_t wpa_Auth;                       /**< WPS authentication. */
     uint16_t caps;                          /**< Capability IE. */
     uint8_t wep_Support;                    /**< Supprt for WEP. */
-    uint8_t reserved[3];                    /**< Reserved. */
+    uint8_t band;                           /**< Wireless band. */
+    uint8_t reserved[2];                    /**< Reserved. */
 } qapi_WLAN_BSS_Scan_Info_t;
 
 /**
@@ -198,7 +199,7 @@ typedef struct {
     uint8_t reason_code;
     uint8_t passphrase[__QAPI_WLAN_PASSPHRASE_LEN + 1]; /* passphrase of joind AP */
     uint16_t assoc_id;                                  /* association id */
-    uint16_t channel_frequency;
+    uint16_t band;
     uint16_t channel;
 } qapi_WLAN_Join_Comp_Evt_t;
 

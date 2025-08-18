@@ -7,6 +7,7 @@
 #include "wmi_api.h"
 #include "safeAPI.h"
 #include <stdlib.h>
+#include <zephyr/net/wifi.h>
 #ifdef CONFIG_WPS
 #include "qapi_wlan_base.h"
 #endif
@@ -161,6 +162,18 @@ int32_t wlan_channel_to_freq(uint16_t *channel, qbool_t is_6g_index)
     }
     return 0;
 }
+
+int32_t wlan_freq_to_band(uint16_t freq)
+{
+    if (freq < 3000) {
+        return WIFI_FREQ_BAND_2_4_GHZ;
+    } else if (freq < 5955) {
+        return WIFI_FREQ_BAND_5_GHZ;
+    }
+
+    return WIFI_FREQ_BAND_6_GHZ;
+}
+
 
 int32_t wlan_freq_to_channel(uint16_t *channel)
 {
