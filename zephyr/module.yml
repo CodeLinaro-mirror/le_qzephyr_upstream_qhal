@@ -9,5 +9,3 @@ name: hal_qcom
 build:
   cmake: zephyr/..
   kconfig: zephyr/../Kconfig
-runners:
-  - file: tools/nvm_programmer/nvmprogrammer.py
