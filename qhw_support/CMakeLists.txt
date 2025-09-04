@@ -17,6 +17,7 @@ zephyr_library_sources(src/wlan_sleep_clk_cal.c)
 zephyr_library_sources(src/nt_gpio.c)
 zephyr_library_sources(src/wifi_fw_ext_intr.c)
 zephyr_library_sources(src/wifi_fw_init.c)
+zephyr_library_sources(src/hal_aon.c)
 
 #to-do
 #ferm_hkadc_drv.c
