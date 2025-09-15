@@ -201,6 +201,7 @@ typedef struct {
     uint16_t assoc_id;                                  /* association id */
     uint16_t band;
     uint16_t channel;
+    uint8_t rssi;
 } qapi_WLAN_Join_Comp_Evt_t;
 
 typedef struct {
