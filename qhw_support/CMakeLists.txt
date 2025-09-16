@@ -19,6 +19,8 @@ zephyr_library_sources(src/wifi_fw_ext_intr.c)
 zephyr_library_sources(src/wifi_fw_init.c)
 zephyr_library_sources(src/hal_aon.c)
 
+zephyr_linker_sources(SECTIONS src/hwmem.ld)
+
 #to-do
 #ferm_hkadc_drv.c
 #nt_prng.c

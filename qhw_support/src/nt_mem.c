@@ -41,12 +41,11 @@ const uint32_t g_ln_REGDB_Start_Addr = _LN_REGDB_START_ADDR;           // 0x0021
 const uint32_t g_ln_REGDB_Data_length = _LN_REGDB_DATA_LENGTH;         // 0x000036e0
 const uint32_t g_ln_CAL_Start_Addr = _LN_CAL_START_ADDR;               // 0x0021dce0
 const uint32_t g_ln_CAL_Data_length = _LN_CAL_DATA_LENGTH;             // 0x3000
-const uint32_t g_ln_RAM_start_addr_hw_desc__ =
-    _LN_RAM_START_ADDR_HW_DESC__; // base address for hardware descriptors, 0x0002f780
-const uint32_t g_ln_RAM_end_addr_hw_desc__ = _LN_RAM_END_ADDR_HW_DESC_; // 0x00034f68, len=0x57e8
-const uint32_t g_ln_RAM_start_addr_hw_pktmem__ =
-    _LN_RAM_START_ADDR_HW_PKTMEM__; // base address for packet memory, 0x00027780
-const uint32_t g_ln_RAM_end_addr_hw_pktmem__ = _LN_RAM_END_ADDR_HW_PKTMEM__; // 0x0002f780, len=0x8000
+
+const uint32_t g_ln_RAM_start_addr_hw_desc__ = (uint32_t)_ln_RAM_start_addr_hw_desc__;
+const uint32_t g_ln_RAM_end_addr_hw_desc__ = (uint32_t)_ln_RAM_end_addr_hw_desc__;
+const uint32_t g_ln_RAM_start_addr_hw_pktmem__ = (uint32_t)_ln_RAM_start_addr_hw_pktmem__;
+const uint32_t g_ln_RAM_end_addr_hw_pktmem__ = (uint32_t)_ln_RAM_end_addr_hw_pktmem__;
 
 #if (NT_CHIP_VERSION == 2) || defined(PLATFORM_FERMION)
 
