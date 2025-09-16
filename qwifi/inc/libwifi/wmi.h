@@ -320,6 +320,7 @@ typedef struct {
     ssid_t ssid;                                /*ssid of joind AP */
     uint8_t passphrase[WMI_PASSPHRASE_LEN + 1]; /* passphrase of the ap joined */
     uint8_t rssi;                               /* rssi value */
+    uint16_t beacon_interval;                   /* beacon interval */
 } POSTPACK WMI_JOIN_EVT;
 
 typedef struct {

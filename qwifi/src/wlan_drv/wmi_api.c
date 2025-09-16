@@ -369,6 +369,8 @@ static void _wlan_fill_join_event(qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOIN
     dst->band = wlan_freq_to_band(src->channel_frequency);
     dst->channel = src->channel_frequency;
     dst->rssi = src->rssi;
+    dst->beacon_interval = src->beacon_interval;
+
     wlan_freq_to_channel(&dst->channel);
 }
 
