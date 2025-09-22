@@ -153,7 +153,7 @@
 
 #define RRAM_PD_WAR /* WAR for cache corruption issue */
 
-// #define NT_SOCPM_SW_MTUSR
+ #define NT_SOCPM_SW_MTUSR
 
 #define SUPPORT_5GHZ
 // #define SUPPORT_TWT_STA
@@ -205,7 +205,7 @@ WAR_COEX_HEAVY_BT_WL_CONNECTING_FREERUN
 #define WAR_DUP_DET
 #endif /* WAR_DUP_DET */
 
-// #define COMPENSATE_AON_PROG_DELAY
+#define COMPENSATE_AON_PROG_DELAY
 
 #define ENABLE_MCS4_RX /* enable MCS4 RX for 2.0 HW to be able to solve IOP issue */
 

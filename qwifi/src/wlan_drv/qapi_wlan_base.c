@@ -7,6 +7,11 @@
 #include "wlan_qapi_helper.h"
 #include "safeAPI.h"
 #include <unistd.h>
+#include <zephyr/drivers/timer/system_timer.h>
+#include <zephyr/sys/time_units.h>
+
+extern volatile uint64_t bmps_enter_sleep;
+extern volatile uint64_t bmps_wkup_cpu;
 
 typedef enum { WPS_NONE, WPS_SCAN, WPS_CONNECTED } WPS_STAGE_TYPE;
 
@@ -49,6 +54,32 @@ qapi_Status_t qapi_WLAN_Enable(qapi_WLAN_Enable_e enable)
         ret = QAPI_WLAN_ERR_EINVAL;
         goto exit;
     }
+exit:
+    PRINT_LOG_FUNC_LINE_EXIT;
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Suspend(void)
+{
+    qapi_Status_t ret = QAPI_ERROR;
+
+    WLAN_QAPI_LOCK();
+    PRINT_LOG_FUNC_LINE_ENTRY;
+    ret = wmi_suspend();
+exit:
+    PRINT_LOG_FUNC_LINE_EXIT;
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Resume(void)
+{
+    sys_clock_announce((uint32_t) k_us_to_ticks_floor64(bmps_wkup_cpu - bmps_enter_sleep));
+    qapi_Status_t ret = QAPI_WLAN_ERROR;
+    WLAN_QAPI_LOCK();
+    PRINT_LOG_FUNC_LINE_ENTRY;
+    wmi_resume();
 exit:
     PRINT_LOG_FUNC_LINE_EXIT;
     WLAN_QAPI_UNLOCK();

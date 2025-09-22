@@ -59,6 +59,7 @@
 #include "uart_hal.h"
 #include "nt_hw_support.h"
 #include "pmu_ll.h"
+#include <zephyr/drivers/timer/system_timer.h>
 
 #define ARRAY_SIZE_IN_TYPE(type, member) sizeof(((type *)(0))->member)
 
@@ -90,7 +91,7 @@ qapi_Status_t qapi_pmu_init(void)
 
     gs_qpower_param.softoff_duration_ms = DEFAULT_SOFTOFF_DURATION_MS;
     gs_qpower_param.softoff_wakeup_src = DEFAULT_SOFTOFF_WAKEUP_SRC;
-    gs_qpower_param.s2ram_duration_ms = DEFAULT_S2RAM_DURATION_MS;
+    gs_qpower_param.s2ram_duration_ms = 0;
     gs_qpower_param.s2ram_wakeup_src = DEFAULT_S2RAM_WAKEUP_SRC;
 
     /* dev cfg should be the first to get initialized */
@@ -313,6 +314,7 @@ static void mcusleep_init_vector_table(void)
 
     size_t vector_size = (size_t)_vector_end - (size_t)_vector_start;
     (void)memcpy(VECTOR_ADDRESS, _vector_start, vector_size);
+    *(uint32_t *)(VECTOR_ADDRESS + 0x4) = (void *)ram_minimum_code;
     SCB->VTOR = VECTOR_ADDRESS & SCB_VTOR_TBLOFF_Msk;
 }
 
@@ -321,7 +323,7 @@ static void mcusleep_restore_vector_table(void) { SCB->VTOR = ((size_t)_vector_s
 /* Function called during local domain suspend to RAM. */
 static int mcu_sleep_enter(void)
 {
-    early_printk("%s %d entry\r\n", __FUNCTION__, __LINE__);
+    //early_printk("%s %d entry\r\n", __FUNCTION__, __LINE__);
     g_socpm_struct.aon_cmnss_wlan_slp_tmr_int_processed = 0;
 #ifdef FIRMWARE_APPS_INFORMED_WAKE
     aon_ext_interrupt_wake_up_processed = 0;
@@ -330,7 +332,7 @@ static int mcu_sleep_enter(void)
     g_socpm_struct.slept_time_ms = 0;
     nvic_suspend(&backup_data.nvic_context);
     mcusleep_init_vector_table();
-    early_printk("vecotr pointed to SRAM 0\r\n");
+    //early_printk("vecotr pointed to SRAM 0 \r\n");
     dead_loop_cond1();
 
     // test_sleep_cb
@@ -400,7 +402,7 @@ void qapi_enter_suspend2ram(void)
     }
     arch_pm_s2ram_suspend(mcu_sleep_enter);
     /* On resuming or error we return exactly *HERE* */
-    ram_minimum_code();
+    //ram_minimum_code();
     mcu_sleep_wakeup();
 exit:
     early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
@@ -417,3 +419,7 @@ void qapi_suspend2ram_exit_post_ops(void)
     irq_unlock(0);
 }
 
+void qapi_slp_tmr_set(uint64_t slp_us)
+{
+    sys_clock_set_timeout( k_us_to_ticks_ceil32(slp_us), true);
+}

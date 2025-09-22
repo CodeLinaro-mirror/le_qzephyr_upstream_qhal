@@ -25,6 +25,8 @@
 #define WLAN_WMI_CMD_SIG_MASK_STARTED_WPS_PROCESS 0x10000
 #define WLAN_WMI_CMD_SIG_MASK_STOPPED_SCAN 0x20000
 #endif
+#define WLAN_WMI_CMD_SIG_MASK_SUSPEND 0x80000
+#define WLAN_WMI_CMD_SIG_MASK_RESUME 0x100000
 
 extern qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_len);
 extern qapi_Status_t wmi_dev_cmd_send(WMI_COMMAND_ID cmd_id, uint8_t dev_id, void *p_data, uint32_t data_len);
@@ -61,5 +63,7 @@ qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_I
 qapi_Status_t wlan_get_rts_rate(uint32_t *rate);
 extern qapi_Status_t wlan_get_edca_param(uint8_t qid, uint8_t *aifs, uint16_t *cw_min, uint16_t *cw_max,
                                          uint16_t *txop_limit);
+extern qapi_Status_t  wmi_suspend(void);
+extern qapi_Status_t  wmi_resume(void);
 
 #endif //__WMI_API_H__

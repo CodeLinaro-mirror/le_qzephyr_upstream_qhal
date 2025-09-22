@@ -24,6 +24,7 @@
 #include "nt_hw_support.h"
 #include "qurt_isr.h"
 #include "qcc730v2.h"
+#include "nt_socpm_sleep.h"
 
 // #include "ferm_prof.h"
 

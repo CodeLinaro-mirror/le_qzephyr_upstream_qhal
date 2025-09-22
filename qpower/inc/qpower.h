@@ -40,3 +40,4 @@ qapi_Status_t qapi_power_get_parameter(uint32_t type, uint32_t *val);
 void qapi_enter_softoff(void);
 void qapi_enter_suspend2ram(void);
 void qapi_suspend2ram_exit_post_ops(void);
+void qapi_slp_tmr_set(uint64_t);

@@ -60,6 +60,8 @@ typedef struct wlan_qapi_cxt_s {
     uint32_t wlan_send_raw_block_mode : 1;
     uint32_t wlan_set_mgmt_filter_block_mode : 1;
     uint32_t wlan_get_tx_power_block_mode : 1;
+    uint32_t wlan_suspend_block_mode: 1;
+    uint32_t wlan_resume_block_mode: 1;
     qapi_Status_t wlan_qapi_error;
     wlan_evt_payload_t event_payload_buf[EVT_PAYLOAD_MAX];
     WMI_CONNECT_CMD connect_cmd;

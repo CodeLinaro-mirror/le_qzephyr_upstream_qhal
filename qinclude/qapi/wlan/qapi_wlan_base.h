@@ -2759,6 +2759,39 @@ Use qapi_WLAN_Remove_Device() before disabling WLAN.
 qapi_Status_t qapi_WLAN_Enable(qapi_WLAN_Enable_e enable);
 
 /**
+  @ingroup qapi_wlan
+  Suspends the Wi-Fi module.
+
+  This is a blocking call that transitions the WLAN firmware into a low-power suspend state.
+  All active WLAN operations are paused, and the module will not process new commands until resumed.
+
+  @return
+  QAPI_OK -- WLAN suspend succeeded. \n
+  Nonzero value -- WLAN suspend failed.
+
+  @dependencies
+  WLAN must be enabled using qapi_WLAN_Enable() before calling this API.
+  Use qapi_WLAN_Resume() to bring the module back to the active state.
+*/
+qapi_Status_t qapi_WLAN_Suspend(void);
+
+/**
+  @ingroup qapi_wlan
+  Resumes the Wi-Fi module from a suspended state.
+
+  This is a blocking call that transitions the WLAN firmware back to the active state.
+  After resuming, all WLAN operations can continue as normal.
+
+  @return
+  QAPI_OK -- WLAN resume succeeded. \n
+  Nonzero value -- WLAN resume failed.
+
+  @dependencies
+  WLAN must have been previously suspended using qapi_WLAN_Suspend().
+*/
+qapi_Status_t qapi_WLAN_Resume(void);
+
+/**
 @ingroup qapi_wlan
 Adds an interface in the Wi-Fi driver. This API has no interaction with KF.
 

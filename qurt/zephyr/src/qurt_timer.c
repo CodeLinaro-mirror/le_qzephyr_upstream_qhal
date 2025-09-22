@@ -16,6 +16,7 @@
 #include <timeout_q.h>
 #include "qurt_timer.h"
 #include "qurt_error.h"
+#include "fermion_reg.h"
 
 #define QURT_TIMER_NOTIFY_TYPE_CALLBACK 1
 #define QURT_TIMER_NOTIFY_TYPE_SIGNAL 2
@@ -331,6 +332,7 @@ void hres_timer_us_delay(uint32_t time_us) { k_busy_wait(time_us); }
 
 uint64_t hres_timer_curr_time_us(void)
 {
+#if 0
 #ifdef SUPPORT_HIGH_RES_TIMER
     uint64_t curr_time_us;
     timer_cvt_from_tick64(hres_timer_timetick_get(), T_USEC, &curr_time_us);
@@ -338,6 +340,18 @@ uint64_t hres_timer_curr_time_us(void)
 #else  /* SUPPORT_HIGH_RES_TIMER */
     return k_uptime_get()*1000;
 #endif /* SUPPORT_HIGH_RES_TIMER */
+#else
+    uint64_t current_ticks;
+    uint32_t count_lo, count_hi;
+    uint64_t cntr_freq_hz = 38400000u;
+    uint64_t curr_time_us;
+
+    count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T0_OFFSET);
+    count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T0_OFFSET);
+    current_ticks = (((uint64_t)count_hi << 32) | count_lo);
+    curr_time_us = (current_ticks * 1000000) / cntr_freq_hz;
+    return curr_time_us;
+#endif
 }
 
 uint32_t hres_timer_curr_time_ms(void)
