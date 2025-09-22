@@ -21,6 +21,7 @@
 #define WLAN_WMI_CMD_SIG_MASK_SEND_RAW 0x2000
 #define WLAN_WMI_CMD_SIG_MASK_SET_MGMT_FILTER 0x4000
 #define WLAN_WMI_CMD_SIG_MASK_GET_TX_POWER 0x8000
+#define WLAN_WMI_CMD_SIG_MASK_GET_STATUS 0x10000
 #ifdef CONFIG_WPS
 #define WLAN_WMI_CMD_SIG_MASK_STARTED_WPS_PROCESS 0x10000
 #define WLAN_WMI_CMD_SIG_MASK_STOPPED_SCAN 0x20000
@@ -65,5 +66,6 @@ extern qapi_Status_t wlan_get_edca_param(uint8_t qid, uint8_t *aifs, uint16_t *c
                                          uint16_t *txop_limit);
 extern qapi_Status_t  wmi_suspend(void);
 extern qapi_Status_t  wmi_resume(void);
+extern qapi_Status_t wmi_get_wifi_status(uint8_t dev_id, WMI_WIFI_STATUS *status);
 
 #endif //__WMI_API_H__

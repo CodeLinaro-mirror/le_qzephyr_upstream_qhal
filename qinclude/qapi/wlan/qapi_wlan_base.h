@@ -199,10 +199,6 @@ typedef struct {
     uint8_t reason_code;
     uint8_t passphrase[__QAPI_WLAN_PASSPHRASE_LEN + 1]; /* passphrase of joind AP */
     uint16_t assoc_id;                                  /* association id */
-    uint16_t band;
-    uint16_t channel;
-    uint16_t beacon_interval;
-    uint8_t rssi;
 } qapi_WLAN_Join_Comp_Evt_t;
 
 typedef struct {
@@ -2707,6 +2703,20 @@ typedef struct {
     uint16_t ack_timeout;
     uint16_t delay;
 } qapi_WLAN_BA_Window_Params_t;
+
+/**
+@ingroup qapi_wlan
+Get current Wi-Fi status.
+*/
+typedef struct {
+    uint16_t band;
+    uint16_t channel;
+    uint16_t beacon_interval;
+    uint16_t dtim_period;
+    uint16_t auth_mode;
+    uint32_t rssi;
+    uint32_t link_mode;
+} qapi_WLAN_Status_t;
 
 /**
 @ingroup qapi_wlan

@@ -366,12 +366,6 @@ static void _wlan_fill_join_event(qapi_WLAN_Join_Comp_Evt_t *dst, const WMI_JOIN
     dst->assoc_id = src->assoc_id;
     // dst->host_initiated = src->host_initiated; //host can judge this
     dst->reason_code = src->reason_code;
-    dst->band = wlan_freq_to_band(src->channel_frequency);
-    dst->channel = src->channel_frequency;
-    dst->rssi = src->rssi;
-    dst->beacon_interval = src->beacon_interval;
-
-    wlan_freq_to_channel(&dst->channel);
 }
 
 static void wmi_join_comp_event(void *msg)
@@ -773,6 +767,35 @@ static void wmi_send_raw_event(void *msg)
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 }
 
+static void wmi_report_wifi_status(void *msg)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
+    set_wlan_qapi_error(QAPI_OK);
+
+    if (p_cxt->wlan_get_stat_block_mode) {
+        qurt_signal_set(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_GET_STATUS);
+    }
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+}
+
+qapi_Status_t wmi_get_wifi_status(uint8_t dev_id, WMI_WIFI_STATUS *status)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    qapi_Status_t ret = QAPI_WLAN_ERROR;
+
+    wmi_dev_cmd_send(WMI_GET_WIFI_STATUS, dev_id, status, sizeof(*status));
+    if (p_cxt->wlan_get_stat_block_mode) {
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_GET_STATUS, QURT_SIGNAL_ATTR_CLEAR_MASK);
+    } else {
+        log_printf("unblock mode, should check WMI cmd done in event cb\n");
+    }
+
+    ret = get_wlan_qapi_error();
+    return ret;
+}
+
 static void wmi_event_dispatch(uint32_t event_id, void *data)
 {
     switch (event_id) {
@@ -836,6 +859,9 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
         break;
     case WMI_MGMT_FRAME_FILTER_EVTID:
         wmi_set_mgmt_filter_event(data);
+        break;
+    case WMI_REPORT_WIFI_STATUS:
+        wmi_report_wifi_status(data);
         break;
 #ifdef CONFIG_WPS
     case WMI_SCAN_STOP_EVTID:
