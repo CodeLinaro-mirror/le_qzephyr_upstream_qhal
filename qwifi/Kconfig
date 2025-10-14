@@ -1,7 +1,6 @@
 # Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-3-Clause
 
-
 config QWIFI
 	bool "QCOM wifi HAL"
 	default n
@@ -15,3 +14,6 @@ config QWIFI
 	select MBEDTLS_MD
 	select MBEDTLS_SHA1
 	select MBEDTLS_CIPHER
+
+config MAIN_STACK_SIZE
+	default 2048 if QWIFI
