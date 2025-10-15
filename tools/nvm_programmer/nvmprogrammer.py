@@ -45,6 +45,12 @@ class NVMProgrammerRunner(ZephyrBinaryRunner):
             self.flash(**kwargs)
 
     def flash(self, **kwargs):
+        openocdcfgpath = Path(self.cfg.board_dir) / ".." / "common" / "qcc730_openocd_ch347.cfg"
+        if not openocdcfgpath.exists():
+            raise FileNotFoundError(f"OpenOCD config file not found: {openocdcfgpath}")
+        original_dir = os.getcwd()
+        os.chdir(openocdcfgpath.parent)
+
         module_path = (
             Path(getenv("ZEPHYR_BASE")).absolute()
             / r".."
@@ -70,6 +76,15 @@ class NVMProgrammerRunner(ZephyrBinaryRunner):
 
         #wifi related
         regdb_path = Path(blobs_path, "regdb.bin")
+
+        if not os.path.isfile(nvm_programmer):
+            nvm_programmeraa = Path(nvmprogrammerpath, "nvm_programmeraa")
+            nvm_programmerab = Path(nvmprogrammerpath, "nvm_programmerab")
+            print('nvm_programmeraa=%s'%nvm_programmeraa)
+            print('nvm_programmerab=%s'%nvm_programmerab)
+            print('nvm_programmer=%s'%nvm_programmer)
+            if os.path.isfile(nvm_programmeraa) and os.path.isfile(nvm_programmerab):
+                os.system('copy /b %s + %s %s'%(nvm_programmeraa, nvm_programmerab, nvm_programmer))
         
         print("board_dir: "+str(self.cfg.board_dir))
         board_name = os.path.basename(self.cfg.board_dir)
@@ -117,3 +132,6 @@ class NVMProgrammerRunner(ZephyrBinaryRunner):
             cmd += " --reset "
         print(cmd)
         os.system(cmd)
+
+        os.chdir(original_dir)
+
