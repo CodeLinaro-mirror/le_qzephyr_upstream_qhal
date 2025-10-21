@@ -1,0 +1,4 @@
+name: qcc730_prg
+build:
+  cmake: zephyr/..
+  kconfig: zephyr/../Kconfig
