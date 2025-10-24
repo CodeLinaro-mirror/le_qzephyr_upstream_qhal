@@ -21,9 +21,6 @@
 #define QURT_TIMER_NOTIFY_TYPE_CALLBACK 1
 #define QURT_TIMER_NOTIFY_TYPE_SIGNAL 2
 
-#define QURT_TIMER_NOTIFY_TYPE_CALLBACK 1
-#define QURT_TIMER_NOTIFY_TYPE_SIGNAL 2
-
 typedef struct _qurt_timer_attr_t {
     qurt_time_t duration;
     qurt_time_t reload;
@@ -177,6 +174,7 @@ int qurt_timer_change_period(TimerHandle_t timer, TickType_t period, TickType_t 
     }
 
     _qtimer->qurt_timer_info.reload = period;
+    _qtimer->qurt_timer_info.duration = period;
     k_timer_start(timer, K_TICKS(_qtimer->qurt_timer_info.duration), K_TICKS(_qtimer->qurt_timer_info.reload));
 
     return QURT_EOK;
