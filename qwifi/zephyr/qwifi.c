@@ -95,7 +95,6 @@ qapi_Status_t qwifi_hal_tx(uint8_t device_ID, void *buffer, uint16_t len)
     uint8_t *buf_ptr = NULL;
     qapi_Status_t ret = QAPI_OK;
 
-    PRINT_LOG_FUNC_LINE_ENTRY;
     buf_ptr = nt_dpm_allocate_buffer_ext((uint32_t)len);
     nt_dpm_memcpy(buf_ptr, buffer, len);
     err = nt_dpm_process_eth_packet_from_stack_ext(buf_ptr, len);
@@ -109,7 +108,7 @@ qapi_Status_t qwifi_hal_tx(uint8_t device_ID, void *buffer, uint16_t len)
             ret = QAPI_ERROR; // TODO: any error log should be added
         }
     }
-    PRINT_LOG_FUNC_LINE_EXIT;
+
     return ret;
 }
 
