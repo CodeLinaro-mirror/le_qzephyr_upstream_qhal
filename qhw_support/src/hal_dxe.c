@@ -91,9 +91,6 @@ void nt_ndxe_start(void)
     qurt_isr_register_3(DXE_qgic2_per_channel_int_6, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_7, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_8, nt_dxe_interrupt_handler);
-    qurt_isr_register_3(DXE_qgic2_per_channel_int_9, nt_dxe_interrupt_handler);
-    qurt_isr_register_3(DXE_qgic2_per_channel_int_10, nt_dxe_interrupt_handler);
-    qurt_isr_register_3(DXE_qgic2_per_channel_int_11, nt_dxe_interrupt_handler);
 
     // Reset DXE : Not reset in pronto code <--  Check if required ?
     regVal = rRead(QWLAN_CCU_R_CCU_SOFT_RESET_REG);
@@ -1205,33 +1202,6 @@ eRet_t __attribute__((section(".after_ram_vectors"))) ndxe_irq_handler()
         if (regVal & QWLAN_DXE_0_INT_SRC_RAW_CH8_INT_MASK) {
             rWrite(QWLAN_DXE_0_INT_CLR_REG, QWLAN_DXE_0_INT_CLR_CH8_INT_CLR_MASK);
             pDxeCCB = (volatile DxeCCB_t *)&(halDxe->DxeCCB[DXE_CHANNEL_8]);
-            if (pDxeCCB->cbfn) {
-                (pDxeCCB->cbfn)(pDxeCCB->arg);
-            }
-        }
-
-        // Channel 9
-        if (regVal & QWLAN_DXE_0_INT_SRC_RAW_CH9_INT_MASK) {
-            rWrite(QWLAN_DXE_0_INT_CLR_REG, QWLAN_DXE_0_INT_CLR_CH9_INT_CLR_MASK);
-            pDxeCCB = (volatile DxeCCB_t *)&(halDxe->DxeCCB[DXE_CHANNEL_9]);
-            if (pDxeCCB->cbfn) {
-                (pDxeCCB->cbfn)(pDxeCCB->arg);
-            }
-        }
-
-        // Channel 10
-        if (regVal & QWLAN_DXE_0_INT_SRC_RAW_CH10_INT_MASK) {
-            rWrite(QWLAN_DXE_0_INT_CLR_REG, QWLAN_DXE_0_INT_CLR_CH10_INT_CLR_MASK);
-            pDxeCCB = (volatile DxeCCB_t *)&(halDxe->DxeCCB[DXE_CHANNEL_10]);
-            if (pDxeCCB->cbfn) {
-                (pDxeCCB->cbfn)(pDxeCCB->arg);
-            }
-        }
-
-        // Channel 11
-        if (regVal & QWLAN_DXE_0_INT_SRC_RAW_CH11_INT_MASK) {
-            rWrite(QWLAN_DXE_0_INT_CLR_REG, QWLAN_DXE_0_INT_CLR_CH11_INT_CLR_MASK);
-            pDxeCCB = (volatile DxeCCB_t *)&(halDxe->DxeCCB[DXE_CHANNEL_11]);
             if (pDxeCCB->cbfn) {
                 (pDxeCCB->cbfn)(pDxeCCB->arg);
             }
