@@ -1,5 +1,14 @@
 # Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-3-Clause
+
+execute_process(
+    COMMAND
+        ${PYTHON_EXECUTABLE}
+        "${ZEPHYR_HAL_QCOM_MODULE_DIR}/tools/qbdf/BDF_txt2bin.py"
+        "${ZEPHYR_HAL_QCOM_MODULE_DIR}/tools/qbdf/bdf_file/"
+        "${ZEPHYR_HAL_QCOM_MODULE_DIR}/zephyr/blobs/"
+)
+
 execute_process(
 	COMMAND
 		${PYTHON_EXECUTABLE}
