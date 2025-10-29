@@ -1,6 +1,6 @@
 /*========================================================================
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause-Clear
+ * SPDX-License-Identifier: BSD-3-Clause
 *
 * @file ring_ctx_holder.h
 * @brief Ring Context Holder param and struct definitions

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause-Clear
+ * SPDX-License-Identifier: BSD-3-Clause
 */
 #ifndef _BOOT_PBL_SHARE_H_
 #define _BOOT_PBL_SHARE_H_
