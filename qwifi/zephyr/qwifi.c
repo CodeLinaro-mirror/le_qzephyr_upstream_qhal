@@ -89,27 +89,9 @@ void qwifi_init(void)
     PRINT_LOG_FUNC_LINE_EXIT;
 }
 
-qapi_Status_t qwifi_hal_tx(uint8_t device_ID, void *buffer, uint16_t len)
+qapi_Status_t qwifi_hal_tx(uint8_t dev_id, void *pkt, uint16_t len)
 {
-    nt_status_t err;
-    uint8_t *buf_ptr = NULL;
-    qapi_Status_t ret = QAPI_OK;
-
-    buf_ptr = nt_dpm_allocate_buffer_ext((uint32_t)len);
-    nt_dpm_memcpy(buf_ptr, buffer, len);
-    err = nt_dpm_process_eth_packet_from_stack_ext(buf_ptr, len);
-    if (err != NT_OK) {
-        nt_dpm_free_buffer_ext(buf_ptr);
-        if (err == NT_ECONN) {
-            ret = QAPI_ERR_NO_ENTRY; /* using LWIP ERROR constant to notify LWIP stack for state of connection */
-        } else if ((err == NT_ENOMEM) || (err == NT_ENORES) || (err == NT_ETXFAIL)) {
-            ret = QAPI_ERR_NO_MEMORY; /* using LWIP ERROR constant to notify LWIP stack for error in transmitting */
-        } else {
-            ret = QAPI_ERROR; // TODO: any error log should be added
-        }
-    }
-
-    return ret;
+    return nt_dpm_process_eth_packet_from_stack_ext(pkt, len);
 }
 
 struct qwifi_hal_t gs_qwifi_hal;
