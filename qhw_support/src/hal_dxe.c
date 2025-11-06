@@ -89,7 +89,6 @@ void nt_ndxe_start(void)
     qurt_isr_register_3(DXE_qgic2_per_channel_int_4, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_5, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_6, nt_dxe_interrupt_handler);
-    qurt_isr_register_3(DXE_qgic2_per_channel_int_7, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_8, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_9, nt_dxe_interrupt_handler);
     qurt_isr_register_3(DXE_qgic2_per_channel_int_10, nt_dxe_interrupt_handler);
