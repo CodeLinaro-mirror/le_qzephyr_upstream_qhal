@@ -63,9 +63,9 @@ extern const uint32_t g__OTP_region_st_addr;           // 0x001a0000
 extern const uint32_t g__OTP_region_end_addr;          // 0x001a1000, len=0x1000
 extern const uint32_t g__rram_region_start_addr;       // 0x00200000
 extern const uint32_t g__rram_region_end_address;      // 0x00380000, len=0x180000
-extern const uint32_t g_ln_REGDB_Start_Addr;           // 0x0021a600
-extern const uint32_t g_ln_REGDB_Data_length;          // 0x000036e0
-extern const uint32_t g_ln_CAL_Start_Addr;             // 0x0021dce0
+extern const uint32_t g_ln_REGDB_Start_Addr;           // 0x00373000
+extern const uint32_t g_ln_REGDB_Data_length;          // 0x00004000
+extern const uint32_t g_ln_CAL_Start_Addr;             // 0x00377000
 extern const uint32_t g_ln_CAL_Data_length;            // 0x3000
 
 /* reserve pktmem region for BD/PDU */
