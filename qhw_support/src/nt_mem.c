@@ -37,9 +37,9 @@ const uint32_t g__OTP_region_st_addr = __OTP_REGION_START_ADDR;        // 0x001a
 const uint32_t g__OTP_region_end_addr = __OTP_REGION_END_ADDR;         // 0x001a1000, len=0x1000
 const uint32_t g__rram_region_start_addr = __RRAM_REGION_START_ADDR;   // 0x00200000
 const uint32_t g__rram_region_end_address = __RRAM_REGION_END_ADDRESS; // 0x00380000, len=0x180000
-const uint32_t g_ln_REGDB_Start_Addr = _LN_REGDB_START_ADDR;           // 0x0021a600
-const uint32_t g_ln_REGDB_Data_length = _LN_REGDB_DATA_LENGTH;         // 0x000036e0
-const uint32_t g_ln_CAL_Start_Addr = _LN_CAL_START_ADDR;               // 0x0021dce0
+const uint32_t g_ln_REGDB_Start_Addr = _LN_REGDB_START_ADDR;           // 0x00373000
+const uint32_t g_ln_REGDB_Data_length = _LN_REGDB_DATA_LENGTH;         // 0x00004000
+const uint32_t g_ln_CAL_Start_Addr = _LN_CAL_START_ADDR;               // 0x00377000
 const uint32_t g_ln_CAL_Data_length = _LN_CAL_DATA_LENGTH;             // 0x3000
 
 const uint32_t g_ln_RAM_start_addr_hw_desc__ = (uint32_t)_ln_RAM_start_addr_hw_desc__;
