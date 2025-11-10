@@ -54,15 +54,22 @@ class GDB_Client(object):
 
         if PACK_ENABLE:
             self.client_path = sys._MEIPASS
+            self.client_exe = client_exe
+            
+        elif 'GDB_CLIENT_PATH' in os.environ:
+            # Get it from an environemnt variable
+            self.client_path = os.environ['GDB_CLIENT_PATH']
+            self.client_exe = "arm-none-eabi-gdb-py3"
         
         else:
             if 'ZEPHYR_SDK_INSTALL_DIR' in os.environ:
             # Get it from an environemnt variable
                 self.client_path = os.path.join(os.environ['ZEPHYR_SDK_INSTALL_DIR'], "arm-zephyr-eabi", "bin")
+                self.client_exe = client_exe
             else:
                 raise GDB_Client_Error('ZEPHYR_SDK_INSTALL_DIR is not in environemnt variable')
 
-        self.client_exe = client_exe
+        #self.client_exe = client_exe
         self.udp_server = udp_port
         self.client_proc = None
         self.udp_socket = None
