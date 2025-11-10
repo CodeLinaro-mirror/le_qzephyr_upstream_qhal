@@ -8,6 +8,7 @@
 #include "wmi_api.h"
 #include "libwifi.h"
 #include <zephyr/autoconf.h>
+#include <zephyr/kernel.h>
 
 #define WLAN_ROAMING_TIMER_PERIOD_DEFAULT 5000
 #define WLAN_ROAMING_TIMER_PERIOD_NICREASE1 5000
@@ -41,7 +42,7 @@ qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_C
     return ret;
 }
 
-void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
+static void roam_handler(struct k_work *item)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     static uint8_t cnt_for_current_time_period = 1;
@@ -58,8 +59,6 @@ void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
         } else {
             p_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE3;
         }
-
-        nt_timer_change_time_period(thandle, NT_MS_TO_TICKS(p_cxt->roaming_time_out));
     }
 
     cnt_for_current_time_period += 1;
@@ -71,11 +70,9 @@ void wlan_drv_roaming_timer_handler(TimerHandle_t thandle)
             wmi_set_passphrase();
         }
         wmi_connect();
-
-        nt_start_timer(p_cxt->roaming_timer);
+        k_work_reschedule(&p_cxt->roaming_work, K_MSEC(p_cxt->roaming_time_out));
     } else {
         p_cxt->wlan_roaming_started = 0;
-        nt_stop_timer(p_cxt->roaming_timer);
     }
 
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
@@ -87,13 +84,11 @@ qapi_Status_t wlan_drv_roaming_start(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
-    if ((p_cxt) && (p_cxt->roaming_timer) && (p_cxt->wlan_roaming_started == 0) &&
+    if ((p_cxt) && (p_cxt->wlan_roaming_started == 0) &&
         (p_cxt->connect_cmd.ssidLength != 0)) {
-        p_cxt->wlan_roaming_started = 1;
+         p_cxt->wlan_roaming_started = 1;
         p_cxt->roaming_time_out = WLAN_ROAMING_TIMER_PERIOD_DEFAULT;
-        nt_timer_change_time_period(p_cxt->roaming_timer, NT_MS_TO_TICKS(p_cxt->roaming_time_out));
-
-        nt_start_timer(p_cxt->roaming_timer);
+        k_work_reschedule(&p_cxt->roaming_work, K_MSEC(p_cxt->roaming_time_out));
     }
 
     return QAPI_OK;
@@ -103,9 +98,9 @@ qapi_Status_t wlan_drv_roaming_stop(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
-    if ((p_cxt) && (p_cxt->roaming_timer) && (p_cxt->wlan_roaming_started)) {
+    if ((p_cxt) && (p_cxt->wlan_roaming_started)) {
         p_cxt->wlan_roaming_started = 0;
-        nt_stop_timer(p_cxt->roaming_timer);
+        k_work_cancel_delayable(&p_cxt->roaming_work);
     }
 
     return QAPI_OK;
@@ -166,9 +161,8 @@ int wlan_qapi_init(void)
     wlan_preset_specific_param();
 
     p_cxt->wlan_roaming_started = 0;
-    p_cxt->roaming_time_out = WLAN_ROAMING_TIMER_PERIOD_DEFAULT;
-    p_cxt->roaming_timer =
-        nt_create_timer(wlan_drv_roaming_timer_handler, NULL, NT_MS_TO_TICKS(p_cxt->roaming_time_out), FALSE);
+    k_work_init_delayable(&p_cxt->roaming_work, roam_handler);
+
     memscpy(p_cxt->country_code, 3, DEF_AP_COUNTRY_CODE, 3);
     p_cxt->mgmt_filter.recv_queue = nt_qurt_pipe_create(100, sizeof(WMI_MGMT_FRAME_RECV_MSG));
     return (int)QAPI_OK;
@@ -177,6 +171,11 @@ int wlan_qapi_init(void)
 void wlan_qapi_exit(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    if (p_cxt->wlan_roaming_started) {
+        p_cxt->wlan_roaming_started = 0;
+        k_work_cancel_delayable(&p_cxt->roaming_work);
+    }
 
     PRINT_LOG_FUNC_LINE;
     qurt_mutex_delete(p_cxt->wlan_qapi_cxt_mutex);
