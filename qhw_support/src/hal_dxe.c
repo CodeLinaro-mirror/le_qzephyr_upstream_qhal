@@ -30,6 +30,9 @@
 
 #define DXE_WAR_FOR_DATA_STALL 1
 #define DXE_MAX_RETRY (10)
+#define QWLAN_DXE_0_CHn_CTRL_REG(x)                         (QWLAN_DXE_0_CH0_CTRL_REG + (x * NT_DXE_CH_REG_SIZE))
+#define QWLAN_DXE_0_CHn_STATUS_REG(x)                       (QWLAN_DXE_0_CH0_STATUS_REG + (x * NT_DXE_CH_REG_SIZE))
+#define QWLAN_DXE_0_INT_ERR_CLR_CHn_INT_ERR_CLR_OFFSET(x)   (QWLAN_DXE_0_INT_ERR_CLR_CH0_INT_ERR_CLR_OFFSET + x)
 
 pHalDxe halDxe = NULL;
 volatile uint32_t dxe_reg;
@@ -1438,6 +1441,69 @@ uint32_t hal_dxe_resume()
     }
     return NDXE_SUCCESS;
 }
+
+#ifdef SUPPORT_BMU_ERROR_RECOVERY
+/*
+ * @brief  : Before BMU recovery process, following things should be taken care 
+ *           1. abort all enabled dxe channels
+ *           2. disable all enabled dxe channels
+ *           3. DXE soft reset is done as part of RRI init so Prefetch clear is not done here
+ * @param  : None
+ * @return : None
+ */
+void hal_dxe_abort_pre_bmu_recovery(void)
+{
+    int32_t wait_count=0;
+    int32_t dxe_ch_err_code=0;
+    volatile uint32_t regVal;
+
+    for (uint8_t ch_idx=0; ch_idx < DXE_CHANNEL_MAX; ch_idx++) {
+        regVal=rRead(QWLAN_DXE_0_CHn_CTRL_REG(ch_idx));
+        if (regVal & QWLAN_DXE_0_CH0_CTRL_EN_MASK) {
+            NT_LOG_PRINT(DPM, INFO, "Disabling dxe channel:%d, addr:0x%x", ch_idx,QWLAN_DXE_0_CHn_CTRL_REG(ch_idx));
+            /* Dxe channel abort request */
+            rWrite(QWLAN_DXE_0_CHn_CTRL_REG(ch_idx), regVal|QWLAN_DXE_0_CH0_CTRL_ABORT_MASK);
+            while (wait_count++ < DXE_MAX_RETRY)
+            {
+                delay(10);
+                regVal=rRead(QWLAN_DXE_0_CHn_STATUS_REG(ch_idx));
+                dxe_ch_err_code = ((regVal & QWLAN_DXE_0_CH0_STATUS_ERR_CODE_MASK) >> QWLAN_DXE_0_CH0_STATUS_ERR_CODE_OFFSET); 
+                /* check the error code for successful abort
+                 *   -> When Dxe channel is enabled, Abort request is honoured, then it will set the error code 0x1a
+                 * Abort Mask will be cleared by HW post Abort successful 
+                 *   -> when Dxe is about to end the transfer and abort request is given, request may be ignored */
+                if ((dxe_ch_err_code == QWLAN_DXE_0_CH0_STATUS_ERR_CODE_EABORT) || 
+                        ((regVal & QWLAN_DXE_0_CH0_STATUS_ABORT_REQ_MASK) == 0))
+                {
+                    NT_LOG_PRINT(DPM, INFO, "DXE CHAN %d aborted", ch_idx);
+                    break;
+                }
+            }
+            NT_LOG_PRINT(DPM, ERR, "PRE BMU RECOVERY: DXE CHAN %d abort error code 0x%x", ch_idx, dxe_ch_err_code);
+            /* Clear the error flag in status register*/
+            rWrite(QWLAN_DXE_0_CHn_STATUS_REG(ch_idx), regVal |  (1 << QWLAN_DXE_0_CH0_STATUS_ERR_OFFSET));
+            /* Clear the DXE channel interrupt */
+            regVal = rRead(QWLAN_DXE_0_INT_ERR_CLR_REG);
+            rWrite(QWLAN_DXE_0_INT_ERR_CLR_REG, regVal | (1 << QWLAN_DXE_0_INT_ERR_CLR_CHn_INT_ERR_CLR_OFFSET(ch_idx)));
+            /* Disable the DXE channel */
+            regVal = rRead(QWLAN_DXE_0_CHn_CTRL_REG(ch_idx));
+            regVal = regVal & ~(QWLAN_DXE_0_CH0_CTRL_EN_MASK);
+            rWrite(QWLAN_DXE_0_CHn_CTRL_REG(ch_idx),regVal);
+        }
+        wait_count = 0;
+    }
+}
+
+/*
+ * @brief  : Enable the disabled channels as part of pre bmu recovery
+ * @param  : None
+ * @return : None
+ */
+void hal_dxe_restore_post_bmu_recovery(void)
+{
+   /* Reconfiguring the channels and enabling is taken care by RRI */
+}
+#endif /* SUPPORT_BMU_ERROR_RECOVERY */
 
 void nt_dxe_update_intr_cnt(e_dxe_channel channel)
 {
