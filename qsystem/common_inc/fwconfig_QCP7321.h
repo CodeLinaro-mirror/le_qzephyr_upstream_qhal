@@ -401,4 +401,7 @@ flag */
 #define FPCI_DEBUG (0)
 #endif
 
+/* This flag enables recovery of BMU once a BMU error occurs */
+#define SUPPORT_BMU_ERROR_RECOVERY
+
 #endif // _QCP7321_H_
