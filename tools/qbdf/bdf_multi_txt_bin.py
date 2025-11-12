@@ -14,20 +14,36 @@ def create_filenames(i, output_dir=None):
     
     txt_f=i[:len(i)-4]+"_new.txt"
     
-    # Generate bin filename
-    if('_' in i.split(os.sep)[len(i.split(os.sep))-1]):
-        bin_f=list(i[:len(i)-4])
-        bin_f.reverse()
-        bin_f[bin_f.index('_')]='.'
-        bin_f.reverse()
-        bin_f=''.join(bin_f)
-    else:
-        bin_f=i[:len(i)-4]+'.bin'
+    # Generate bin filename - Only check filename part, not full path
+    # Handle both Unix and Windows path separators explicitly
+    # Replace backslashes with forward slashes first, then normalize
+    normalized_path = i.replace('\\', '/')
+    normalized_path = os.path.normpath(normalized_path)
+    filename = os.path.basename(normalized_path)
     
-    # If output directory is specified, change bin file path
-    if output_dir and output_dir != os.path.dirname(i):
-        bin_filename = os.path.basename(bin_f)
+    # Generate bin filename based on filename only (not full path)
+    if('_' in filename):
+        # Replace the last underscore in the filename with a dot
+        filename_no_ext = filename[:-4]  # Remove .txt extension
+        # Find last underscore and replace with dot
+        last_underscore_pos = filename_no_ext.rfind('_')
+        if last_underscore_pos != -1:
+            bin_filename = filename_no_ext[:last_underscore_pos] + '.' + filename_no_ext[last_underscore_pos+1:]
+        else:
+            bin_filename = filename_no_ext + '.bin'
+    else:
+        bin_filename = filename[:-4] + '.bin'  # Remove .txt, add .bin
+    
+    # Construct full path for bin file
+    if output_dir and output_dir != os.path.dirname(normalized_path):
         bin_f = os.path.join(output_dir, bin_filename)
+    else:
+        # Use same directory as input file
+        input_dir = os.path.dirname(normalized_path)
+        if input_dir:
+            bin_f = os.path.join(input_dir, bin_filename)
+        else:
+            bin_f = bin_filename
     
     return txt_f, bin_f
 
