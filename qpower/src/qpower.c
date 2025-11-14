@@ -341,6 +341,9 @@ static int mcu_sleep_enter(void)
     if (gs_qpower_param.s2ram_duration_ms) {
         early_printk("To set sleep timer=%d ms\r\n", gs_qpower_param.s2ram_duration_ms);
         aon_set_alarm(((uint64_t)gs_qpower_param.s2ram_duration_ms) * 1000);
+    } else {
+        /* gpio wakeup: systick */
+        sys_clock_set_timeout(K_TICKS_FOREVER, true);
     }
 
     /* This function performs sleep recipe as per the sleep mode specified */
