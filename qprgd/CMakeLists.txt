@@ -14,7 +14,7 @@ target_compile_definitions(${executable_name} PRIVATE
 )
 
 # ===== 2) Linker script and map file =====
-set(linker_script_path "${ZEPHYR_HAL_QCOM_MODULE_DIR}/qprg/frn_nvm_programmer.ld")
+set(linker_script_path "${ZEPHYR_HAL_QCOM_MODULE_DIR}/qprgd/frn_nvm_programmer.ld")
 set(map_file_path          "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.map")
 
 # ===== 3) CPU/ABI flags (must match for compile and link) =====
