@@ -220,7 +220,7 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 
 /* flag for enabling WPA3 */
 #ifndef NT_FN_WPA3
-// #define NT_FN_WPA3
+#define NT_FN_WPA3
 #endif // NT_FN_WPA3
 
 /* flag for enabling PMK caching */
