@@ -6,13 +6,13 @@
 #define __WLAN_DRV_H__
 
 #include <stdio.h>
+#include <zephyr/kernel.h>
 #include "printfext.h"
 
 #include "qapi_wlan.h"
 #include "wmi.h"
 
 #include "qurt_ext.h"
-
 #include "nt_osal.h"
 
 #define QAPI_EVENT_LARGE_PAYLOAD_LENGTH_MAX 1000
@@ -60,6 +60,8 @@ typedef struct wlan_qapi_cxt_s {
     uint32_t wlan_send_raw_block_mode : 1;
     uint32_t wlan_set_mgmt_filter_block_mode : 1;
     uint32_t wlan_get_tx_power_block_mode : 1;
+    uint32_t wlan_suspend_block_mode: 1;
+    uint32_t wlan_resume_block_mode: 1;
     qapi_Status_t wlan_qapi_error;
     wlan_evt_payload_t event_payload_buf[EVT_PAYLOAD_MAX];
     WMI_CONNECT_CMD connect_cmd;
@@ -91,7 +93,6 @@ typedef struct wlan_qapi_cxt_s {
     uint8_t rssi;
     uint8_t network_id;
     uint32_t roaming_time_out;
-    TimerHandle_t roaming_timer;
     char country_code[3];
     uint8_t frame_queued_flag;
     qapi_WLAN_Set_Rate_Params_t rate_param;
@@ -103,6 +104,7 @@ typedef struct wlan_qapi_cxt_s {
 #ifdef CONFIG_WPS
     WMI_WPS_START_CMD wps_param;
 #endif
+    struct k_work_delayable roaming_work;
 } wlan_qapi_cxt_t;
 
 extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;

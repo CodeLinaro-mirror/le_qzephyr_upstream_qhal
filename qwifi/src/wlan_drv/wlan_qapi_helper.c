@@ -910,6 +910,44 @@ qapi_Status_t wlan_get_bmiss_threshold(uint8_t *bmiss_threshold)
     return QAPI_OK;
 }
 
+qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
+{
+    WMI_WIFI_STATUS wifi_status = {0};
+    int ret = wmi_get_wifi_status(dev_id, &wifi_status);
+    if (ret != QAPI_OK) {
+        return ret;
+    }
+
+    status->link_mode = wifi_status.link_mode;
+    status->beacon_interval = wifi_status.beacon_interval;
+    status->rssi = wifi_status.rssi;
+    status->dtim_period = wifi_status.dtim_period;
+
+    switch (wifi_status.auth_mode) {
+    case WMI_WPA2_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA2_E;
+        break;
+    case WMI_WPA2_PSK_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA2_PSK_E;
+        break;
+    case WMI_NONE_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_NONE_E;
+        break;
+    case WMI_WPA_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA_E;
+        break;
+    default:
+        status->auth_mode = QAPI_WLAN_AUTH_INVALID_E;
+        break;
+    }
+
+    status->channel = wifi_status.channel_frequency;
+    wlan_freq_to_channel(&status->channel);
+    status->band = wlan_freq_to_band(wifi_status.channel_frequency);
+
+    return QAPI_OK;
+}
+
 #ifdef CONFIG_WPS
 qapi_WLAN_WPS_Credentials_t gWpsCredentials;
 qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof)

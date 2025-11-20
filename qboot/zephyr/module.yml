@@ -1,0 +1,4 @@
+name: qcc730_sbl
+build:
+  cmake: zephyr/..
+  kconfig: zephyr/../Kconfig

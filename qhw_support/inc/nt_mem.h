@@ -63,14 +63,22 @@ extern const uint32_t g__OTP_region_st_addr;           // 0x001a0000
 extern const uint32_t g__OTP_region_end_addr;          // 0x001a1000, len=0x1000
 extern const uint32_t g__rram_region_start_addr;       // 0x00200000
 extern const uint32_t g__rram_region_end_address;      // 0x00380000, len=0x180000
-extern const uint32_t g_ln_REGDB_Start_Addr;           // 0x0021a600
-extern const uint32_t g_ln_REGDB_Data_length;          // 0x000036e0
-extern const uint32_t g_ln_CAL_Start_Addr;             // 0x0021dce0
+extern const uint32_t g_ln_REGDB_Start_Addr;           // 0x00373000
+extern const uint32_t g_ln_REGDB_Data_length;          // 0x00004000
+extern const uint32_t g_ln_CAL_Start_Addr;             // 0x00377000
 extern const uint32_t g_ln_CAL_Data_length;            // 0x3000
-extern const uint32_t g_ln_RAM_start_addr_hw_desc__;   // base address for hardware descriptors, 0x0002f780
-extern const uint32_t g_ln_RAM_end_addr_hw_desc__;     // 0x00034f68, len=0x57e8
-extern const uint32_t g_ln_RAM_start_addr_hw_pktmem__; // base address for packet memory, 0x00027780
-extern const uint32_t g_ln_RAM_end_addr_hw_pktmem__;   // 0x0002f780, len=0x8000
+
+/* reserve pktmem region for BD/PDU */
+extern uint8_t _ln_RAM_start_addr_hw_pktmem__[];
+extern uint8_t _ln_RAM_end_addr_hw_pktmem__[];
+extern const uint32_t g_ln_RAM_start_addr_hw_pktmem__;
+extern const uint32_t g_ln_RAM_end_addr_hw_pktmem__;
+
+/* reserve hw descriptor region  */
+extern uint8_t _ln_RAM_start_addr_hw_desc__[];
+extern uint8_t _ln_RAM_end_addr_hw_desc__[];
+extern const uint32_t g_ln_RAM_start_addr_hw_desc__;
+extern const uint32_t g_ln_RAM_end_addr_hw_desc__;
 
 #ifdef FERMION_OTP_SUPPORT
 /* OTP region length and its locking number mapping */

@@ -250,6 +250,9 @@ typedef enum {
     WMI_GET_TX_POWER_CMDID,
     WMI_IMPS_SLEEP_EXIT_CMDID,
     WMI_IMPS_TIMEDOUT_HNDL_CMDID,
+    WMI_WLAN_SUSPEND_CMDID,
+    WMI_DBG_TSF_CMDID,
+    WMI_GET_WIFI_STATUS,
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
 
@@ -285,6 +288,9 @@ typedef enum {
     WMI_MGMT_FRAME_FILTER_EVTID,
     WMI_GET_TX_POWER_EVTID,
     WMI_WPS_FAIL_EVTID, // 0x1E
+    WMI_WLAN_SUSPEND_EVTID,
+    WMI_WLAN_RESUME_EVTID,
+    WMI_REPORT_WIFI_STATUS,
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
 
@@ -1919,6 +1925,15 @@ typedef enum { // temporary declarartion maybe shifted to roaming api.h
     periodic,
     mixed
 } roam_trigger_types;
+
+typedef PREPACK struct {
+    uint16_t beacon_interval;
+    uint16_t dtim_period;
+    uint16_t channel_frequency;
+    uint16_t auth_mode;
+    uint32_t rssi;
+    uint32_t link_mode;
+} POSTPACK WMI_WIFI_STATUS;
 
 #ifdef CONFIG_WIFILIB_6GHZ
 #define DEV_CHANNEL_NUM_MAX 76

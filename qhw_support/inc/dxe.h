@@ -84,7 +84,7 @@
 #define NT_SA_DXE_DESC_CTRL_ENDIANNESS 0x00200000
 #define NT_SA_DXE_DESC_CTRL_RSVD 0xffc00000
 // DXE Interrupts
-#define ENABLE_DXE_IRQ 0xFFE00000  // Enable DXE 11 interrupts
+#define ENABLE_DXE_IRQ 0xEFE00000  // Enable DXE 11 interrupts
 #define ENABLE_DXE_IRQ1 0x00000001 // Enable DXE 12th interrupt
 
 #define printf(...)

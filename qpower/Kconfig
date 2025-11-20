@@ -5,3 +5,7 @@ config QPOWER
 	select QURT_ABSTRACTION_LAYER
 	select QSYSTEM
 	select QHW_SUPPORT
+
+	# Tick compensation during PM sleep
+	select CORTEX_M_SYSTICK_IDLE_TIMER if PM && COUNTER && TICKLESS_KERNEL
+	select COUNTER_QCC730_AON if CORTEX_M_SYSTICK_IDLE_TIMER

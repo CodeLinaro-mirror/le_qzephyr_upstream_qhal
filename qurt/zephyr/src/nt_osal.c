@@ -37,7 +37,7 @@ int tickless_idle_enabled(void)
 }
 
 // NT_LOG_LVL_WARN
-extern uint8_t min_loglvl;
+uint8_t min_loglvl = 1;
 
 uint8_t nt_log_write(
     /*!@module id like SME,MLME,HAL.etc...*/

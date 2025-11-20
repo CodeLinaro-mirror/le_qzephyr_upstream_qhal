@@ -153,7 +153,7 @@
 
 #define RRAM_PD_WAR /* WAR for cache corruption issue */
 
-// #define NT_SOCPM_SW_MTUSR
+ #define NT_SOCPM_SW_MTUSR
 
 #define SUPPORT_5GHZ
 // #define SUPPORT_TWT_STA
@@ -205,7 +205,7 @@ WAR_COEX_HEAVY_BT_WL_CONNECTING_FREERUN
 #define WAR_DUP_DET
 #endif /* WAR_DUP_DET */
 
-// #define COMPENSATE_AON_PROG_DELAY
+#define COMPENSATE_AON_PROG_DELAY
 
 #define ENABLE_MCS4_RX /* enable MCS4 RX for 2.0 HW to be able to solve IOP issue */
 
@@ -273,6 +273,12 @@ WAR_COEX_HEAVY_BT_WL_CONNECTING_FREERUN
     WAR for VIFERMION-490 where CPR will be initialized after Cold Boot Calibration
 */
 #define CBC_CX_VOLTAGE_WAR
+
+/*
+When enter BMPs, default WQ switched from WQ12 to WQ11. When exit BMPs,
+ default WQ need to be switched back to WQ12 to prevent transferring MGMT frames to WQ11
+*/
+#define WAR_RESTORE_DPU_DEFAULT_WQ_12_ON_EXIT_FROM_BMPS
 
 #ifdef NT_DEBUG
 /* To Enable JTAG debugging post MCU sleep */
@@ -394,5 +400,8 @@ flag */
 // #define FEATURE_FPCI
 #define FPCI_DEBUG (0)
 #endif
+
+/* This flag enables recovery of BMU once a BMU error occurs */
+#define SUPPORT_BMU_ERROR_RECOVERY
 
 #endif // _QCP7321_H_
