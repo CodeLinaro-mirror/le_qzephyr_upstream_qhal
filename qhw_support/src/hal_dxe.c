@@ -59,21 +59,25 @@ void *nt_dxe_memcpy(void *dst, const void *src, uint32_t length)
 {
     eRet_t ret = NDXE_SUCCESS;
 
+    taskENTER_CRITICAL();
+
     while (copy_ongoing)
         ;
 
-    taskENTER_CRITICAL();
     copy_ongoing = 1;
-    taskEXIT_CRITICAL();
 
     ret = nt_ndxe_write_frame_to_transfer(H2H, src, length, dst);
+
     if (ret != NDXE_SUCCESS) {
         copy_ongoing = 0;
+        taskEXIT_CRITICAL();
         return NULL;
     }
 
     while (copy_ongoing)
         ;
+
+    taskEXIT_CRITICAL();
 
     return dst;
 }
@@ -688,7 +692,7 @@ static void nt_dxe_update_descctrl_in_lst(volatile DxeCCB_t *pDxeCCB)
 #endif /* DXE_WAR_FOR_DATA_STALL */
 
 /* Write frame for transfer from the Host. Used for H2B and H2H transfer */
-eRet_t nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void *frame, uint32_t length, void *h2hdst)
+eRet_t __attribute__ ((section(".ramfunc"))) nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void *frame, uint32_t length, void *h2hdst)
 {
     DescCB_t *pDCB;
     DescCB_t *pCurrDCB;
@@ -927,7 +931,7 @@ eRet_t nt_ndxe_write_frame_to_transfer_single(e_dxe_channel channel, void *frame
 #endif
 
 /* Obtain the frame from the DXE Ring Descriptor after transfer to Staging Buffer */
-eRet_t nt_ndxe_get_single_received_frame(e_dxe_channel channel, void **frame)
+eRet_t __attribute__ ((section(".ramfunc"))) nt_ndxe_get_single_received_frame(e_dxe_channel channel, void **frame)
 {
     DescCB_t *pDCB;
     volatile DxeCCB_t *pDxeCCB;
@@ -1104,7 +1108,7 @@ eRet_t nt_ndxe_init()
 }
 uint8_t g_dxe_error_int = 0;
 uint32_t dxe_err_cnt[12];
-eRet_t __attribute__((section(".after_ram_vectors"))) ndxe_irq_handler()
+eRet_t ndxe_irq_handler()
 {
     uint32_t regVal;
     volatile DxeCCB_t *pDxeCCB;
@@ -1243,7 +1247,7 @@ eRet_t __attribute__((section(".after_ram_vectors"))) ndxe_irq_handler()
     return NDXE_SUCCESS;
 }
 
-void __attribute__((section(".after_ram_vectors"))) nt_dxe_interrupt_handler(void)
+void nt_dxe_interrupt_handler(void)
 {
     eRet_t ret = 0;
 
@@ -1519,7 +1523,7 @@ void nt_dxe_update_intr_cnt(e_dxe_channel channel)
  * @param  : channel - Dxe Channel
  * @return : None
  */
-void __attribute__((section(".after_ram_vectors"))) hal_dxe_desc_reconfig(e_dxe_channel channel)
+void hal_dxe_desc_reconfig(e_dxe_channel channel)
 {
     uint8_t desc_idx;
     DescCB_t *pCurrDCB;

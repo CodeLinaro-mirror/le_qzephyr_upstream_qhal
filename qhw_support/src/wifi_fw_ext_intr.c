@@ -72,7 +72,7 @@ extern SOCPM_STRUCT g_socpm_struct;
  * @return         : NONE
  *
  */
-void __attribute__((section(".__sect_ps_txt"))) wifi_fw_ext_f2a_pulse(f2a_short_reason_t reason)
+void wifi_fw_ext_f2a_pulse(f2a_short_reason_t reason)
 {
 #if defined(SUPPORT_RING_IF) || defined(SUPPORT_RING_IF_ONLY)
     /* Wait till Fw Table is initialized */
@@ -351,8 +351,7 @@ bool f2a_enable_disable_assert(uint8_t enable_assert)
  * @return         : NONE
  *
  */
-void __attribute__((section(".after_ram_vectors")))
-aon_a2f_assert_isr_handler(void)
+void aon_a2f_assert_isr_handler(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	
@@ -489,8 +488,7 @@ aon_a2f_assert_isr_handler(void)
  * @return         : NONE
  *
  */
-void __attribute__((section(".after_ram_vectors")))
-aon_a2f_deassert_isr_handler(void)
+void aon_a2f_deassert_isr_handler(void)
 {
 	PROF_IRQ_ENTER();
 

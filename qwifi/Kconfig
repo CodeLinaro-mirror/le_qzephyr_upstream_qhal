@@ -17,3 +17,8 @@ config QWIFI
 
 config MAIN_STACK_SIZE
 	default 2048 if QWIFI
+
+config DP_RAM_LOCATED
+    bool "Locate code of data path into RAM"
+    depends on QWIFI && CODE_DATA_RELOCATION
+    default y if QWIFI && CODE_DATA_RELOCATION

@@ -44,7 +44,7 @@ void nt_gpio_init(void)
  * @Return :    NULL
  */
 
-void __attribute__((section(".__sect_ps_txt"))) nt_gpio_pin_mode(gpio_register_t *GPIOx, uint32_t Pin, uint32_t Mode)
+void nt_gpio_pin_mode(gpio_register_t *GPIOx, uint32_t Pin, uint32_t Mode)
 {
 
     uint32_t value = 0;
@@ -67,7 +67,7 @@ void __attribute__((section(".__sect_ps_txt"))) nt_gpio_pin_mode(gpio_register_t
  * @Return :    NULL
  */
 
-void __attribute__((section(".__sect_ps_txt"))) nt_gpio_pin_write(gpio_register_t *GPIOx, uint32_t Pin,
+void nt_gpio_pin_write(gpio_register_t *GPIOx, uint32_t Pin,
                                                                   GPIO_PinState val)
 {
 
