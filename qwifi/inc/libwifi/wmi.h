@@ -1847,6 +1847,7 @@ typedef enum {
 
 typedef struct WLAN_WMI_DISCONN_s {
     int32_t sta_id;
+    uint8 mac_addr[IEEE80211_ADDR_LEN];
 } WLAN_WMI_DISCONN_t;
 
 typedef void (*resp_function)(void *);

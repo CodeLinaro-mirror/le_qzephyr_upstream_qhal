@@ -2954,6 +2954,26 @@ qapi_Status_t qapi_WLAN_Disconnect(uint8_t device_ID);
 
 /**
 @ingroup qapi_wlan
+Disconnects a station in softap.
+This API internally calls qapi_WLAN_Commit(), hence no explicit call is needed in the disconnect process when using this
+API.
+
+@param[in] device_ID         Device ID.
+@param[in] mac_addr          mac address.
+@param[in] len               length of mac address.
+
+@return
+QAPI_OK -- Disconnect process succeeded. \n
+Nonzero value -- Disconnection failed.
+
+@dependencies
+None.
+*/
+qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t __attribute__((__unused__)) device_ID, const uint8_t *mac_addr, uint32_t len);
+
+
+/**
+@ingroup qapi_wlan
 Sets requested parameters in the WLAN firmware.
 
 The group_ID parameter is used to determine to which group the the command belongs, and the param_ID is used to provide

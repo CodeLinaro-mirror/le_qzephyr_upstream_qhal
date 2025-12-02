@@ -376,6 +376,7 @@ static void wmi_join_comp_event(void *msg)
     }
 
     PRINT_LOG_FUNC_LINE_ENTRY;
+    uint32_t event_id = QAPI_WLAN_CONNECT_CB_E;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_WLAN_Join_Comp_Evt_t *p_qapi_join_evt = &p_cxt->connect_result;
 
@@ -429,9 +430,14 @@ static void wmi_join_comp_event(void *msg)
     }
 
 done:
+    /* disconnect from station */
+    if (p_qapi_join_evt->reason_code == BSS_DISCONNECTED) {
+        event_id = QAPI_WLAN_DISCONNECT_CB_E;
+    }
+
     if (p_cxt->qapi_event_handler) {
-        info_printf("QAPI_WLAN_CONNECT_CB_E sent, status=%d\n", p_qapi_join_evt->evt_hdr.status);
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CONNECT_CB_E, p_cxt->event_application_Context,
+        info_printf("%d sent, status=%d\n", event_id, p_qapi_join_evt->evt_hdr.status);
+        p_cxt->qapi_event_handler(p_cxt->network_id, event_id, p_cxt->event_application_Context,
                                   p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
     }
 
@@ -1280,6 +1286,7 @@ qapi_Status_t wmi_disconnect(void)
     if (p_cxt->opmode == DEV_MODE_AP_E) {
         qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
         p_cxt->discon_cmd.sta_id = -1;
+        memset(p_cxt->discon_cmd.mac_addr, 0, sizeof(p_cxt->discon_cmd.mac_addr));
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
         wmi_cmd_send(WMI_DISCONNECT_CMDID, &p_cxt->discon_cmd, sizeof(WLAN_WMI_DISCONN_t));
     } else
@@ -1296,6 +1303,25 @@ qapi_Status_t wmi_disconnect(void)
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     if (p_cxt->opmode == DEV_MODE_STATION_E)
         wlan_drv_roaming_stop();
+    return ret;
+}
+
+qapi_Status_t wmi_ap_disconnect_station(const uint8_t *mac_addr, uint32_t len)
+{
+    qapi_Status_t ret = QAPI_OK;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    if (p_cxt->opmode != DEV_MODE_AP_E) {
+        return QAPI_OK;
+    }
+
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
+    p_cxt->discon_cmd.sta_id = -1;
+    memcpy(p_cxt->discon_cmd.mac_addr, mac_addr, sizeof(p_cxt->discon_cmd.mac_addr));
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+
+    wmi_cmd_send(WMI_DISCONNECT_CMDID, &p_cxt->discon_cmd, sizeof(WLAN_WMI_DISCONN_t));
+
     return ret;
 }
 
