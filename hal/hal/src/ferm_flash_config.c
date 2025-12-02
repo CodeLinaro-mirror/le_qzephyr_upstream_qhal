@@ -9,7 +9,6 @@
 
 #include "ferm_flash_config.h"
 
-#include <zephyr/kernel.h>
 /*
 ****Supported Flash Type****
 1. Macronix, MX25R6435F

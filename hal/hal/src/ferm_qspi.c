@@ -7,14 +7,12 @@
  * Include Files
  *-----------------------------------------------------------------------*/
 
-#include "ferm_qspi.h"
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <zephyr/autoconf.h>
+#include "ferm_qspi.h"
 #include "ferm_qspi_hal.h"
-
-#include "autoconf.h"
 
 /*-------------------------------------------------------------------------
  * Preprocessor Definitions and Constants
