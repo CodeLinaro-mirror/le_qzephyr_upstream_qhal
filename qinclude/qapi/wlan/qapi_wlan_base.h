@@ -1478,7 +1478,9 @@ typedef enum {
     /**< WPA3 SAE mode of authentication. */
     QAPI_WLAN_AUTH_WPA2_SAE_MIXED_E = 10,
     /**< WPA2 and SAE mixed mode of authentication. */
-    QAPI_WLAN_AUTH_INVALID_E = 11 /**< Invalid authentication method. */
+    QAPI_WLAN_AUTH_WPA_WPA2_SAE_MIXED_E = 11,
+    /**< WPA, WPA2 and SAE mixed mode of authentication. */
+    QAPI_WLAN_AUTH_INVALID_E = 12 /**< Invalid authentication method. */
 } qapi_WLAN_Auth_Mode_e;
 
 /**
@@ -1506,7 +1508,9 @@ typedef enum {
     /**< Broadcast Integrity Protocol; currently not supported. */
     QAPI_WLAN_CRYPT_KTK_CRYPT_E = 6,
     /**< Key Transport Key; currently not supported. */
-    QAPI_WLAN_CRYPT_INVALID_E = 7 /**< Invalid encryption type. */
+    QAPI_WLAN_CRYPT_AUTO = 7,
+    /**< Auto Select Key based on AP capability. Support TKIP & AES for now. */
+    QAPI_WLAN_CRYPT_INVALID_E = 8 /**< Invalid encryption type. */
 } qapi_WLAN_Crypt_Type_e;
 
 /**
