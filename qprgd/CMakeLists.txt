@@ -11,6 +11,7 @@ add_executable(${executable_name})
 # ===== 1) Compile-time definitions =====
 target_compile_definitions(${executable_name} PRIVATE
   CONFIG_NON_OS
+  CONFIG_BOARD_QCC730_QSPI_ENABLE
 )
 
 # ===== 2) Linker script and map file =====
@@ -67,7 +68,14 @@ target_include_directories(${executable_name} PRIVATE
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/lib/include
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/qsystem/common_inc/hwio/TAPEOUT_07
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/qinclude/qapi/common
-  ${ZEPHYR_BINARY_DIR}/include/generated
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/include
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/soc/
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/soc/qcc730
+  ${ZEPHYR_BASE}/../modules/hal/cmsis/CMSIS/Core/Include
+  ${ZEPHYR_BASE}/../qcc730/soc/qcom/qcc730
+  ${ZEPHYR_BASE}/../zephyr/include
+  ${APPLICATION_BINARY_DIR}/zephyr/include/generated
+  src
 )
 
 # ===== 8) Source files =====
@@ -76,6 +84,9 @@ target_sources(${executable_name} PRIVATE
   src/nvm_rram.c
   src/nvm_flash.c
   src/uart_print.c
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/src/ferm_flash.c
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/src/ferm_qspi.c
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/src/ferm_flash_config.c
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/lib/util/safeAPI.c
 )
 

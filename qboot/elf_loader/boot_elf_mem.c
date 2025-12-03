@@ -10,6 +10,8 @@
 #include "nt_bl_rram_dxe.h"
 #include "boot_print.h"
 #include "pbl_patch_table.h"
+#include "ferm_qspi.h"
+
 #ifdef SBL_BUILD
 #include "sbl_common.h"
 #endif

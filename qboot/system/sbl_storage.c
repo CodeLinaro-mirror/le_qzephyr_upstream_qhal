@@ -12,13 +12,17 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <zephyr/autoconf.h>
 #include "boot_error_if.h"
 #include "nt_bl_rram_dxe.h"
 #include "nt_bl_uart.h"
+#include "ferm_qspi.h"
+#include "ferm_flash.h"
+#include "drv_flash.h"
 #include "sbl_common.h"
 #include "nt_bl_common.h"
-#include <zephyr/autoconf.h>
 #ifdef CONFIG_BOARD_QCC730_QSPI_ENABLE
+
 /*
 * SBL flash init function.
 */

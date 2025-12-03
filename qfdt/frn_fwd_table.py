@@ -55,15 +55,24 @@ class Firmware_Descriptor_Entry:
         temp = [0x00] * self.reserve_size
 
         if sys.version_info[0] < 3:
-            self.reserved = str(bytearray(temp))
+            self.reserved = bytes(bytearray(temp))
         else:
-            self.reserved = bytearray(temp)
+            self.reserved = bytes(bytearray(temp))
 
     def to_binary (self):
         ''' Convert the firmware descriptor entry into a packed binary
         form '''
-        if isinstance(self.reserved,str):
-            self.reserved = self.reserved.encode('utf-8')            
+        # Ensure reserved is bytes
+        if isinstance(self.reserved, str):
+            # If it's a string, it might be from XML parsing with hex encoding
+            try:
+                if self.reserved.startswith('0x'):
+                    self.reserved = bytes.fromhex(self.reserved[2:])
+                else:
+                    self.reserved = bytes.fromhex(self.reserved)
+            except:
+                # Fallback: pad with zeros if conversion fails
+                self.reserved = bytes([0x00] * self.reserve_size)
 
         data = self.fde_packed.pack(self.id,
                                     self.rank,
@@ -173,14 +182,14 @@ class Firmware_Descriptor_Table:
         self.signature = self.FWD_TABLE_SIGNATURE
         self.num_fde = 0
 
-        #create a bytearray filled with 0xFF
+        #create a bytearray filled with 0x00
         temp = [0x00] * self.reserve_size
         self.entries = []
 
         if sys.version_info[0] < 3:
-            self.reserved = str(bytearray(temp))
+            self.reserved = bytes(bytearray(temp))
         else:
-            self.reserved = bytearray(temp)
+            self.reserved = bytes(bytearray(temp))
 
     def add_entry (self, entry):
         self.entries.append(entry)
@@ -189,10 +198,22 @@ class Firmware_Descriptor_Table:
     def to_binary (self):
         ''' Convert the firmware descriptor entry into a packed binary
         form '''
-        if isinstance(self.signature,str):
-            self.signature = self.signature.encode('utf-8')
-        if isinstance(self.reserved,str):
-            self.reserved = self.reserved.encode('utf-8')            
+        # Ensure signature is an integer
+        if isinstance(self.signature, str):
+            self.signature = int(self.signature, 0)
+        
+        # Ensure reserved is bytes (should already be bytes from __init__)
+        if isinstance(self.reserved, str):
+            # If it's a string, it might be from XML parsing with hex encoding
+            try:
+                if self.reserved.startswith('0x'):
+                    self.reserved = bytes.fromhex(self.reserved[2:])
+                else:
+                    self.reserved = bytes.fromhex(self.reserved)
+            except:
+                # Fallback: pad with zeros if conversion fails
+                self.reserved = bytes([0x00] * self.reserve_size)
+        
         data = self.fdt_packed.pack(self.signature,
                                     self.num_fde,
                                     self.reserved
@@ -200,7 +221,7 @@ class Firmware_Descriptor_Table:
         for entry in self.entries:
             data = data + entry.to_binary()
 
-        return data;
+        return data
 
     def from_binary (self, data):
         ''' Convert the binary packed form of firmware descriptor table

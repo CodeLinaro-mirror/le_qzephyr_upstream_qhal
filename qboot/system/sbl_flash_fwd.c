@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-
+#include "ferm_qspi.h"
 #include "sbl_common.h"
 #include "sbl_flash_fwd.h"
 #include "safeAPI.h"

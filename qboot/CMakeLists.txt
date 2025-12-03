@@ -17,6 +17,7 @@ target_compile_definitions(${executable_name} PRIVATE
   SBL_BUILD
   P_DEBUG
   CONFIG_NON_OS
+  CONFIG_BOARD_QCC730_QSPI_ENABLE
   __LINUX_ERRNO_EXTENSIONS__
 )
 
@@ -88,6 +89,9 @@ target_include_directories(${executable_name} PRIVATE
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/soc/qcc730
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/qsystem/inc
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/qpower/inc
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/qprgd/src
+  ${ZEPHYR_BASE}/../qcc730/soc/qcom/qcc730/
+  ${ZEPHYR_BASE}/include
   ${ZEPHYR_MBEDTLS_MODULE_DIR}/include
   ${ZEPHYR_MBEDTLS_MODULE_DIR}/include/mbedtls
   ${ZEPHYR_MBEDTLS_MODULE_DIR}/include/psa
@@ -117,6 +121,9 @@ target_sources(${executable_name} PRIVATE
   system/sbl_flash_fwd.c
   system/rram_fdt.c
   src/sbl_main.c
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/src/ferm_qspi.c
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/src/ferm_flash.c
+  ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/src/ferm_flash_config.c
   sbl_auth/sbl_auth.c
   sbl_auth/rollback/boot_rollback_version.c
   sbl_auth/rollback/boot_rollback_version_impl.c
