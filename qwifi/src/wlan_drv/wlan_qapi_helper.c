@@ -534,14 +534,9 @@ qapi_Status_t wlan_set_sta_slptime(uint8_t device_ID, uint16_t time, uint16_t ro
     return error;
 }
 
-qapi_Status_t wlan_get_sta_slptime(uint32_t *listen_interval)
+qapi_Status_t wlan_get_sta_slptime(uint16_t *listen_interval)
 {
-    uint16_t ni_intval = get_dev_bss_ni_intval();
-
-    if (dev_is_up())
-        *listen_interval = (uint32_t)wlan_get_listen_interval_ext(ni_intval) * ni_intval;
-    else
-        *listen_interval = (uint32_t)wlan_get_listen_interval_ext(100) * 100;
+    *listen_interval = wlan_get_listen_interval_ext(0);
     return QAPI_OK;
 }
 
