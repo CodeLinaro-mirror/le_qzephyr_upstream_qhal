@@ -63,10 +63,6 @@ typedef TickType_t nt_osal_tick_type_t;
 
 #define nt_osal_semaphore_delete(sem) qurt_sem_destroy(sem)
 
-#define nt_osal_higher_priority_task_woken xHigherPriorityTaskWoken
-
-#define nt_osal_yield_from_isr(nt_osal_higher_priority_task_woken) k_yield()
-
 /*Change Time Period*/
 #define nt_osal_timer_change_period(timer_handle, period) qurt_timer_change_period(timer_handle, period, 0)
 

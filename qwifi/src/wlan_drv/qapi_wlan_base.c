@@ -153,6 +153,14 @@ qapi_Status_t qapi_WLAN_Disconnect(uint8_t __attribute__((__unused__)) device_ID
     return ret;
 }
 
+qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t __attribute__((__unused__)) device_ID, const uint8_t *mac_addr, uint32_t len)
+{
+    WLAN_QAPI_LOCK();
+    qapi_Status_t ret = wmi_ap_disconnect_station(mac_addr, len);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
 qapi_Status_t qapi_WLAN_Commit(uint8_t __attribute__((__unused__)) device_ID)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
