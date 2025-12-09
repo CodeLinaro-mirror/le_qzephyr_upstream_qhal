@@ -15,6 +15,11 @@ config QWIFI
 	select MBEDTLS_SHA1
 	select MBEDTLS_CIPHER
 
+	select MBEDTLS_ECP_C
+	select MBEDTLS_ECP_DP_SECP256R1_ENABLED
+	select MBEDTLS_ENTROPY_C
+	select MBEDTLS_HKDF_C
+
 config MAIN_STACK_SIZE
 	default 2048 if QWIFI
 
