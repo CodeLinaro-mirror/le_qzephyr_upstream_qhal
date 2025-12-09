@@ -65,8 +65,11 @@ static void roam_handler(struct k_work *item)
 
     if (p_cxt->roaming_time_out <= WLAN_ROAMING_TIMER_PERIOD_MAX) {
         uint8_t authMode = p_cxt->connect_cmd.authMode;
-        if ((authMode == WMI_WPA_PSK_AUTH) || (authMode == WMI_WPA2_PSK_AUTH) || (authMode == WMI_WPA3_SHA256_AUTH) ||
-            (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))) {
+        if ((authMode == WMI_WPA_PSK_AUTH)
+		|| (authMode == WMI_WPA2_PSK_AUTH)
+		|| (authMode == WMI_WPA3_SHA256_AUTH)
+		|| (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))
+		|| (authMode == (WMI_WPA_PSK_AUTH | WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))) {
             wmi_set_passphrase();
         }
         wmi_connect();
