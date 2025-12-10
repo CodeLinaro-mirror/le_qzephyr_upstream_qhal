@@ -48,6 +48,7 @@ extern qapi_Status_t wlan_get_tx_power(qapi_WLAN_Get_Power_Evt_t *txpower_params
 extern qapi_Status_t wlan_set_bmiss_threshold(uint8_t device_ID, uint8_t bmiss_threshold);
 extern qapi_Status_t wlan_get_bmiss_threshold(uint8_t *bmiss_threshold);
 extern qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status);
+extern qapi_Status_t wlan_unit_test_cmd(void *p_data, uint32_t data_len);
 #ifdef CONFIG_WPS
 extern qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof);
 #endif

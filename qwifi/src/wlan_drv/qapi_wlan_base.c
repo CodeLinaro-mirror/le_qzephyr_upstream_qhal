@@ -382,3 +382,15 @@ qapi_Status_t qapi_WLAN_Stop_Wps(uint8_t device_ID, uint8_t wps_stage)
 }
 
 #endif
+
+#ifdef SUPPORT_UNIT_TEST_CMD
+qapi_Status_t qapi_WLAN_Unit_Test(uint8_t device_ID, void *p_data, uint32_t data_len)
+{
+    qapi_Status_t ret = QAPI_WLAN_ERROR;
+
+    WLAN_QAPI_LOCK();
+    ret = wlan_unit_test_cmd(p_data, data_len);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+#endif

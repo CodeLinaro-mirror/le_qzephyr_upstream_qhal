@@ -954,3 +954,9 @@ qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credenti
     return QAPI_OK;
 }
 #endif
+#ifdef SUPPORT_UNIT_TEST_CMD
+qapi_Status_t wlan_unit_test_cmd(void *p_data, uint32_t data_len)
+{
+    return wmi_unit_test_cmd_send(p_data, data_len);
+}
+#endif

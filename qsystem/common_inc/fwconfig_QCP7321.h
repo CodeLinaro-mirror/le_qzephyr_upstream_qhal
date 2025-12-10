@@ -106,9 +106,10 @@
 #define SUPPORT_QSPI_MASTER
 #endif
 #endif
-#undef SUPPORT_UNIT_TEST_CMD
+#define SUPPORT_UNIT_TEST_CMD
 #ifdef SUPPORT_UNIT_TEST_CMD
 #define HRES_TIMER_UNIT_TEST
+#define UNIT_TEST_SUPPORT
 #endif
 
 /* I2C module support flag */

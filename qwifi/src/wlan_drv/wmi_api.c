@@ -803,6 +803,13 @@ qapi_Status_t wmi_get_wifi_status(uint8_t dev_id, WMI_WIFI_STATUS *status)
     return ret;
 }
 
+#ifdef SUPPORT_UNIT_TEST_CMD
+qapi_Status_t wmi_unit_test_cmd_send(void *p_data, uint32_t data_len)
+{
+    return wmi_cmd_send(WMI_UNIT_TEST_CMDID, p_data, data_len);
+}
+#endif
+
 static void wmi_event_dispatch(uint32_t event_id, void *data)
 {
     switch (event_id) {

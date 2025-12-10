@@ -2974,7 +2974,22 @@ Nonzero value -- Disconnection failed.
 None.
 */
 qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t __attribute__((__unused__)) device_ID, const uint8_t *mac_addr, uint32_t len);
+/**
+@ingroup qapi_wlan
+Executes a unit test command for WLAN.
 
+@param[in] device_ID         Device ID.
+@param[in] p_data            Pointer to the data required for the unit test.
+@param[in] data_len          Length of the data.
+
+@return
+QAPI_OK -- Unit test command executed successfully. \n
+Nonzero value -- Unit test command failed.
+
+@dependencies
+None.
+*/
+qapi_Status_t qapi_WLAN_Unit_Test(uint8_t device_ID, void *p_data, uint32_t data_len);
 
 /**
 @ingroup qapi_wlan
