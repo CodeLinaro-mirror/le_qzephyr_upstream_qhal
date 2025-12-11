@@ -78,6 +78,7 @@ struct backup {
 static __noinit struct backup backup_data;
 
 qpower_param_t gs_qpower_param;
+struct libpower_kconfig_t g_libpower_kconfig;
 
 static void aon_set_alarm(uint64_t us)
 {
@@ -85,9 +86,16 @@ static void aon_set_alarm(uint64_t us)
     sys_clock_set_timeout(k_us_to_ticks_ceil64(us), true);
 }
 
+static void libpower_kconfig_install(void)
+{
+    ;//transform KCONFIG to variable in g_libpower_kconfig for libpower
+}
+
 qapi_Status_t qapi_pmu_init(void)
 {
     PRINT_LOG_FUNC_LINE_ENTRY;
+
+    libpower_kconfig_install();
 
     gs_qpower_param.softoff_duration_ms = DEFAULT_SOFTOFF_DURATION_MS;
     gs_qpower_param.softoff_wakeup_src = DEFAULT_SOFTOFF_WAKEUP_SRC;

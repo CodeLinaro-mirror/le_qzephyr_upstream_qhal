@@ -1,6 +1,11 @@
 
 #pragma once
 
+struct libpower_kconfig_t {
+    uint32_t reserved;
+};
+extern struct libpower_kconfig_t g_libpower_kconfig;
+
 void nt_enable_standby(uint64_t sleep_time);
 void nt_enable_indef_deepsleep(void);
 
