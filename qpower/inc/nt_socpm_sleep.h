@@ -184,7 +184,7 @@ extern uint32_t nt_socpm_slp_time_sby;
 #define CTX_RESTORE_TO_SCHED_RESTART_US 290
 
 /* Upper limit on sleep slop offset time */
-#define SLEEP_SLOP_OFFSET_UPPER_LIMIT_US 1500
+#define SLEEP_SLOP_OFFSET_UPPER_LIMIT_US 3000
 
 /* Time from CPU sleep to CLK_REQ going low, as profiled from waveforms */
 #define MCU_SLEEP_HW_W2S_TRANSITION_TIME_US (1500)

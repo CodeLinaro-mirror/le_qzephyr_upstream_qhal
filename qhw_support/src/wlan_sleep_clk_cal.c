@@ -327,6 +327,12 @@ nt_status_t socpm_slp_clk_cal_init(void)
     case 128:
         tmp1 = 112;
         break;
+    case 512:
+        tmp1 = 447;
+        break;
+    case 1024:
+        tmp1 = 895;
+        break;
     default:
         tmp1 = 28;
         break;
