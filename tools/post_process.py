@@ -92,6 +92,8 @@ def main():
                     help="Path to tools/sechash/createxbl.py; if absent, hashed step is skipped")
     ap.add_argument("--hashed-out", default=None,
                     help="Output path for hashed ELF (default: <elf_dir>/<elf_base>_HASHED.elf)")
+    ap.add_argument("--check-noinit", action="store_true",
+                    help="Check and skip segments containing noinit sections when hashing (for app images)")
     ap.add_argument("--copy-nvm-prog", action="store_true",
                     help="If base name equals FERMION_NVM_PROGRAMMER, copy ELF to tools/nvm_programmer/bin")
     args = ap.parse_args()
@@ -139,9 +141,11 @@ def main():
         hash_script = os.path.abspath(args.hash_script)
         if os.path.isfile(hash_script):
             hashed_out = args.hashed_out or os.path.join(elf_dir, f"{elf_base}_HASHED.elf")
-            # createxbl.py 示例：python createxbl.py -f <elf> -a32 -o <out>
-            run([sys.executable, hash_script, "-f", elf, "-a32", "-o", hashed_out],
-                desc="Generate hashed ELF (createxbl.py)")
+            # createxbl.py: python createxbl.py -f <elf> -a32 -o <out> [-i]
+            cmd_hash = [sys.executable, hash_script, "-f", elf, "-a32", "-o", hashed_out]
+            if args.check_noinit:
+                cmd_hash.append("-i")
+            run(cmd_hash, desc="Generate hashed ELF (createxbl.py)")
         else:
             print(f"[WARN] hash-script not found: {hash_script} -> skip hashed ELF")
     else:

@@ -37,6 +37,7 @@
 from optparse import OptionParser
 import os
 import sys
+import struct
 
 #for embedded python
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -99,6 +100,10 @@ def main():
                     action="store_true", dest="zi_oob",
                     help="Removes ZI segments that have addresses greater" + \
                          " than 32 bits when converting from a 64 to 32 bit ELF")
+
+  parser.add_option("-i", "--check-noinit",
+                    action="store_true", dest="check_noinit",
+                    help="Check and skip segments containing noinit sections (for app images)")
 
   
   (options, args) = parser.parse_args()
@@ -187,6 +192,12 @@ def main():
   else:
     zi_oob_enabled = True
 
+  # Store check_noinit value
+  if not options.check_noinit:
+    check_noinit_enabled = False
+  else:
+    check_noinit_enabled = True
+
 
   mbn_type = 'elf'
   header_format = 'reg' 
@@ -219,7 +230,8 @@ def main():
 	     is_elf2_64_bit,
        is_elf_xbl_sec_64_bit,
 	     is_out_elf_64_bit,
-	     zi_oob_enabled)
+	     zi_oob_enabled,
+	     check_noinit_enabled)
   
 
   # Hash the image if user did not explicitly say not to
@@ -267,6 +279,81 @@ def roundup(x, precision):
   return x if x % precision == 0 else (x + precision - (x % precision))
 
 ##############################################################################
+# get_section_name
+##############################################################################
+def get_section_name(elf_fp, sh_name_offset, shstrtab_offset):
+  """Get section name from section header"""
+  if sh_name_offset == 0:
+    return ""
+  elf_fp.seek(shstrtab_offset + sh_name_offset)
+  name = b""
+  while True:
+    char = elf_fp.read(1)
+    if char == b'\0' or char == b'':
+      break
+    name += char
+  return name.decode('utf-8', errors='ignore')
+
+##############################################################################
+# should_skip_segment
+##############################################################################
+def should_skip_segment(elf_fp, elf_header, phdr, is_64_bit, check_noinit_enabled):
+  """Check if a program header segment should be skipped (e.g., noinit section)"""
+  # Only check for noinit sections if skip_noinit is enabled
+  if not check_noinit_enabled:
+    return False
+  
+  # Read section headers
+  if elf_header.e_shoff == 0 or elf_header.e_shnum == 0:
+    return False
+  
+  # Get section header string table offset
+  if is_64_bit:
+    shdr_size = 64
+    # ELF64 section header format: IIQQQQQQ (name, type, flags, addr, offset, size, link, info, addralign, entsize)
+    shdr_format = 'IIQQQQQQQ'
+    elf_fp.seek(elf_header.e_shoff + elf_header.e_shstrndx * shdr_size)
+    shstrtab_data = elf_fp.read(shdr_size)
+    shstrtab_fields = struct.unpack(shdr_format, shstrtab_data)
+    shstrtab_offset = shstrtab_fields[4]  # sh_offset is at index 4
+  else:
+    shdr_size = 40
+    # ELF32 section header format: 10 I's (name, type, flags, addr, offset, size, link, info, addralign, entsize)
+    shdr_format = 'I' * 10
+    elf_fp.seek(elf_header.e_shoff + elf_header.e_shstrndx * shdr_size)
+    shstrtab_data = elf_fp.read(shdr_size)
+    shstrtab_fields = struct.unpack(shdr_format, shstrtab_data)
+    shstrtab_offset = shstrtab_fields[4]  # sh_offset is at index 4
+  
+  # Check all sections
+  for i in range(elf_header.e_shnum):
+    elf_fp.seek(elf_header.e_shoff + i * shdr_size)
+    shdr_data = elf_fp.read(shdr_size)
+    
+    if is_64_bit:
+      shdr_fields = struct.unpack(shdr_format, shdr_data)
+      sh_name = shdr_fields[0]
+      sh_addr = shdr_fields[3]
+      sh_size = shdr_fields[5]
+    else:
+      shdr_fields = struct.unpack(shdr_format, shdr_data)
+      sh_name = shdr_fields[0]
+      sh_addr = shdr_fields[3]
+      sh_size = shdr_fields[5]
+    
+    # Get section name
+    section_name = get_section_name(elf_fp, sh_name, shstrtab_offset)
+    
+    # Check if this is a noinit section
+    if 'noinit' in section_name.lower():
+      # Check if this section overlaps with the program header
+      if sh_addr >= phdr.p_vaddr and sh_addr < (phdr.p_vaddr + phdr.p_memsz):
+        #print("Skipping segment containing noinit section: " + section_name)
+        return True
+  
+  return False
+
+##############################################################################
 # merge_elfs
 ##############################################################################
 def merge_elfs(env, 
@@ -278,10 +365,11 @@ def merge_elfs(env,
                is_elf2_64_bit,
                is_elf_xbl_sec_64_bit,
 	             is_out_elf_64_bit,
-	             zi_oob_enabled):
+	             zi_oob_enabled,
+	             check_noinit_enabled):
 
   [elf_header1, phdr_table1] = \
-    mbn_tools.preprocess_elf_file(elf_in_file_name1) 
+    mbn_tools.preprocess_elf_file(elf_in_file_name1)
 
   # Check to make sure second file path exists before using
   if elf_in_file_name2 != "":
@@ -379,6 +467,16 @@ def merge_elfs(env,
   out_elf_header.e_shstrndx    = 0
 
 
+  # Check for noinit sections and adjust count
+  for i in range(len(phdr_table1)):
+    if should_skip_segment(elf_in_fp1, elf_header1, phdr_table1[i], is_elf1_64_bit, check_noinit_enabled):
+      phdr_total_count = phdr_total_count - 1
+
+  if elf_in_file_name2 != "":
+    for i in range(len(phdr_table2)):
+      if should_skip_segment(elf_in_fp2, elf_header2, phdr_table2[i], is_elf2_64_bit, check_noinit_enabled):
+        phdr_total_count = phdr_total_count - 1
+
   # If ZI OOB is enabled then it is possible that a segment could be discarded
   # Scan for that instance and handle before setting e_phnum and writing header
   # Ensure ELF output is 32 bit
@@ -420,6 +518,10 @@ def merge_elfs(env,
   # Output first elf data
   for i in range(elf_header1.e_phnum):
     curr_phdr = phdr_table1[i]
+
+    # Skip segments containing noinit sections
+    if should_skip_segment(elf_in_fp1, elf_header1, curr_phdr, is_elf1_64_bit, check_noinit_enabled):
+      continue
 
     # Copy program header piece by piece to ensure possible conversion success
     if is_out_elf_64_bit == True:
@@ -518,6 +620,10 @@ def merge_elfs(env,
   if elf_in_file_name2 != "":
     for i in range(elf_header2.e_phnum):
       curr_phdr = phdr_table2[i]
+
+      # Skip segments containing noinit sections
+      if should_skip_segment(elf_in_fp2, elf_header2, curr_phdr, is_elf2_64_bit, check_noinit_enabled):
+        continue
 
       # Copy program header piece by piece to ensure possible conversion success
       if is_out_elf_64_bit == True:
