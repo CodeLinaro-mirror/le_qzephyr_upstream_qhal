@@ -64,6 +64,9 @@
                                  conneced to EB*/
 #endif
 
+/* Enables Random Backoff for QoS Null frames triggered using SW template method */
+#define ENABLE_RBO_FOR_QOS_NULL
+
 // #define SUPPORT_RING_IF_DEBUG /* Use this flag for heavy logs in Ring IF */
 // #define SUPPORT_RING_IF_STATS
 // #ifdef SUPPORT_RING_IF
@@ -367,6 +370,12 @@ When enter BMPs, default WQ switched from WQ12 to WQ11. When exit BMPs,
 // #define SLEEP_CLK_CAL_IN_SLEEP_MODE
 #endif /* SLEEP_CLK_CAL_IN_ACTIVE_MODE */
 
+#ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
+/* WAR flag to compensate the RC clock division error for 
+ * Fermion 2.0 new timer implementation */
+#define COMPENSATE_RC_DIVISION_ERROR_WAR
+#endif /* SLEEP_CLK_CAL_IN_ACTIVE_MODE */
+
 #ifdef PMU_TS_CONFIGURATION
 #define FERMION_TEMP_COMP_SUPPORT /* Adjust the SCPC finegain offset based on temperature to maintain TPC accuracy */
 #endif
@@ -407,5 +416,8 @@ flag */
 
 /* This flag enables recovery of BMU once a BMU error occurs */
 #define SUPPORT_BMU_ERROR_RECOVERY
+
+/* Check data activity after DPM stop during BMPS entry and abort sleep if necessary */
+#define BMPS_ENTRY_ABORT_ON_ACTIVITY_POST_ITO
 
 #endif // _QCP7321_H_

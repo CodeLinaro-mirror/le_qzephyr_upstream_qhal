@@ -1374,6 +1374,22 @@ uint32_t nt_dxe_get_dxe_timestamp(e_dxe_channel channel)
     return reg_val;
 }
 
+void nt_hal_wait_until_dxe_channel_avail(void)
+{
+	volatile uint32_t regVal;
+
+	do { // wait for completion
+		regVal = rRead(QWLAN_DXE_0_CH6_STATUS_REG);
+	} while ((regVal & QWLAN_DXE_0_CH6_STATUS_BUSY_MASK));
+
+	do { // wait for completion
+		regVal = rRead(QWLAN_DXE_0_CH5_STATUS_REG);
+	} while ((regVal & QWLAN_DXE_0_CH5_STATUS_BUSY_MASK));
+
+
+	return;
+}
+
 uint32_t hal_dxe_suspend()
 {
     uint32_t wait_count = 0;
@@ -1386,6 +1402,10 @@ uint32_t hal_dxe_suspend()
     uint32_t start = HAL_REG_RD(QWLAN_MTU_MTU_GLOBAL_TIMER_REG);
     ++g_dxe_suspend;
 #endif
+
+	
+	/*wait for all channels are available*/
+	nt_hal_wait_until_dxe_channel_avail();
 
     regVal = HAL_REG_RD(QWLAN_DXE_0_DMA_CSR_REG);
     rWrite(QWLAN_DXE_0_DMA_CSR_REG, regVal | QWLAN_DXE_0_DMA_CSR_PAUSE_MASK);
@@ -1428,6 +1448,10 @@ uint32_t hal_dxe_resume()
 #ifdef DEBUG
         ++g_dxe_resume;
 #endif
+
+	/*wait for all channels are available*/
+	nt_hal_wait_until_dxe_channel_avail();
+    
         // halDxe->dxe_suspend = 0;
         NT_LOG_DPM_INFO("hal_dxe_resume", 0, 0, 0);
 
