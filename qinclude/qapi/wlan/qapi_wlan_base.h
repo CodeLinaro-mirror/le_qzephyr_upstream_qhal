@@ -15,6 +15,7 @@
  *          for applications to perform WLAN control operations.
  */
 
+#include "qapi_wlan_misc.h"
 #include "qapi_types.h"
 #include "qapi_status.h"
 
