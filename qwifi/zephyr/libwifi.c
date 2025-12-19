@@ -117,7 +117,13 @@ void nt_dpm_notify_network_to_set_linkdown(struct netif *netif)
 
 nt_status_t get_netif_hwaddr_from_netif_id(uint8_t netif_id, uint8_t *addr) { return NT_OK; }
 
-app_mode_id_t nt_get_app_mode(void) { return APP_MODE_MM; }
+app_mode_id_t nt_get_app_mode(void) { 
+#if CONFIG_FTM_MODE
+    return APP_MODE_FTM;
+#else
+    return APP_MODE_MM; 
+#endif
+}
 
 int32_t pmu_ts_get_current_temperature(void)
 {

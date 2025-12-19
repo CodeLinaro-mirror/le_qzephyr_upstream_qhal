@@ -87,9 +87,13 @@ uint8_t nt_log_printf(uint8_t mod_id, uint8_t loglvl, char *func_name,
     va_start(argp, num);
     vsnprintf(my1pbuf, sizeof(my1pbuf), fmt, argp);
     va_end(argp);
+#if CONFIG_FTM_MODE
+    printk("[%s %d]: %s\r\n", func_name, ln, my1pbuf);
+#else
     printk("[%s %d]: ", func_name, ln);
     uart_hal_poll_out_str_ext(my1pbuf);
     uart_hal_poll_out_str_ext("\r\n");
+#endif
 #endif
     return NT_OK;
 }
