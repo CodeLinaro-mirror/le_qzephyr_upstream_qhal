@@ -975,7 +975,7 @@ eRet_t __attribute__ ((section(".ramfunc"))) nt_ndxe_get_single_received_frame(e
     if (desc_ctrl & NT_SA_DXE_DESC_CTRL_VALID) {
         // nt_dxe_update_descctrl_in_lst(pDxeCCB);
         /*NOTE:in some corner with powersaving enabled,DXE may have HALT but buffer been write to description*/
-        // rWrite(QWLAN_DXE_0_DMA_ENCH_REG, (1 << pDxeCCB->channel));
+        rWrite(QWLAN_DXE_0_DMA_ENCH_REG, (1 << pDxeCCB->channel));
         return NDXE_NO_PKTS_AVAILABLE;
     }
 
