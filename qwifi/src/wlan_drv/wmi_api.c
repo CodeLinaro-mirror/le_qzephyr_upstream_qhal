@@ -238,24 +238,29 @@ static void wmi_scan_comp_event(void *msg)
 
     qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t *)p_cxt->pScanOut;
     scan_comp_evt->evt_hdr.status = QAPI_OK;
-    if (scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
-        last_idx = scan_comp_evt->num_bss_cur;
-        num_entries = scan_comp_evt->num_bss_cur + p_scan_result->num_entries;
 
-        if (num_entries > p_cxt->scanBssMaxCount) {
-            scan_comp_evt->num_bss_cur = p_cxt->scanBssMaxCount;
-        } else {
-            scan_comp_evt->num_bss_cur = num_entries;
+    if(scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
+        last_idx = scan_comp_evt->num_bss_cur;
+        int cur_idx = last_idx;
+        for (int i = 0; i < p_scan_result->num_entries && cur_idx < p_cxt->scanBssMaxCount; ++i) {
+            int duplicate = 0;
+            for (int j = 0; j < last_idx; ++j) {
+                if (memcmp(scan_comp_evt->scan_bss_info[j].bssid,
+                        p_scan_result->scan_bss_info[i].bssid,
+                        IEEE80211_ADDR_LEN) == 0) {
+                    duplicate = 1;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx],
+                     (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i));
+                cur_idx++;
+            }
         }
-        scan_comp_evt->scan_id = p_scan_result->scan_id;
-        int i;
-        for (i = last_idx; i < scan_comp_evt->num_bss_cur; i++) {
-            _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[i],
-                                 (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) +
-                                             sizeof(ap_info) * (i - last_idx)));
-        }
+        scan_comp_evt->num_bss_cur = cur_idx;
     }
-    scan_comp_evt->total_bss += p_scan_result->num_entries;
+    scan_comp_evt->total_bss = scan_comp_evt->num_bss_cur;
     log_printf("scan found %d bss, our capacity %d\n", scan_comp_evt->total_bss, p_cxt->scanBssMaxCount);
 
     p_cxt->scan_in_progress = false;
@@ -1482,7 +1487,7 @@ qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_I
     p_cxt->wps_param.auth_floor = auth_floor;
     if (mode == QAPI_WLAN_WPS_PBC_MODE_E) {
         p_cxt->wps_param.config_mode = WPS_PBC_MODE;
-    } else if (mode == QAPI_WLAN_WPS_PBC_MODE_E) {
+    } else if (mode == QAPI_WLAN_WPS_PIN_MODE_E) {
         p_cxt->wps_param.config_mode = WPS_PIN_MODE;
     } else {
         return QAPI_WLAN_ERROR;

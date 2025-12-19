@@ -1818,8 +1818,8 @@ typedef enum {
 Enumeration of supported WPS modes.
 */
 typedef enum {
-    QAPI_WLAN_WPS_PIN_MODE_E = 0, /**< WPS Pushbutton method. */
-    QAPI_WLAN_WPS_PBC_MODE_E = 1  /**< WPS PIN method. */
+    QAPI_WLAN_WPS_PIN_MODE_E = 0, /**< WPS PIN method. */
+    QAPI_WLAN_WPS_PBC_MODE_E = 1  /**< WPS Pushbutton method. */
 } qapi_WLAN_WPS_Mode_e;
 
 /**
