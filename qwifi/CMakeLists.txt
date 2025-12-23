@@ -19,6 +19,7 @@ zephyr_library_sources(zephyr/libwifi.c)
 
 zephyr_link_libraries(
     wifiqcc730
+    cryptoqcc730
     -L${CMAKE_CURRENT_SOURCE_DIR}/../zephyr/blobs/
 )
 
