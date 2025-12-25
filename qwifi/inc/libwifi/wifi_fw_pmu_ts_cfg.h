@@ -28,7 +28,7 @@
 // #define PMU_TS_ROOM_TEMP_DEFAULT 212
 
 // moved to Kconfig
-// #define CONFIG_PMU_TS_MON_PERIOD_US 1000000 // 1 seconds
+#define CONFIG_PMU_TS_MON_PERIOD_US 1000000 /* 1 seconds */
 
 // OTP versions
 #define OTP_V1 1

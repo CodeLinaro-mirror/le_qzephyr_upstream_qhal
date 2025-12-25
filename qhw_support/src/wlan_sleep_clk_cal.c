@@ -21,6 +21,7 @@
 #include "nt_socpm_sleep.h"
 #include "nt_common.h"
 #include "nt_logger_api.h"
+#include "nt_timer.h"
 #ifdef FEATURE_FPCI
 #include "wifi_fw_pwr_cb_infra.h"
 #endif
@@ -31,6 +32,7 @@
 #include "qurt_isr.h"
 #include "qcc730v2.h"
 #include "fermion_hw_reg.h"
+#include "wmi.h"
 
 /*-----------------------------------------------------------------------------
  * Externalized Varible/Function Definitions
@@ -415,10 +417,12 @@ void socpm_actv_slp_clk_cal_monitor_resume(void)
             socpm_sleep_clk_cal_timer_cb();
         }
     }
-    socpm_slp_clk_cal_hw_init(); // to do only for MCU sleep( can be skipped if registers are retained)
+    socpm_slp_clk_cal_hw_init(); /*to do only for MCU sleep( can be skipped if registers are retained)*/
+#ifdef PMU_TS_CONFIGURATION
     if (is_pmu_ts_configured() != true) {
         pmu_ts_configure();
     }
+#endif
     p_slp_clk_cal_params->slp_clk_cal_enabled_mode = ACTIVE_MODE;
     return;
 }
