@@ -67,8 +67,8 @@ typedef struct {
     /* NVIC components stored into RAM. */
     uint32_t ISER[ARRAY_SIZE_IN_TYPE(NVIC_Type, ISER)];
     uint32_t ISPR[ARRAY_SIZE_IN_TYPE(NVIC_Type, ISPR)];
-    uint8_t IP[ARRAY_SIZE_IN_TYPE(NVIC_Type, IP)];
-    uint8_t SHP[ARRAY_SIZE_IN_TYPE(SCB_Type, SHP)];
+    uint8_t IP[ARRAY_SIZE_IN_TYPE(NVIC_Type, IPR)];
+    uint8_t SHP[ARRAY_SIZE_IN_TYPE(SCB_Type, SHPR)];
 } _nvic_context_t;
 
 struct backup {
@@ -304,16 +304,16 @@ static void nvic_suspend(_nvic_context_t *backup)
 {
     memcpy(backup->ISER, (uint32_t *)NVIC->ISER, sizeof(NVIC->ISER));
     memcpy(backup->ISPR, (uint32_t *)NVIC->ISPR, sizeof(NVIC->ISPR));
-    memcpy(backup->IP, (uint32_t *)NVIC->IP, sizeof(NVIC->IP));
-    memcpy(backup->SHP, SCB->SHP, sizeof(SCB->SHP));
+    memcpy(backup->IP, (uint32_t *)NVIC->IPR, sizeof(NVIC->IPR));
+    memcpy(backup->SHP, SCB->SHPR, sizeof(SCB->SHPR));
 }
 
 static void nvic_resume(_nvic_context_t *backup)
 {
     memcpy((uint32_t *)NVIC->ISER, backup->ISER, sizeof(NVIC->ISER));
     memcpy((uint32_t *)NVIC->ISPR, backup->ISPR, sizeof(NVIC->ISPR));
-    memcpy((uint32_t *)NVIC->IP, backup->IP, sizeof(NVIC->IP));
-    memcpy(SCB->SHP, backup->SHP, sizeof(SCB->SHP));
+    memcpy((uint32_t *)NVIC->IPR, backup->IP, sizeof(NVIC->IPR));
+    memcpy(SCB->SHPR, backup->SHP, sizeof(SCB->SHPR));
 }
 
 static void mcusleep_init_vector_table(void)
