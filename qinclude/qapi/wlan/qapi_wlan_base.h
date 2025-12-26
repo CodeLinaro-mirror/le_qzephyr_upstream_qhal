@@ -19,6 +19,18 @@
 #include "qapi_types.h"
 #include "qapi_status.h"
 
+
+typedef void (*qapi_wlan_activity_cb)(bool);
+
+/**
+@ingroup qapi_wlan
+Identifies the activity status for WLAN.
+*/
+typedef enum  {
+    QAPI_WIFI_IDLE = 0,    /**< wifi is idle with no activity. */
+    QAPI_WIFI_BUSY = 1 /**< wifi is busy beacuse network, scan, connect etc. */
+} qapi_wlan_activity_status;
+
 /**
 @ingroup qapi_wlan
 Identifies the enable/disable options for WLAN.
@@ -1284,6 +1296,10 @@ qapi_Status_t qapi_WLAN_Disable_Mgmt_Filter(uint8_t device_ID);
 @return qapi_Status_t    QAPI_OK on success, other error code on failure.
 */
 qapi_Status_t qapi_WLAN_Recv_Mgmt_Frames(uint8_t *buffer, uint32_t buffer_len, uint32_t *frame_len, uint32_t timeout);
+
+qapi_Status_t qapi_WLAN_Get_Activity_Status(qapi_wlan_activity_status *wifi_status);
+qapi_Status_t qapi_WLAN_Start_Check_Activity(void);
+qapi_Status_t qapi_WLAN_Stop_Check_Activity(void);
 
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Evt_Hdr_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Enable_Evt_t)

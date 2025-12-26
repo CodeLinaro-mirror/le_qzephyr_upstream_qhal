@@ -16,7 +16,7 @@
 
 #include "fwconfig_cmn.h"
 
-#if defined(SLEEP_CLK_CAL_IN_ACTIVE_MODE) && defined(CONFIG_WIFI)
+#if defined(SLEEP_CLK_CAL_IN_ACTIVE_MODE)
 
 #include "nt_socpm_sleep.h"
 #include "nt_common.h"
@@ -34,6 +34,9 @@
 #include "fermion_hw_reg.h"
 #include "wmi.h"
 #include <zephyr/irq.h>
+
+
+char sleep_clk_timer_name[] = "clk_cal";
 /*-----------------------------------------------------------------------------
  * Externalized Varible/Function Definitions
  * ---------------------------------------------------------------------------*/
@@ -282,6 +285,7 @@ nt_status_t socpm_slp_clk_cal_init(void)
 {
     socpm_sleep_clk_cal_t *p_slp_clk_cal_params = &(g_socpm_struct.slp_clk_cal_params);
 
+    printk("socpm_slp_clk_cal_init");
     // Set Sleep Clock Calibration periodicity
     p_slp_clk_cal_params->slp_clk_cal_poll_period =
         *((uint32_t *)(nt_devcfg_get_config(NT_DEVCFG_SLP_CLK_CAL_POLL_TIMER_PERIOD_MS)));
@@ -356,8 +360,9 @@ nt_status_t socpm_slp_clk_cal_init(void)
     /*During init, configure poll timer periodicity for a smaller value(1 sec) and
       later in the timer callback it is set to the original poll value*/
     if (!(p_slp_clk_cal_params->slp_clk_cal_poll_timer)) {
+        printk("slp_clk_cal_poll_timer\r\n");
         p_slp_clk_cal_params->slp_clk_cal_poll_timer =
-            nt_create_timer(socpm_sleep_clk_cal_timer_cb, NULL, INIT_SLP_CAL_POLL_PERIOD_MS, FALSE);
+            nt_create_pm_timer(sleep_clk_timer_name,socpm_sleep_clk_cal_timer_cb, NULL, (INIT_SLP_CAL_POLL_PERIOD_MS), FALSE);
     }
 
     if (!(p_slp_clk_cal_params->slp_clk_cal_poll_timer)) {
@@ -473,6 +478,7 @@ nt_status_t socpm_slp_clk_cal_enable(slp_clk_cal_mode_t mode)
 {
     socpm_sleep_clk_cal_t *p_slp_clk_cal_params = &(g_socpm_struct.slp_clk_cal_params);
     uint32_t value;
+    printk("socpm_slp_clk_cal_enable %d", mode);
     if (mode == ACTIVE_MODE) {
         NT_LOG_PRINT(SOCPM, ERR, "SOCPM slp clk cal enable prev_state %u,curr_state %u",
                      p_slp_clk_cal_params->slp_clk_cal_enabled_mode, mode);
