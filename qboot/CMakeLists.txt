@@ -95,7 +95,7 @@ target_include_directories(${executable_name} PRIVATE
   ${ZEPHYR_MBEDTLS_MODULE_DIR}/include
   ${ZEPHYR_MBEDTLS_MODULE_DIR}/include/mbedtls
   ${ZEPHYR_MBEDTLS_MODULE_DIR}/include/psa
-  ${ZEPHYR_CMSIS_MODULE_DIR}/CMSIS/Core/Include
+  ${ZEPHYR_CMSIS_6_MODULE_DIR}/CMSIS/Core/Include
   ${ZEPHYR_BINARY_DIR}/include/generated
   elf_loader
   include

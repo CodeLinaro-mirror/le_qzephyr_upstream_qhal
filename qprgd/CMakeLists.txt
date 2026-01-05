@@ -71,7 +71,7 @@ target_include_directories(${executable_name} PRIVATE
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/hal/include
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/soc/
   ${ZEPHYR_HAL_QCOM_MODULE_DIR}/hal/soc/qcc730
-  ${ZEPHYR_BASE}/../modules/hal/cmsis/CMSIS/Core/Include
+  ${ZEPHYR_CMSIS_6_MODULE_DIR}/CMSIS/Core/Include
   ${ZEPHYR_BASE}/../qcc730/soc/qcom/qcc730
   ${ZEPHYR_BASE}/../zephyr/include
   ${APPLICATION_BINARY_DIR}/zephyr/include/generated
