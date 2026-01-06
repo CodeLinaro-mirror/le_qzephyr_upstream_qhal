@@ -134,17 +134,17 @@ int qurt_get_time_period(TimerHandle_t timer)
     return _qtimer->qurt_timer_info.reload;
 }
 
-int qurt_timer_Is_Active(TimerHandle_t timer)
+bool qurt_timer_Is_Active(TimerHandle_t timer)
 {
     if (NULL == timer) {
-        return QURT_EINVALID;
+        return false;
     }
 
     if (z_is_inactive_timeout(&timer->timeout)) {
-        return QURT_EFAILED;
+        return false;
     }
-
-    return QURT_EOK;
+    
+    return true;
 }
 
 int qurt_timer_stop(TimerHandle_t timer, TickType_t block_time)

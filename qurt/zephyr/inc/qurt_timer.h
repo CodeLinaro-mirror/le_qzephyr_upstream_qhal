@@ -6,6 +6,7 @@
 #pragma once
 
 #include "qurt_types.h"
+#include <stdbool.h>
 
 #define QURT_TIMER_OBJ_SIZE_BYTES 128
 
@@ -49,7 +50,7 @@ typedef void (*TimerCallbackFunction_t)(TimerHandle_t timer);
 TickType_t qurt_timer_ms_to_ticks(uint32_t ms);
 
 int qurt_get_expiry_time(TimerHandle_t timer);
-int qurt_timer_Is_Active(TimerHandle_t timer);
+bool qurt_timer_Is_Active(TimerHandle_t timer);
 int qurt_get_time_period(TimerHandle_t timer);
 
 void qurt_timer_attr_init(qurt_timer_attr_t *attr);

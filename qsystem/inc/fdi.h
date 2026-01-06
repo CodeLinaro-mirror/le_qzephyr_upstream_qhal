@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+/**
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
  */
 /******************************************************************************
@@ -15,8 +15,9 @@
 
 #include "wifi_fw_dbg_infra.h"
 #include "wifi_fw_dbg_infra_cmn.h"
+#ifdef FEATURE_FDI_RMC
 #include "fdi_rmc.h"
-
+#endif
 #ifdef FEATURE_FDI
 #include "nt_common.h"
 

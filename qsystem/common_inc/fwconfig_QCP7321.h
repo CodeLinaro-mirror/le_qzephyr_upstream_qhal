@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+/**
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
  */
 /*========================================================================
@@ -360,15 +360,15 @@ When enter BMPs, default WQ switched from WQ12 to WQ11. When exit BMPs,
 #define FERMION_EMU_CLK_SCALING 16
 
 #else
-// #define PMU_TS_CONFIGURATION /* APIs to configure and get temperature */
+#define PMU_TS_CONFIGURATION /* APIs to configure and get temperature */
 //  Features only for Silicon
 /* Flag to enable Sleep Clock Calibration in Active Mode
  * and necessary configuration to enable sleep mode cal */
 #define SLEEP_CLK_CAL_IN_ACTIVE_MODE
 #ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
-// #define APPLY_SLEEP_CLK_CORRECTION
+#define APPLY_SLEEP_CLK_CORRECTION
 /* Flag to enable Sleep Clock Calibration in Sleep Mode */
-// #define SLEEP_CLK_CAL_IN_SLEEP_MODE
+#define SLEEP_CLK_CAL_IN_SLEEP_MODE
 #endif /* SLEEP_CLK_CAL_IN_ACTIVE_MODE */
 
 #ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
@@ -411,7 +411,7 @@ flag */
 #endif
 
 #ifndef FEATURE_FPCI
-// #define FEATURE_FPCI
+#define FEATURE_FPCI
 #define FPCI_DEBUG (0)
 #endif
 
