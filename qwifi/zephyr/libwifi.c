@@ -15,6 +15,14 @@
 
 #include <zephyr/sys/printk.h>
 
+extern struct qwifi_hal_t gs_qwifi_hal[2];
+
+enum {
+	STA_DEVICE,
+	AP_DEVICE,
+	MAX_ROLE,
+};
+
 #define HAL_MAX_RX_RATEINDEX    (32)
 typedef struct qintf_device {
 	uint8_t role;
@@ -64,9 +72,16 @@ void wmi_unit_test_cmd_handler(WMI_UNIT_TEST_CMD *cmd)
 
 nt_status_t nt_dpm_forward_eth_packet_to_stack_ext(void *rx_buf, void *eth_frame, uint32_t length, void *ext)
 {
-    struct qwifi_hal_t *hal = &gs_qwifi_hal;
+    struct qwifi_hal_t *hal;
 
     (void)ext;
+    device_t *device = ext;
+
+    if (device && (device->role == STA_DEVICE)) {
+        hal = &gs_qwifi_hal[0];
+    } else {
+        hal = &gs_qwifi_hal[1];
+    }
 
     hal->rx_cb(hal->drv_intf_data, eth_frame, length, hal);
     nt_dpm_free_buffer_ext(rx_buf);
@@ -77,15 +92,30 @@ void nt_dpm_network_init(void) {}
 
 void nt_dpm_add_dev_to_stack(void *dev)
 {
-    struct qwifi_hal_t *hal = &gs_qwifi_hal;
     device_t *device = dev;
+    struct qwifi_hal_t *hal;
+
+    if (device && (device->role == STA_DEVICE)) {
+        hal = &gs_qwifi_hal[0];
+    } else {
+        hal = &gs_qwifi_hal[1];
+    }
+
+    hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_REMOVE, device->mac_address);
     hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_ADD, device->mac_address);
 }
 
 void nt_dpm_remove_dev_from_stack(void *dev)
 {
-    struct qwifi_hal_t *hal = &gs_qwifi_hal;
     device_t *device = dev;
+    struct qwifi_hal_t *hal;
+
+    if (device && (device->role == STA_DEVICE)) {
+        hal = &gs_qwifi_hal[0];
+    } else {
+        hal = &gs_qwifi_hal[1];
+    }
+
     hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_REMOVE, device->mac_address);
 }
 
