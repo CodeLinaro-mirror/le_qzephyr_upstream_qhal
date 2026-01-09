@@ -16,7 +16,7 @@
 
 #include "fwconfig_cmn.h"
 
-#ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
+#if defined(SLEEP_CLK_CAL_IN_ACTIVE_MODE) && defined(CONFIG_WIFI)
 
 #include "nt_socpm_sleep.h"
 #include "nt_common.h"
