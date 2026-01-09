@@ -33,7 +33,7 @@
 #include "qcc730v2.h"
 #include "fermion_hw_reg.h"
 #include "wmi.h"
-
+#include <zephyr/irq.h>
 /*-----------------------------------------------------------------------------
  * Externalized Varible/Function Definitions
  * ---------------------------------------------------------------------------*/
@@ -56,6 +56,11 @@ void socpm_enable_slp_clk_cal_int(void)
 {
 #ifdef APPLY_SLEEP_CLK_CORRECTION
     uint32_t temp1;
+    /*this interrupt will be registerred when slp clk init, but it will be also registerred when timer timeout,
+    and it induces an assertion when CONFIG_ASSERT is enabled, so disable it before registering it again.
+    */
+    irq_disable(slp_clk_cal_intr);
+    
     qurt_isr_register_3(slp_clk_cal_intr, pmu_ccpu_slp_cal_done_intr);
     temp1 = HAL_REG_RD(NT_NVIC_ISER2);
     temp1 = temp1 | (0x1 << 1);
