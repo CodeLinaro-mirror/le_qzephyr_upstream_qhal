@@ -3,7 +3,7 @@
 
 config QCRYPTO
 	bool "QCOM crypto HAL"
-	default y
+	default n
 	select QURT_ABSTRACTION_LAYER
 	select QSYSTEM
 	select QHW_SUPPORT
