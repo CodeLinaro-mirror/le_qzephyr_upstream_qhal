@@ -165,3 +165,12 @@ qapi_Status_t qapi_bmps_sleep_wakeup_cb(ps_evt_cb_t cb, uint8_t flag);
    - QAPI_OK                             --   valid pointer.
 */
 qapi_Status_t qapi_bmps_get_exit_reason(uint8_t *reason);
+
+/**
+   @brief enable/disable compress qos null frame sending
+
+   @param[in] enable  1: Enable; 0: disable;
+   @return
+   - QAPI_OK                             --   valid pointer.
+*/
+qapi_Status_t qapi_bmps_compress_qos_null_enable(uint8_t enable);
