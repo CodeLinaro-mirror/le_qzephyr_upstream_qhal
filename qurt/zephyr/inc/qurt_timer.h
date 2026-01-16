@@ -33,6 +33,40 @@ typedef enum {
     QURT_TIME_NONE = 0XFFFFFFFF // identifier to use if no particular return type is needed
 } qurt_time_unit_t;
 
+//*****for qtmr start*/
+
+#define FRAME_n QTMR_FRAME_PHYSICAL_4
+/* Get current time */
+#define TIMER_GET_TIME64() qtmr_get_time64(FRAME_n)
+
+#define QTMR_CNTR_FREQ_HZ (38400000u)
+
+/**
+ * Various units supported by the timetick module
+ */
+typedef enum {
+    T_TICK, /**< -- Return time in Ticks */
+    T_USEC, /**< -- Return time in Microseconds */
+    T_MSEC, /**< -- Return time in Milliseconds */
+    T_SEC,  /**< -- Return time in Seconds */
+
+    T_NONE = T_TICK /**< -- use if no paticular return type is needed */
+} time_unit_type;
+
+typedef uint64_t time_timetick_type;
+
+/**
+ * Qtimer frame type
+ */
+typedef enum {
+    QTMR_FRAME_PHYSICAL_0, /**< Qtimer Physical Frame-0 */
+    QTMR_FRAME_PHYSICAL_1, /**< Qtimer Physical Frame-1 */
+    QTMR_FRAME_PHYSICAL_2, /**< Qtimer Physical Frame-2 */
+    QTMR_FRAME_PHYSICAL_3, /**< Qtimer Physical Frame-3 */
+    QTMR_FRAME_PHYSICAL_4, /**< Qtimer Physical Frame-4 */
+} qtmr_frame_t;
+//*****for qtmr end*/
+
 /* qurt_timer_t types */
 
 /* qurt_timer_cb_func_t types */
@@ -82,6 +116,8 @@ qurt_time_t qurt_timer_convert_time_to_ticks(qurt_time_t time, qurt_time_unit_t 
 
 TimerHandle_t nt_create_timer(void *call_back_function, void *timer_id, uint32_t time_countdown,
                               UBaseType_t auto_reload);
+TimerHandle_t nt_create_pm_timer(char *pcTimerName,void *call_back_function, void *timer_id, TickType_t time_countdown, UBaseType_t auto_reload);
+
 int nt_start_timer(TimerHandle_t timer_handle);
 int nt_stop_timer(TimerHandle_t timer_handle);
 
@@ -96,8 +132,13 @@ TimerHandle_t nt_qurt_timer_create(char *pcTimerName, const TickType_t xTimerPer
 int nt_timer_change_time_period(TimerHandle_t timer_handle, TickType_t new_period);
 void *nt_get_timeout_arg(TimerHandle_t timer_handle);
 
+//*****for qtmr start*/
 // TickType_t
 void hres_timer_us_delay(uint32_t time_us);
 uint64_t hres_timer_curr_time_us(void);
 uint32_t hres_timer_curr_time_ms(void);
-
+int8_t timer_cvt_to_tick64(uint64_t time, time_unit_type unit, uint64_t *pTimeRet);
+uint64_t qtmr_get_time64(qtmr_frame_t frame);
+time_timetick_type  hres_timer_timetick_get(void);
+uint32_t qtmr_get_freq(void);
+//*****for qtmr end*/

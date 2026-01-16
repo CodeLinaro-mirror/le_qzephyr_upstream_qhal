@@ -220,11 +220,19 @@ int qurt_timer_attr_get_reload(qurt_timer_attr_t *attr, qurt_time_t *reload_time
     return QURT_EOK;
 }
 
+/* Weak function declaration that points to pm_timer_unregister */
+__weak void pm_timer_unregister_internal(TimerHandle_t k_timer_handle)
+{
+    /* Empty implementation when pm_timer_unregister doesn't exist */
+}
+
 int qurt_timer_delete(TimerHandle_t timer, TickType_t block_time)
 {
     if (NULL == timer) {
         return QURT_EINVALID;
     }
+
+    pm_timer_unregister_internal(timer); 
 
     k_timer_stop(timer);
     k_free(timer);
@@ -293,6 +301,27 @@ TimerHandle_t nt_create_timer(void *call_back_function, void *timer_id, TickType
     return nt_qurt_timer_create(TIMER_NAME, time_countdown, auto_reload, timer_id, call_back_function);
 }
 
+/* Weak function declaration that points to pm_timer_register */
+__weak void pm_timer_register_internal(char *pcTimerName,TimerHandle_t k_timer_handle)
+{
+    /* Empty implementation when pm_timer_register doesn't exist */
+}
+
+TimerHandle_t nt_create_pm_timer(char *pcTimerName,void *call_back_function, void *timer_id, TickType_t time_countdown, UBaseType_t auto_reload)
+{
+    TimerHandle_t k_timer_handle = NULL;
+
+    k_timer_handle = nt_qurt_timer_create(pcTimerName, time_countdown, auto_reload, timer_id, call_back_function);
+
+    if(k_timer_handle && pcTimerName) {
+        /* Call the weak function that will link to pm_timer_register if it exists */
+        pm_timer_register_internal(pcTimerName, k_timer_handle);
+    }
+
+    return k_timer_handle;
+}
+
+
 int nt_start_timer(TimerHandle_t timer_handle) { return qurt_timer_start(timer_handle, 100); }
 
 int nt_stop_timer(TimerHandle_t timer_handle) { return qurt_timer_stop(timer_handle, 100); }
@@ -344,13 +373,121 @@ uint64_t hres_timer_curr_time_us(void)
     uint64_t cntr_freq_hz = 38400000u;
     uint64_t curr_time_us;
 
-    count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T0_OFFSET);
-    count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T0_OFFSET);
+    count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+    count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
     current_ticks = (((uint64_t)count_hi << 32) | count_lo);
     curr_time_us = (current_ticks * 1000000) / cntr_freq_hz;
     return curr_time_us;
 #endif
 }
+
+/**
+ * @brief   Get frequency of QTMR counter
+ * @return  qtmr counter frequency
+ */
+uint32_t qtmr_get_freq(void)
+{
+    return QTMR_CNTR_FREQ_HZ;
+}
+
+/**
+ * @brief   Get the current timer counter value.
+ * @return  Current time in ticks
+ */
+uint64_t qtmr_get_time64(qtmr_frame_t frame)
+{
+    uint64_t current_ticks;
+    uint32_t count_lo, count_hi;
+
+    switch (frame) {
+        case QTMR_FRAME_PHYSICAL_0:
+            count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T0_OFFSET);
+            count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T0_OFFSET);
+            break;
+        case QTMR_FRAME_PHYSICAL_1:
+            count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T1_OFFSET);
+            count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T1_OFFSET);
+            break;
+        case QTMR_FRAME_PHYSICAL_2:
+            count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T2_OFFSET);
+            count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T2_OFFSET);
+            break;
+        case QTMR_FRAME_PHYSICAL_3:
+            count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T3_OFFSET);
+            count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T3_OFFSET);
+            break;
+        case QTMR_FRAME_PHYSICAL_4:
+            count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+            count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+            break;
+        default:
+            count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+            count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+            break;
+    }
+
+    current_ticks = (((uint64_t)count_hi << 32) | count_lo);
+
+    return current_ticks;
+}
+
+/**
+ * hres_timer_timetick_get
+ *
+ * @brief This function gets the timetick and stores the value in global variable
+ * Timer module should be initialized before calling this function
+ *
+ * @return timetick value
+ */
+time_timetick_type  hres_timer_timetick_get(void)
+{
+    return TIMER_GET_TIME64();
+}
+
+/**
+ * timer_cvt_to_tick64
+ *
+ * @brief Converts time to ticks
+ *
+ * @param time Timer to convert
+ * @param unit Time unit type
+ * @param pTimeRet Pointer to store the result
+ *
+ * @return Success or failure after conversion
+ */
+int8_t timer_cvt_to_tick64(uint64_t time, time_unit_type unit, uint64_t *pTimeRet)
+{
+    uint64_t cntr_freq_hz = qtmr_get_freq();
+
+    switch (unit) {
+        case T_SEC:
+            /* Seconds to ticks */
+            time *= cntr_freq_hz;
+            break;
+
+        case T_MSEC:
+            /* Milliseconds to ticks */
+            time = (time * cntr_freq_hz) / 1000;
+            break;
+
+        case T_USEC:
+            /* Microseconds to ticks */
+            time = ((time * cntr_freq_hz) / 1000000);
+            break;
+
+        case T_TICK:
+            /* Time already in tick */
+            break;
+
+        default:
+            return -1;
+    }
+
+    *pTimeRet = time;
+
+    return 0;
+
+} /* timer_cvt_to_tick64 */
 
 uint32_t hres_timer_curr_time_ms(void)
 {

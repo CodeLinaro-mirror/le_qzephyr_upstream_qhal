@@ -65,23 +65,18 @@ qapi_Status_t qapi_WLAN_Suspend(void)
     qapi_Status_t ret = QAPI_ERROR;
 
     WLAN_QAPI_LOCK();
-    PRINT_LOG_FUNC_LINE_ENTRY;
     ret = wmi_suspend();
 exit:
-    PRINT_LOG_FUNC_LINE_EXIT;
     WLAN_QAPI_UNLOCK();
     return ret;
 }
 
 qapi_Status_t qapi_WLAN_Resume(void)
 {
-    sys_clock_announce((uint32_t) k_us_to_ticks_floor64(bmps_wkup_cpu - bmps_enter_sleep));
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     WLAN_QAPI_LOCK();
-    PRINT_LOG_FUNC_LINE_ENTRY;
     wmi_resume();
 exit:
-    PRINT_LOG_FUNC_LINE_EXIT;
     WLAN_QAPI_UNLOCK();
     return ret;
 }
@@ -206,6 +201,42 @@ qapi_Status_t qapi_WLAN_Get_Country_Code(char __attribute__((__unused__)) * coun
 }
 
 qapi_Status_t qapi_WLAN_Get_Regulatory_Info(qapi_WLAN_Reg_Evt_t *reg) { return wlan_sta_get_reg_info(reg); }
+
+qapi_Status_t qapi_WLAN_Get_Activity_Status(qapi_wlan_activity_status *wifi_status)
+{
+    if(!wifi_status)
+    {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+    if(wifi_activity_is_busy())
+    {
+        *wifi_status = QAPI_WIFI_BUSY;
+    }
+    else
+    {
+        *wifi_status = QAPI_WIFI_IDLE;
+    }
+    return QAPI_OK;
+}
+
+qapi_Status_t qapi_WLAN_Start_Check_Activity(void)
+{
+    pmStartTimeoutExt();
+    return QAPI_OK;
+}
+
+qapi_Status_t qapi_WLAN_Stop_Check_Activity(void)
+{
+    pmStopTimeoutExt();
+    return QAPI_OK;
+}
+
+qapi_Status_t qapi_WLAN_Activity_Register_CB(qapi_wlan_activity_cb wifi_activity_cb)
+{
+    register_wifi_activity_cb(wifi_activity_cb);
+    return QAPI_OK;
+}
+
 
 qapi_Status_t qapi_WLAN_Set_Rate(qapi_WLAN_Set_Rate_Params_t *prate_para)
 {
