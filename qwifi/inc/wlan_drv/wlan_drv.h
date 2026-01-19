@@ -62,6 +62,7 @@ typedef struct wlan_qapi_cxt_s {
     uint32_t wlan_get_tx_power_block_mode : 1;
     uint32_t wlan_suspend_block_mode: 1;
     uint32_t wlan_resume_block_mode: 1;
+    uint32_t wlan_sap_csa_block_mode: 1;
     qapi_Status_t wlan_qapi_error;
     wlan_evt_payload_t event_payload_buf[EVT_PAYLOAD_MAX];
     WMI_CONNECT_CMD connect_cmd;
@@ -106,6 +107,7 @@ typedef struct wlan_qapi_cxt_s {
 #endif
     struct k_work_delayable roaming_work;
     uint32_t suspend_ret;
+    WMI_SAP_CSA_CMD sap_csa;
 } wlan_qapi_cxt_t;
 
 extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;
