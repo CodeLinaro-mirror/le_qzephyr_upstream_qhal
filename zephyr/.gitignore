@@ -3,4 +3,4 @@ blobs/libpowerqcc730.a
 blobs/libcryptoqcc730.a
 blobs/libsensorqcc730.a
 blobs/*.bin
-
+blobs/*.elf

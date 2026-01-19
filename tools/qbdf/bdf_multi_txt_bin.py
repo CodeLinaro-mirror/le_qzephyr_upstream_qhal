@@ -95,20 +95,26 @@ def main(argv):
         print("Executing python txt2bin.py "+newf2+" "+newb)
         t2b.main(["",newf2,newb])
         
-        print("Executing python bin2txt.py "+newb+" "+newf2)
-        b2t.main(["",newb,newf2])
-
-    print("Removing old .txt files.")
-    for i in files_diff:
-        try:
-            os.remove(i)
-        except:
-            print("Make sure the txt files are not read-only.")
-            exit()
-    
-    print("Renaming new .txt files as old.")
-    for i in files_diff:
-        os.rename(i[:len(i)-4]+"_new.txt",i)
+        # Only perform bin2txt verification if output is in same directory as input
+        # This preserves the original txt files when output directory is different
+        if output_dir == input_dir or output_dir == os.path.dirname(i):
+            print("Executing python bin2txt.py "+newb+" "+newf2)
+            b2t.main(["",newb,newf2])
+            
+            print("Removing old .txt files.")
+            for j in files_diff:
+                try:
+                    os.remove(j)
+                except:
+                    print("Make sure the txt files are not read-only.")
+                    exit()
+            
+            print("Renaming new .txt files as old.")
+            for j in files_diff:
+                os.rename(j[:len(j)-4]+"_new.txt",j)
+            break
+        else:
+            print(f"Skipping verification for {newf2} (output directory is different)")
 
     print("\n\nSuccessfully generated binaries for BDF files.")
 
