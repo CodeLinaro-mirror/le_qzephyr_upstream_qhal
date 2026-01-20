@@ -119,5 +119,6 @@ class GDB_Server(object):
         Parameters:
             client: object used to send commands to the gdb_client.
         '''
-        #client.execute('gdb.execute("monitor reset halt")')
-
+        # Execute reset halt for flash operations (nvm_programmer)
+        # This is needed to stop the CPU before programming
+        client.execute('gdb.execute("monitor reset halt")')
