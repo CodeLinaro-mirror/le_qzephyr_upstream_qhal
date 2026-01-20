@@ -33,8 +33,9 @@ typedef uint64_t (*aon_expiry_fn)(void *user_data);
  */
 typedef enum {
     AON_CLIENT_OS = 0,
-    AON_CLIENT_WIFI,
-    // Add other clients like AON_CLIENT_BT here...
+    AON_CLIENT_BMPS_IN_SLEEP_MODE,
+    AON_CLIENT_BMPS_IN_ACTIVE_MODE,
+    /*Add other clients like AON_CLIENT_BT here...*/
     AON_CLIENT_MAX,
     AON_CLIENT_NONE = 0xFF  // Special value to indicate no client
 } aon_client_id_t;
@@ -65,6 +66,7 @@ typedef struct {
 
 void aon_manager_init(get_abs_us_fn us_provider);
 void aon_timer_register(aon_client_id_t id, aon_expiry_fn cb, void *data);
+void aon_timer_deregister(aon_client_id_t id);
 void aon_timer_set(aon_client_id_t id, uint64_t duration_us);
 void aon_get_min_expiry(aon_sleep_info_t* info);
 void aon_disable_all_timers(void);
