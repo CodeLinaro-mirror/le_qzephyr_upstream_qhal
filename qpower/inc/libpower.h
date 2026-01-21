@@ -12,11 +12,13 @@ typedef void (*wifi_pre_sleep_ulpsmps2_cb)(void);
 typedef void (*pmu_ts_init_cb)(void);
 typedef  void (*pmu_ts_configure_cb)(void);
 typedef nt_status_t (*slp_clk_cal_enable_cb)(slp_clk_cal_mode_t mode);
+typedef void (*set_sleep_exit_reason_cb)(void *reason);
 typedef struct libpower_ifc {
     wifi_pre_sleep_ulpsmps2_cb ulpsmps2;
     pmu_ts_init_cb  ts_init;
     pmu_ts_configure_cb ts_configure;
     slp_clk_cal_enable_cb slp_clk_cal_enable;
+    set_sleep_exit_reason_cb set_sleep_exit_reason;
 } libpower_ifc_t;
 
 #define LIBPOWER_IFC_CALL(func, ...) \

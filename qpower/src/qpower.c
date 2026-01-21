@@ -90,7 +90,8 @@ static void aon_set_alarm(uint64_t us)
 
 static void libpower_kconfig_install(void)
 {
-    ;//transform KCONFIG to variable in g_libpower_kconfig for libpower
+    /*This is reserved to read KCONFIG value to variable in g_libpower_kconfig for libpower.*/
+    ;
 }
 
 qapi_Status_t qapi_pmu_init(void)
@@ -105,6 +106,7 @@ qapi_Status_t qapi_pmu_init(void)
     libpower_ifc.ts_init = pmu_ts_init;
     libpower_ifc.ts_configure = pmu_ts_configure;
     libpower_ifc.slp_clk_cal_enable = socpm_slp_clk_cal_enable;
+    libpower_ifc.set_sleep_exit_reason = set_sleep_exit_reason; 
     reg_libpower_ifc(&libpower_ifc);
 #endif
 

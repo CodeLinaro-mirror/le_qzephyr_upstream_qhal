@@ -41,3 +41,4 @@ void qapi_enter_softoff(void);
 void qapi_enter_suspend2ram(void);
 void qapi_suspend2ram_exit_post_ops(void);
 void qapi_slp_tmr_set(uint64_t);
+void set_sleep_exit_reason(void *reason);

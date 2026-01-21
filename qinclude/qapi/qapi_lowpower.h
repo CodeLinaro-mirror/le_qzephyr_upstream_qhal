@@ -30,6 +30,21 @@ typedef enum qapi_sleep_types {
     qapi_infdeepsleep
 } qapi_sleep_mode;
 
+typedef enum {
+    qapi_exit_reason_none,
+    qapi_exit_reason_beacon_miss,
+    qapi_exit_reason_tim_uc,
+    qapi_exit_reason_tim_bc,
+#ifdef SUPPORT_DATAPATH_FLUSH_BEFORE_BMPS_SLEEP
+    qapi_exit_reason_data_path,
+#endif
+    qapi_exit_reason_csa,
+    qapi_exit_reason_negative_slp_time,
+    qapi_exit_reason_ext_int,
+    qapi_exit_reason_rtos_time,
+    qapi_exit_reason_limit,
+}  qapi_sleep_exit_reason;
+
 /* @brief bmps rx filter callback typedef */
 typedef bool (*qapi_bmps_rx_filter_cb)(uint16_t type, bool bm_cast, void *pbuf, uint16_t len);
 
@@ -164,7 +179,16 @@ qapi_Status_t qapi_bmps_sleep_wakeup_cb(ps_evt_cb_t cb, uint8_t flag);
    @return
    - QAPI_OK                             --   valid pointer.
 */
-qapi_Status_t qapi_bmps_get_exit_reason(uint8_t *reason);
+qapi_Status_t qapi_bmps_get_exit_reason(qapi_sleep_exit_reason *reason);
+
+/**
+   @brief enable/disable power optimization in bmps mode when active
+
+   @param[in] enable  1: Enable; 0: disable;
+   @return
+   - QAPI_OK                             --   valid pointer.
+*/
+qapi_Status_t qapi_bmps_power_optimization_enable(uint8_t enable);
 
 /**
    @brief enable/disable compress qos null frame sending
