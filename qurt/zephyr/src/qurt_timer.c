@@ -34,7 +34,25 @@ typedef struct _qurt_timer_attr_t {
 typedef struct _qurt_timer_t {
     struct k_timer timer;
     _qurt_timer_attr_t qurt_timer_info;
+    struct k_work work;
+    TimerCallbackFunction_t user_callback;
 } _qurt_timer_t;
+
+static void timer_work_handler(struct k_work *work)
+{
+    _qurt_timer_t *_qtimer = CONTAINER_OF(work, _qurt_timer_t, work);
+
+    if (_qtimer->user_callback) {
+        _qtimer->user_callback(&_qtimer->timer);
+    }
+}
+
+static void k_timer_expiry_wrapper(struct k_timer *timer)
+{
+    _qurt_timer_t *_qtimer = CONTAINER_OF(timer, _qurt_timer_t, timer);
+
+    k_work_submit(&_qtimer->work);
+}
 
 
 TickType_t qurt_timer_ms_to_ticks(uint32_t ms)
@@ -89,7 +107,11 @@ TimerHandle_t qurt_timer_create(void *id, const qurt_timer_attr_t *attr, TimerCa
     _qtimer->qurt_timer_info.duration = pattr->duration;
     _qtimer->qurt_timer_info.reload = pattr->reload;
     _qtimer->qurt_timer_info.id = id;
-    k_timer_init(&_qtimer->timer, expiry_fn, NULL);
+    _qtimer->user_callback = expiry_fn;
+
+    k_work_init(&_qtimer->work, timer_work_handler);
+
+    k_timer_init(&_qtimer->timer, k_timer_expiry_wrapper, NULL);
 
     return &_qtimer->timer;
 }
@@ -232,9 +254,13 @@ int qurt_timer_delete(TimerHandle_t timer, TickType_t block_time)
         return QURT_EINVALID;
     }
 
+    _qurt_timer_t *_qtimer = (_qurt_timer_t *)timer;
+
     pm_timer_unregister_internal(timer); 
 
     k_timer_stop(timer);
+    k_work_cancel(&_qtimer->work);
+    k_work_flush(&_qtimer->work, NULL);
     k_free(timer);
 
     return QURT_EOK;
