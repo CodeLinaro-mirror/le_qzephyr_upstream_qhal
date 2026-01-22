@@ -70,4 +70,5 @@ void aon_timer_deregister(aon_client_id_t id);
 void aon_timer_set(aon_client_id_t id, uint64_t duration_us);
 void aon_get_min_expiry(aon_sleep_info_t* info);
 void aon_disable_all_timers(void);
+bool aon_process_specific_client(aon_client_id_t client_id, uint64_t* slp_back);
 #endif // __DRV_AON_TMR_H__
