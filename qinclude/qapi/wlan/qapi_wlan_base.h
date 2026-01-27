@@ -18,9 +18,10 @@
 #include "qapi_wlan_misc.h"
 #include "qapi_types.h"
 #include "qapi_status.h"
+#include "wlan_defs.h"
 
 
-typedef void (*qapi_wlan_activity_cb)(bool);
+typedef void (*qapi_wlan_activity_cb)(PM_WLAN_ACTIVITY_STATUS activity);
 
 /**
 @ingroup qapi_wlan
