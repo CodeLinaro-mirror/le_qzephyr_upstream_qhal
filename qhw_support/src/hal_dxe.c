@@ -45,9 +45,12 @@ extern uint8_t rx_amsdu_enabled;
 
 #ifdef MEM_CPY_VIA_DXE
 static volatile uint8_t copy_ongoing = 0;
+//static volatile uint32_t h2h_memcpy_call_cnt = 0;
+
 void nt_dxe_cpy_done_handler(uint32_t tx_type)
 {
     if (tx_type == H2H) {
+        //nt_dxe_update_intr_cnt(H2H);
         copy_ongoing = 0;
     } else {
         NT_LOG_DPM_ERR("Invalid TX Type in Interrupt Handler\r\n", 0, 0, 0);
@@ -55,28 +58,54 @@ void nt_dxe_cpy_done_handler(uint32_t tx_type)
     return;
 }
 
+#define DXE_COPY_TIMEOUT_US 200 // 200us
 void *nt_dxe_memcpy(void *dst, const void *src, uint32_t length)
 {
     eRet_t ret = NDXE_SUCCESS;
-
+    uint32_t timeout = 0;
     taskENTER_CRITICAL();
 
-    while (copy_ongoing)
-        ;
+    /* Wait for previous transfer with timeout */
+    timeout = 0;
+    while (copy_ongoing) {
+        // Small delay to avoid busy-wait (use Zephyr k_busy_wait)
+        hres_timer_us_delay(10);
+        timeout += 10;
+
+        if (timeout > DXE_COPY_TIMEOUT_US) {
+            NT_LOG_DPM_ERR("DXE H2H wait timeout (start)",
+                          0, 0, 0);
+            taskEXIT_CRITICAL();
+            return NULL;
+        }
+    }
 
     copy_ongoing = 1;
 
     ret = nt_ndxe_write_frame_to_transfer(H2H, src, length, dst);
+
 
     if (ret != NDXE_SUCCESS) {
         copy_ongoing = 0;
         taskEXIT_CRITICAL();
         return NULL;
     }
+    //h2h_memcpy_call_cnt++;
 
-    while (copy_ongoing)
-        ;
+    /* Wait for current transfer with timeout */
+    timeout = 0;
+    while (copy_ongoing) {
+        hres_timer_us_delay(10);
+        timeout += 10;
 
+        if (timeout > DXE_COPY_TIMEOUT_US) {
+            NT_LOG_DPM_ERR("DXE H2H wait timeout (end) - resetting flag",
+                          0, 0, 0);
+            copy_ongoing = 0;  // Force recovery
+            taskEXIT_CRITICAL();
+            return NULL;
+        }
+    }
     taskEXIT_CRITICAL();
 
     return dst;
@@ -1386,6 +1415,9 @@ void nt_hal_wait_until_dxe_channel_avail(void)
 		regVal = rRead(QWLAN_DXE_0_CH5_STATUS_REG);
 	} while ((regVal & QWLAN_DXE_0_CH5_STATUS_BUSY_MASK));
 
+    do {
+         regVal = rRead(QWLAN_DXE_0_CH10_STATUS_REG);
+    } while ((regVal & QWLAN_DXE_0_CH10_STATUS_BUSY_MASK));
 
 	return;
 }
@@ -1403,7 +1435,7 @@ uint32_t hal_dxe_suspend()
     ++g_dxe_suspend;
 #endif
 
-	
+
 	/*wait for all channels are available*/
 	nt_hal_wait_until_dxe_channel_avail();
 
@@ -1451,7 +1483,7 @@ uint32_t hal_dxe_resume()
 
 	/*wait for all channels are available*/
 	nt_hal_wait_until_dxe_channel_avail();
-    
+
         // halDxe->dxe_suspend = 0;
         NT_LOG_DPM_INFO("hal_dxe_resume", 0, 0, 0);
 
@@ -1472,7 +1504,7 @@ uint32_t hal_dxe_resume()
 
 #ifdef SUPPORT_BMU_ERROR_RECOVERY
 /*
- * @brief  : Before BMU recovery process, following things should be taken care 
+ * @brief  : Before BMU recovery process, following things should be taken care
  *           1. abort all enabled dxe channels
  *           2. disable all enabled dxe channels
  *           3. DXE soft reset is done as part of RRI init so Prefetch clear is not done here
@@ -1495,12 +1527,12 @@ void hal_dxe_abort_pre_bmu_recovery(void)
             {
                 delay(10);
                 regVal=rRead(QWLAN_DXE_0_CHn_STATUS_REG(ch_idx));
-                dxe_ch_err_code = ((regVal & QWLAN_DXE_0_CH0_STATUS_ERR_CODE_MASK) >> QWLAN_DXE_0_CH0_STATUS_ERR_CODE_OFFSET); 
+                dxe_ch_err_code = ((regVal & QWLAN_DXE_0_CH0_STATUS_ERR_CODE_MASK) >> QWLAN_DXE_0_CH0_STATUS_ERR_CODE_OFFSET);
                 /* check the error code for successful abort
                  *   -> When Dxe channel is enabled, Abort request is honoured, then it will set the error code 0x1a
-                 * Abort Mask will be cleared by HW post Abort successful 
+                 * Abort Mask will be cleared by HW post Abort successful
                  *   -> when Dxe is about to end the transfer and abort request is given, request may be ignored */
-                if ((dxe_ch_err_code == QWLAN_DXE_0_CH0_STATUS_ERR_CODE_EABORT) || 
+                if ((dxe_ch_err_code == QWLAN_DXE_0_CH0_STATUS_ERR_CODE_EABORT) ||
                         ((regVal & QWLAN_DXE_0_CH0_STATUS_ABORT_REQ_MASK) == 0))
                 {
                     NT_LOG_PRINT(DPM, INFO, "DXE CHAN %d aborted", ch_idx);
