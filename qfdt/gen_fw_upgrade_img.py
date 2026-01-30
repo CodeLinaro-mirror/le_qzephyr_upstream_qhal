@@ -242,9 +242,54 @@ class Fw_Upgrade_Img_Descriptor:
                 self.add_entry(entry)
         return 1
 
-    def gen_whole_disk_binary(self, filename):
+    def search_file_in_build_dir(self, filename, build_dir, board=None):
+        ''' Search for a file in the build directory
+        
+        Args:
+            filename: The filename to search for (e.g., zephyr_HASHED.elf)
+            build_dir: The build directory to search in
+            board: Optional board name for SBL files
+            
+        Returns:
+            Full path to the file if found, otherwise the original filename
+        '''
+        if not build_dir or not os.path.exists(build_dir):
+            return filename
+        
+        # For SBL files, construct the expected path based on board name
+        if 'sbl' in filename.lower() and board:
+            # Expected path: build_dir/modules/hal_qcom/qboot/zephyr/{board}_sbl_HASHED.elf
+            sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', 'zephyr', f'{board}_sbl_HASHED.elf')
+            if os.path.exists(sbl_path):
+                logging.info(f'Found SBL file: {sbl_path}')
+                return sbl_path
+        
+        # For zephyr_HASHED.elf, search in build_dir/zephyr/
+        if 'zephyr_HASHED.elf' in filename:
+            zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
+            if os.path.exists(zephyr_path):
+                logging.info(f'Found zephyr file: {zephyr_path}')
+                return zephyr_path
+        
+        # If not found in expected locations, try recursive search
+        for root, dirs, files in os.walk(build_dir):
+            if filename in files:
+                found_path = os.path.join(root, filename)
+                logging.info(f'Found file via search: {found_path}')
+                return found_path
+        
+        logging.warning(f'File not found in build directory: {filename}')
+        return filename
+
+    def gen_whole_disk_binary(self, filename, build_dir=None, board=None):
         ''' Write to the given file name a copy of the binary blob contained
-        in the partition table. Note: All files must be in current folder.'''
+        in the partition table. Note: All files must be in current folder.
+        
+        Args:
+            filename: Output filename
+            build_dir: Optional build directory to search for ELF files
+            board: Optional board name for SBL file resolution
+        '''
 
         out = open(filename, 'wb')
 
@@ -259,9 +304,33 @@ class Fw_Upgrade_Img_Descriptor:
         if self.format == 1: # partial format
             for entry in self.entries:
                 if len(entry.filename) > 0:
-                    logging.debug('Will try to open file %s' % (entry.filename))
+                    # Search for file in build directory if provided
+                    # Use image_id to determine which file to use:
+                    # image_id 1 = SBL, image_id 10 = zephyr application
+                    actual_filename = entry.filename
+                    file_replaced = False
+                    if build_dir and os.path.exists(build_dir):
+                        if entry.image_id == 1 and board:
+                            # SBL file
+                            sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', 'zephyr', f'{board}_sbl_HASHED.elf')
+                            if os.path.exists(sbl_path):
+                                actual_filename = sbl_path
+                                file_replaced = True
+                                logging.info(f'Using SBL file from build_dir for image_id {entry.image_id}: {sbl_path}')
+                        elif entry.image_id == 10:
+                            # Zephyr application file
+                            zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
+                            if os.path.exists(zephyr_path):
+                                actual_filename = zephyr_path
+                                file_replaced = True
+                                logging.info(f'Using zephyr file from build_dir for image_id {entry.image_id}: {zephyr_path}')
+                    
+                    if not file_replaced and len(entry.filename) > 0:
+                        logging.info(f'Using original XML path for image_id {entry.image_id}: {entry.filename}')
+                    
+                    logging.debug('Will try to open file %s' % (actual_filename))
                     try:
-                        with open(entry.filename , 'rb') as f:
+                        with open(actual_filename , 'rb') as f:
                             # get file size
                             f.seek(0,2)
                             size = f.tell()
@@ -299,9 +368,33 @@ class Fw_Upgrade_Img_Descriptor:
         else: # format with all in one
             for entry in self.entries:
                 if len(entry.filename) > 0:
-                    logging.debug('Will try to open file %s' % (entry.filename))
+                    # Search for file in build directory if provided
+                    # Use image_id to determine which file to use:
+                    # image_id 1 = SBL, image_id 10 = zephyr application
+                    actual_filename = entry.filename
+                    file_replaced = False
+                    if build_dir and os.path.exists(build_dir):
+                        if entry.image_id == 1 and board:
+                            # SBL file
+                            sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', f'{board}_sbl_HASHED.elf')
+                            if os.path.exists(sbl_path):
+                                actual_filename = sbl_path
+                                file_replaced = True
+                                logging.info(f'Using SBL file from build_dir for image_id {entry.image_id}: {sbl_path}')
+                        elif entry.image_id == 10:
+                            # Zephyr application file
+                            zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
+                            if os.path.exists(zephyr_path):
+                                actual_filename = zephyr_path
+                                file_replaced = True
+                                logging.info(f'Using zephyr file from build_dir for image_id {entry.image_id}: {zephyr_path}')
+                    
+                    if not file_replaced and len(entry.filename) > 0:
+                        logging.info(f'Using original XML path for image_id {entry.image_id}: {entry.filename}')
+                    
+                    logging.debug('Will try to open file %s' % (actual_filename))
                     try:
-                        with open(entry.filename , 'rb') as f:
+                        with open(actual_filename , 'rb') as f:
                             # get file size
                             f.seek(0,2)
                             size = f.tell()
@@ -364,6 +457,8 @@ Run: python gen_fw_upgrade_img.py --xml fw_upgrade.xml --output fw_upgrade_img.b
     parser = argparse.ArgumentParser(description=tool_verbose_description, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--xml', type= open, required=True, help='The xml file for the firmware upgrade image generater')
     parser.add_argument('--output', type=str, required=False, help='The output file where to store the whole disk')
+    parser.add_argument('-d', '--build-dir', type=str, required=False, help='Build directory to search for ELF files (e.g., qcc730mi_sbl_HASHED.elf, zephyr_HASHED.elf)')
+    parser.add_argument('-b', '--board', type=str, required=False, help='Board name (e.g., qcc730mi, qcc730evbx) to determine SBL filename')
     parser.add_argument('-v', '--verbose', type=int, choices=[0,1,2,3,4,5], help='Verbose levels. Higher numbers include lower. For example, 3 means 3,2,1 and 0. 0=Critcal. 1=Error, 2=Warning 3=Info[Default], 4=Debug, 5=Everything', default=0)
     args = parser.parse_args()
 
@@ -389,7 +484,7 @@ Run: python gen_fw_upgrade_img.py --xml fw_upgrade.xml --output fw_upgrade_img.b
         return
 
     #Generate the disk image.
-    if fwd.gen_whole_disk_binary(args.output) == 1:
+    if fwd.gen_whole_disk_binary(args.output, args.build_dir, args.board) == 1:
         #done here
         logging.info('Done generating the whole firmware upgrade image')
         print('Done generating the whole firmware upgrade image')
