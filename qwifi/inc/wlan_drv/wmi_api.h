@@ -21,13 +21,14 @@
 #define WLAN_WMI_CMD_SIG_MASK_SEND_RAW 0x2000
 #define WLAN_WMI_CMD_SIG_MASK_SET_MGMT_FILTER 0x4000
 #define WLAN_WMI_CMD_SIG_MASK_GET_TX_POWER 0x8000
-#define WLAN_WMI_CMD_SIG_MASK_GET_STATUS 0x10000
 #ifdef CONFIG_WPS
 #define WLAN_WMI_CMD_SIG_MASK_STARTED_WPS_PROCESS 0x10000
 #define WLAN_WMI_CMD_SIG_MASK_STOPPED_SCAN 0x20000
 #endif
+#define WLAN_WMI_CMD_SIG_MASK_GET_STATUS 0x40000
 #define WLAN_WMI_CMD_SIG_MASK_SUSPEND 0x80000
 #define WLAN_WMI_CMD_SIG_MASK_RESUME 0x100000
+#define WLAN_WMI_CMD_SIG_MASK_SAP_CSA_STATUS 0x200000
 
 extern qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_len);
 extern qapi_Status_t wmi_dev_cmd_send(WMI_COMMAND_ID cmd_id, uint8_t dev_id, void *p_data, uint32_t data_len);
@@ -68,5 +69,8 @@ extern qapi_Status_t wlan_get_edca_param(uint8_t qid, uint8_t *aifs, uint16_t *c
 extern qapi_Status_t  wmi_suspend(void);
 extern qapi_Status_t  wmi_resume(void);
 extern qapi_Status_t wmi_get_wifi_status(uint8_t dev_id, WMI_WIFI_STATUS *status);
+extern qapi_Status_t wmi_wlan_sap_csa(uint8_t device_ID, uint8_t switch_mode, uint16_t channel,
+                                      uint8_t is_6g, uint8_t switch_count);
+
 
 #endif //__WMI_API_H__

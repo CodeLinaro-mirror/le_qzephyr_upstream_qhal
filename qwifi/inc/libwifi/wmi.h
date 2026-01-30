@@ -254,6 +254,7 @@ typedef enum {
     WMI_IMPS_TIMEDOUT_HNDL_CMDID,
     WMI_WLAN_SUSPEND_CMDID,
     WMI_DBG_TSF_CMDID,
+    WIFI_SET_SAP_CSA,
     WMI_GET_WIFI_STATUS,
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
@@ -292,6 +293,7 @@ typedef enum {
     WMI_WPS_FAIL_EVTID, // 0x1E
     WMI_WLAN_SUSPEND_EVTID,
     WMI_WLAN_RESUME_EVTID,
+    WMI_WLAN_SAP_CSA_EVTID,
     WMI_REPORT_WIFI_STATUS,
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
@@ -1161,6 +1163,16 @@ typedef PREPACK struct {
     uint8_t is_sender_initiator;
 
 } POSTPACK WMI_DELBA_REQ_CMD;
+
+/*
+ * WMI_SAP_CSA_CMD
+ */
+typedef PREPACK struct {
+    uint8_t mode;
+    uint8_t is_6g;
+    uint16_t channel;
+    uint8_t count;
+} POSTPACK WMI_SAP_CSA_CMD;
 
 /*
  * ------- AP Mode definitions --------------
