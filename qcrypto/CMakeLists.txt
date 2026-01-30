@@ -13,7 +13,10 @@ zephyr_link_libraries(
     -L${CMAKE_CURRENT_SOURCE_DIR}/../zephyr/blobs/
 )
 
-zephyr_library_sources(src/qcrypto.c)
+zephyr_library_sources(
+    src/qcrypto.c
+    src/aead_get_custom.c
+)
 
 zephyr_compile_definitions(
     MBEDTLS_RSA_C
