@@ -217,7 +217,7 @@ void aon_ext_interrupt_wake_up(void)
 {
     aon_ext_interrupt_wake_up_cnt++;
     aon_ext_interrupt_wake_up_processed = 1;
-
+    early_printk("wakeup\r\n");
     // Clear the interrupt
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 1);
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 0);

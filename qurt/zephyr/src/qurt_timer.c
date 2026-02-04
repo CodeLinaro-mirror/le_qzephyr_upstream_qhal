@@ -388,7 +388,7 @@ void hres_timer_us_delay(uint32_t time_us)
 void hres_timer_us_delay(uint32_t time_us) { k_busy_wait(time_us); }
 #endif
 
-uint64_t hres_timer_curr_time_us(void)
+uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
 {
 #if 0
 #ifdef SUPPORT_HIGH_RES_TIMER

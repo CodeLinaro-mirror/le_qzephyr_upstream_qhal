@@ -329,7 +329,7 @@ When enter BMPs, default WQ switched from WQ12 to WQ11. When exit BMPs,
 
 /* Feature flag to enable HDM module in hardware to
  * initiate RRI parallel to CPU reset*/
-#define SUPPORT_HDM_INITIATED_RRI
+// #define SUPPORT_HDM_INITIATED_RRI
 
 #if defined(SUPPORT_LIGHT_SLEEP_FOR_TWT)
 /* Feature flag to consider going to different sleep
