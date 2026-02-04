@@ -177,6 +177,7 @@ extern uint8_t _socpm_slp_clk_src;
 extern volatile uint64_t nt_socpm_slp_time_total;
 extern uint32_t nt_socpm_slp_time_min;
 extern uint32_t nt_socpm_slp_time_sby;
+extern bool _socpm_mcu_sleep_wake;
 
 /* Time taken from end of min cb to context restore */
 #define MINCB_END_TO_CTXT_RESTORE_US 70
@@ -626,6 +627,15 @@ void nt_socpm_secondary_init(void);
  *  @return : None
  */
 void nt_socpm_check_sleep_entry_failure(sleep_mode mode, bool is_ctxt_rstr_point);
+
+/*
+ *  @brief : the handler to handle unexpected failure in entering to sleep after wfi
+ *  @param :
+ *      mode - sleep mode being entered
+ * execution
+ *  @return : None
+ */
+void nt_socpm_handle_sleep_entry_failure(sleep_mode mode);
 
 #ifdef NT_SOCPM_SW_MTUSR
 /*

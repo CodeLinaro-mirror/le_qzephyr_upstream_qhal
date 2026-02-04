@@ -12,11 +12,13 @@ SysTick_Type *g_SysTick = SysTick;
 volatile uint32_t g32_dead_loop_1 = 0;
 volatile uint32_t g32_dead_loop_2 = 0;
 volatile uint32_t g32_bss_test;
-
+bool dead_loop_entered = false;
 void dead_loop(void)
 {
-    while (1)
-        ;
+    dead_loop_entered = true;
+    /* We only set a flag here for debugging purposes.
+    while (1);
+    */
 }
 
 void dead_loop_cond1(void)
