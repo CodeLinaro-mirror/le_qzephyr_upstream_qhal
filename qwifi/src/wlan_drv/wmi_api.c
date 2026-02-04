@@ -1028,30 +1028,59 @@ void wmi_event_relay(uint32_t if_id, uint32_t event_id, void *data, uint32_t dat
     wlan_evt_payload_t *event_payload;
 
     (void)if_id;
+
+    if (!p_cxt) {
+        PRINT_ERR_INVALID_PARAM;
+        return;
+    }
+
+    /* Reject payloads that cannot fit in the largest slot */
     if (data_length > p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD].buf_length) {
         PRINT_ERR_INVALID_PARAM1("data_length", data_length);
         return;
     }
+
+    /* Reject NULL data when length is non-zero */
+    if (data == NULL && data_length != 0U) {
+        err_printf("wmi_event_relay: NULL data with non-zero length: eid=%u len=%u\n", event_id, data_length);
+        return;
+    }
+
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 
+    /* Choose size class by payload length */
     if (data_length > p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD].buf_length) {
         event_payload = &(p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD]);
     } else {
         event_payload = &(p_cxt->event_payload_buf[EVT_SMALL_PAYLOAD]);
     }
+
     if (event_payload->buf_used >= event_payload->buf_num) {
-        err_printf("No free event payload buf");
+        /* Pool exhausted: drop and log with context */
+        err_printf("wmi_event_relay: drop eid=%u len=%u: payload pool exhausted (class=%s)\n",
+                   event_id, data_length,
+                   (event_payload == &(p_cxt->event_payload_buf[EVT_LARGE_PAYLOAD])) ? "L" : "S");
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
         return;
     }
 
+    /* Compute destination slot address */
     dst = (event_payload->buf + event_payload->buf_write_pointer * event_payload->buf_length);
-    memscpy(dst, data_length, data, data_length);
+
+    /* Copy payload: pass full destination capacity to memscpy for safety */
+    memset(dst, 0, event_payload->buf_length);
+    (void)memscpy(dst, event_payload->buf_length, data, data_length);
+
+    /* Advance ring write pointer and usage */
     event_payload->buf_write_pointer = ((event_payload->buf_write_pointer + 1) % event_payload->buf_num);
     event_payload->buf_used++;
 
-    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+    /* Publish event: payload is owned by the ring until wmi_event_buf_free() */
     wmi_event_notify(eWiFiSuccess, event_id, dst);
+
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+
+    return;
 }
 
 qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_len)
