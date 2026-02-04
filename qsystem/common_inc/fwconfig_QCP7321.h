@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+/**
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
  */
 /*========================================================================
@@ -64,6 +64,9 @@
                                  conneced to EB*/
 #endif
 
+/* Enables Random Backoff for QoS Null frames triggered using SW template method */
+#define ENABLE_RBO_FOR_QOS_NULL
+
 // #define SUPPORT_RING_IF_DEBUG /* Use this flag for heavy logs in Ring IF */
 // #define SUPPORT_RING_IF_STATS
 // #ifdef SUPPORT_RING_IF
@@ -106,9 +109,10 @@
 #define SUPPORT_QSPI_MASTER
 #endif
 #endif
-#undef SUPPORT_UNIT_TEST_CMD
+#define SUPPORT_UNIT_TEST_CMD
 #ifdef SUPPORT_UNIT_TEST_CMD
 #define HRES_TIMER_UNIT_TEST
+#define UNIT_TEST_SUPPORT
 #endif
 
 /* I2C module support flag */
@@ -164,6 +168,7 @@
 
 #define DXE_ERROR_WAR // WAR added for DXE error seen in powersave
 // #define FERMION_CONFIG_HCF //Get config from INI region
+#define BTQM_ERROR_WAR  // WAR added for BTQM error
 
 #define FERMION_ANI_SW_SUPPORT /* Use this flag to enable ANI SW support */
 #define FERMION_ANI_DEBUG      /* Disable this flag to disable ANI asserts /debug logs */
@@ -346,21 +351,30 @@ When enter BMPs, default WQ switched from WQ12 to WQ11. When exit BMPs,
 /* War flag for power issues seen in Fermion*/
 #define FERMION_POWER_WAR
 
+/* War flag for TXP TPE busy issues seen in Fermion bmps*/
+#define FERMION_TXP_TPE_WAR
+
 #ifdef EMULATION_BUILD
 
 #define EMULATION_WAR
 #define FERMION_EMU_CLK_SCALING 16
 
 #else
-// #define PMU_TS_CONFIGURATION /* APIs to configure and get temperature */
+#define PMU_TS_CONFIGURATION /* APIs to configure and get temperature */
 //  Features only for Silicon
 /* Flag to enable Sleep Clock Calibration in Active Mode
  * and necessary configuration to enable sleep mode cal */
 #define SLEEP_CLK_CAL_IN_ACTIVE_MODE
 #ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
-// #define APPLY_SLEEP_CLK_CORRECTION
+#define APPLY_SLEEP_CLK_CORRECTION
 /* Flag to enable Sleep Clock Calibration in Sleep Mode */
-// #define SLEEP_CLK_CAL_IN_SLEEP_MODE
+#define SLEEP_CLK_CAL_IN_SLEEP_MODE
+#endif /* SLEEP_CLK_CAL_IN_ACTIVE_MODE */
+
+#ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
+/* WAR flag to compensate the RC clock division error for 
+ * Fermion 2.0 new timer implementation */
+#define COMPENSATE_RC_DIVISION_ERROR_WAR
 #endif /* SLEEP_CLK_CAL_IN_ACTIVE_MODE */
 
 #ifdef PMU_TS_CONFIGURATION
@@ -397,11 +411,14 @@ flag */
 #endif
 
 #ifndef FEATURE_FPCI
-// #define FEATURE_FPCI
+#define FEATURE_FPCI
 #define FPCI_DEBUG (0)
 #endif
 
 /* This flag enables recovery of BMU once a BMU error occurs */
 #define SUPPORT_BMU_ERROR_RECOVERY
+
+/* Check data activity after DPM stop during BMPS entry and abort sleep if necessary */
+#define BMPS_ENTRY_ABORT_ON_ACTIVITY_POST_ITO
 
 #endif // _QCP7321_H_

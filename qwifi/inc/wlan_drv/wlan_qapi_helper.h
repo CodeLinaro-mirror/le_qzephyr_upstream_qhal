@@ -30,7 +30,7 @@ extern qapi_Status_t wlan_set_ap_hidden(uint8_t device_ID, uint8_t hidden);
 extern qapi_Status_t wlan_set_agg_cfg(uint8_t device_ID, uint16_t tx_tid_mask, uint16_t rx_tid_mask);
 extern qapi_Status_t wlan_set_amsdu_rx(uint8_t device_ID, uint8_t enable);
 extern qapi_Status_t wlan_set_sta_slptime(uint8_t device_ID, uint16_t time, uint16_t round_type);
-extern qapi_Status_t wlan_get_sta_slptime(uint32_t *listen_interval);
+extern qapi_Status_t wlan_get_sta_slptime(uint16_t *listen_interval);
 extern qapi_Status_t wlan_clear_mgmt_frame_queue(void);
 extern qapi_Status_t wlan_recv_mgmt_frame(uint8_t *buffer, uint32_t buffer_len, uint32_t *frame_len, uint32_t timeout);
 extern qapi_Status_t wlan_set_appie(qapi_WLAN_App_Ie_Params_t *ie_params);
@@ -48,6 +48,7 @@ extern qapi_Status_t wlan_get_tx_power(qapi_WLAN_Get_Power_Evt_t *txpower_params
 extern qapi_Status_t wlan_set_bmiss_threshold(uint8_t device_ID, uint8_t bmiss_threshold);
 extern qapi_Status_t wlan_get_bmiss_threshold(uint8_t *bmiss_threshold);
 extern qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status);
+extern qapi_Status_t wlan_unit_test_cmd(void *p_data, uint32_t data_len);
 #ifdef CONFIG_WPS
 extern qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof);
 #endif

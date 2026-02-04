@@ -17,6 +17,7 @@ LOG_MODULE_DECLARE(soc, CONFIG_SOC_LOG_LEVEL);
 
 struct libwifi_kconfig_t g_libwifi_kconfig;
 struct libwifi_qos_null_kconfig_t g_libwifi_qos_null_kconfig_t;
+uint32_t total_beacon_wait_time;
 
 static void libwifi_kconfig_install(void)
 {
@@ -53,6 +54,13 @@ static void libwifi_kconfig_install(void)
 #else
     g_libwifi_kconfig.srrc_band_edge_enable = FALSE;
 #endif
+
+#ifdef CONFIG_TOTAL_BEACON_WAIT_TIME
+  total_beacon_wait_time = CONFIG_TOTAL_BEACON_WAIT_TIME;
+#else
+  total_beacon_wait_time = 25000;
+#endif
+
 }
 
 void qwifi_init(void)
@@ -96,13 +104,15 @@ qapi_Status_t qwifi_hal_tx(uint8_t dev_id, void *pkt, uint16_t len)
 
 struct qwifi_hal_t gs_qwifi_hal;
 
-qapi_Status_t qwifi_hal_reg_rxcb(void *drv_intf_data, qwifi_drv_eth_rx_cb_t fn)
+qapi_Status_t qwifi_hal_reg_rxcb(void *drv_intf_data, qwifi_drv_eth_rx_cb_t fn,
+                                 qwifi_link_change_handler link_fn)
 {
     struct qwifi_hal_t *hal = &gs_qwifi_hal;
 
     PRINT_LOG_FUNC_LINE_ENTRY;
     hal->drv_intf_data = drv_intf_data;
     hal->rx_cb = fn;
+    hal->link_change = link_fn;
     PRINT_LOG_FUNC_LINE_EXIT;
     return QAPI_OK;
 }

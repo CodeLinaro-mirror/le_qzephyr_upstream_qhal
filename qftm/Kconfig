@@ -1,0 +1,10 @@
+
+config FTM_MODE
+    bool "Enable FTM Mode"
+    default n
+
+config FTM_UART_BAUDRATE
+    int "FTM UART baud rate"
+    default 115200
+    help
+      The baud rate for FTM UART communication.

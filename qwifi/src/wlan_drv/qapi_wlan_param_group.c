@@ -239,6 +239,11 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                     p_cmd->dot11AuthMode = (SAE_AUTH | OPEN_AUTH);
                     p_cmd->authMode = (WMI_WPA3_SHA256_AUTH | WMI_WPA2_PSK_AUTH);
                     break;
+		case QAPI_WLAN_AUTH_WPA_WPA2_SAE_MIXED_E:
+                    p_cmd->dot11AuthMode = (SAE_AUTH | OPEN_AUTH);
+                    p_cmd->authMode = (WMI_WPA3_SHA256_AUTH | WMI_WPA2_PSK_AUTH
+				    | WMI_WPA_PSK_AUTH);
+			break;
                 default:
                     PRINT_ERR_INVALID_PARAM1("e_wpa_ver", e_wpa_ver);
                     ret = QAPI_WLAN_ERR_EINVAL;
@@ -276,7 +281,11 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 break;
             case QAPI_WLAN_CRYPT_AES_CRYPT_E:
                 p_cmd->pairwiseCryptoType = AES_CRYPT;
-                p_cmd->groupCryptoType = AES_CRYPT;
+                p_cmd->groupCryptoType = TKIP_CRYPT | AES_CRYPT;
+                break;
+            case QAPI_WLAN_CRYPT_AUTO:
+                p_cmd->pairwiseCryptoType = TKIP_CRYPT | AES_CRYPT;
+                p_cmd->groupCryptoType = TKIP_CRYPT | AES_CRYPT;
                 break;
             default:
                 PRINT_ERR_INVALID_PARAM1("e_cipher", e_cipher);
@@ -388,8 +397,8 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t __attribute__((__unused__)) device_ID,
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_RSSI */
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_STA_LISTEN_INTERVAL_IN_TU: {
-            uint32_t *interval = (uint32_t *)data;
-            if (*length < sizeof(uint32_t)) {
+            uint16_t *interval = (uint16_t *)data;
+            if (*length < sizeof(uint16_t)) {
                 return QAPI_WLAN_ERR_EINVAL;
             }
             wlan_get_sta_slptime(interval);

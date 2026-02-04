@@ -7,3 +7,4 @@
 
 #include "qapi_wlan.h"
 #include "qwifi.h"
+#include "qapi_system.h"

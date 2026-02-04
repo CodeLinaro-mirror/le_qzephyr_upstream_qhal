@@ -105,6 +105,7 @@ typedef struct wlan_qapi_cxt_s {
     WMI_WPS_START_CMD wps_param;
 #endif
     struct k_work_delayable roaming_work;
+    uint32_t suspend_ret;
 } wlan_qapi_cxt_t;
 
 extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;

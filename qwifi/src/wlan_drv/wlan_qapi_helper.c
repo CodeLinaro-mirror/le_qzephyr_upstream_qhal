@@ -534,14 +534,9 @@ qapi_Status_t wlan_set_sta_slptime(uint8_t device_ID, uint16_t time, uint16_t ro
     return error;
 }
 
-qapi_Status_t wlan_get_sta_slptime(uint32_t *listen_interval)
+qapi_Status_t wlan_get_sta_slptime(uint16_t *listen_interval)
 {
-    uint16_t ni_intval = get_dev_bss_ni_intval();
-
-    if (dev_is_up())
-        *listen_interval = (uint32_t)wlan_get_listen_interval_ext(ni_intval) * ni_intval;
-    else
-        *listen_interval = (uint32_t)wlan_get_listen_interval_ext(100) * 100;
+    *listen_interval = wlan_get_listen_interval_ext(0);
     return QAPI_OK;
 }
 
@@ -957,5 +952,11 @@ qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credenti
     if (pwps_prof != NULL)
         memscpy(&gWpsCredentials, sizeof(gWpsCredentials), pwps_prof, sizeof(qapi_WLAN_WPS_Credentials_t));
     return QAPI_OK;
+}
+#endif
+#ifdef SUPPORT_UNIT_TEST_CMD
+qapi_Status_t wlan_unit_test_cmd(void *p_data, uint32_t data_len)
+{
+    return wmi_unit_test_cmd_send(p_data, data_len);
 }
 #endif

@@ -60,6 +60,8 @@
 #include "nt_hw_support.h"
 #include "pmu_ll.h"
 #include <zephyr/drivers/timer/system_timer.h>
+#include "aon_tmr_mgr.h"
+#include  "wifi_fw_pmu_ts_cfg.h"
 
 #define ARRAY_SIZE_IN_TYPE(type, member) sizeof(((type *)(0))->member)
 
@@ -67,8 +69,8 @@ typedef struct {
     /* NVIC components stored into RAM. */
     uint32_t ISER[ARRAY_SIZE_IN_TYPE(NVIC_Type, ISER)];
     uint32_t ISPR[ARRAY_SIZE_IN_TYPE(NVIC_Type, ISPR)];
-    uint8_t IP[ARRAY_SIZE_IN_TYPE(NVIC_Type, IP)];
-    uint8_t SHP[ARRAY_SIZE_IN_TYPE(SCB_Type, SHP)];
+    uint8_t IP[ARRAY_SIZE_IN_TYPE(NVIC_Type, IPR)];
+    uint8_t SHP[ARRAY_SIZE_IN_TYPE(SCB_Type, SHPR)];
 } _nvic_context_t;
 
 struct backup {
@@ -78,6 +80,7 @@ struct backup {
 static __noinit struct backup backup_data;
 
 qpower_param_t gs_qpower_param;
+struct libpower_kconfig_t g_libpower_kconfig;
 
 static void aon_set_alarm(uint64_t us)
 {
@@ -85,9 +88,27 @@ static void aon_set_alarm(uint64_t us)
     sys_clock_set_timeout(k_us_to_ticks_ceil64(us), true);
 }
 
+static void libpower_kconfig_install(void)
+{
+    /*This is reserved to read KCONFIG value to variable in g_libpower_kconfig for libpower.*/
+    ;
+}
+
 qapi_Status_t qapi_pmu_init(void)
 {
     PRINT_LOG_FUNC_LINE_ENTRY;
+    libpower_ifc_t libpower_ifc;
+
+    libpower_kconfig_install();
+
+#ifdef CONFIG_QWIFI
+    libpower_ifc.ulpsmps2 = presleep_update_ulpsmps2_oneshot;
+    libpower_ifc.ts_init = pmu_ts_init;
+    libpower_ifc.ts_configure = pmu_ts_configure;
+    libpower_ifc.slp_clk_cal_enable = socpm_slp_clk_cal_enable;
+    libpower_ifc.set_sleep_exit_reason = set_sleep_exit_reason; 
+    reg_libpower_ifc(&libpower_ifc);
+#endif
 
     gs_qpower_param.softoff_duration_ms = DEFAULT_SOFTOFF_DURATION_MS;
     gs_qpower_param.softoff_wakeup_src = DEFAULT_SOFTOFF_WAKEUP_SRC;
@@ -296,16 +317,16 @@ static void nvic_suspend(_nvic_context_t *backup)
 {
     memcpy(backup->ISER, (uint32_t *)NVIC->ISER, sizeof(NVIC->ISER));
     memcpy(backup->ISPR, (uint32_t *)NVIC->ISPR, sizeof(NVIC->ISPR));
-    memcpy(backup->IP, (uint32_t *)NVIC->IP, sizeof(NVIC->IP));
-    memcpy(backup->SHP, SCB->SHP, sizeof(SCB->SHP));
+    memcpy(backup->IP, (uint32_t *)NVIC->IPR, sizeof(NVIC->IPR));
+    memcpy(backup->SHP, SCB->SHPR, sizeof(SCB->SHPR));
 }
 
 static void nvic_resume(_nvic_context_t *backup)
 {
     memcpy((uint32_t *)NVIC->ISER, backup->ISER, sizeof(NVIC->ISER));
     memcpy((uint32_t *)NVIC->ISPR, backup->ISPR, sizeof(NVIC->ISPR));
-    memcpy((uint32_t *)NVIC->IP, backup->IP, sizeof(NVIC->IP));
-    memcpy(SCB->SHP, backup->SHP, sizeof(SCB->SHP));
+    memcpy((uint32_t *)NVIC->IPR, backup->IP, sizeof(NVIC->IPR));
+    memcpy(SCB->SHPR, backup->SHP, sizeof(SCB->SHPR));
 }
 
 static void mcusleep_init_vector_table(void)
@@ -338,13 +359,7 @@ static int mcu_sleep_enter(void)
     // test_sleep_cb
     q_sleep_wifi_enter(NT_PMU_CFG_WIFI_SLEEP_OFFSET);
 
-    if (gs_qpower_param.s2ram_duration_ms) {
-        early_printk("To set sleep timer=%d ms\r\n", gs_qpower_param.s2ram_duration_ms);
-        aon_set_alarm(((uint64_t)gs_qpower_param.s2ram_duration_ms) * 1000);
-    } else {
-        /* gpio wakeup: systick */
-        sys_clock_set_timeout(K_TICKS_FOREVER, true);
-    }
+    extern aon_sleep_info_t last_sleep_info;
 
     /* This function performs sleep recipe as per the sleep mode specified */
 #ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
@@ -398,7 +413,7 @@ void qapi_enter_suspend2ram(void)
             && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
         early_printk("%s wakeup by timer %d ms or gpio\r\n", __FUNCTION__, p_qpower_param->s2ram_duration_ms);
     } else if (IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
-        early_printk("%s only wakeup by gpio\r\n", __FUNCTION__);
+        early_printk("%s only wakeup by gpio %d\r\n", __FUNCTION__, (uint32_t)p_qpower_param->s2ram_duration_ms);
     } else {
         early_printk("%s no valid wakeup source, skip\n", __FUNCTION__);
         goto exit;
@@ -408,7 +423,6 @@ void qapi_enter_suspend2ram(void)
     //ram_minimum_code();
     mcu_sleep_wakeup();
 exit:
-    early_printk("%s %d exit\r\n", __FUNCTION__, __LINE__);
     __enable_fault_irq();
 }
 

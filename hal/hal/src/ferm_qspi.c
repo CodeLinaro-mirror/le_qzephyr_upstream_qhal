@@ -7,14 +7,12 @@
  * Include Files
  *-----------------------------------------------------------------------*/
 
-#include "ferm_qspi.h"
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <zephyr/autoconf.h>
+#include "ferm_qspi.h"
 #include "ferm_qspi_hal.h"
-
-#include "autoconf.h"
 
 /*-------------------------------------------------------------------------
  * Preprocessor Definitions and Constants
@@ -679,7 +677,7 @@ bool drv_qspi_init(qspi_master_config_t *config)
 #ifndef CONFIG_NON_OS
 	if (!hal_qspi_is_qspi_active()) {
 #endif
-		printf("do qspi init...\n");
+
 		hal_qspi_enable_qspi(enable, pads_option);
 		hal_qspi_set_clock((uint8_t)config->clk_freq);
 

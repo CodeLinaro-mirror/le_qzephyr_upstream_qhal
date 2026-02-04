@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+/**
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause
  */
 /*********************************************************************************************
@@ -9,6 +9,7 @@
  *
  ********************************************************************************************/
 #include "wifi_fw_pwr_cb_infra.h"
+#include "safeAPI.h"
 // #include "sort.h"
 #if FPCI_DEBUG == 1
 // #include "uart.h"
@@ -43,8 +44,9 @@ uint8_t g_fpci_debug_toggle = FDI_RESET;
  *************************/
 #ifdef FEATURE_FPCI
 
-static FDI_PS_DATA pwr_evt_reg_t g_event_bin[FPCI_MAX_REG];
-static FDI_PS_DATA size_t g_event_bin_ctr = FDI_RESET;
+static pwr_evt_reg_t g_event_bin[FPCI_MAX_REG];
+static size_t g_event_bin_ctr = FDI_RESET;
+static void swap(char* x, char* y, char* dummy_buff, size_t element_size);
 SORT_INSTANCE_STRUCT(FPCI, pwr_evt_reg_t, g_event_bin, priority);
 
 /*************************
@@ -62,6 +64,44 @@ extern uint8_t get_warmboot_status(void);
 /*************************
  * Function Defination
  *************************/
+ /************************************************************************************
+ * @brief  Bubble Sort
+ *
+ * @param p_sort    Pointer to Sort instance
+ * @param dir       Assending / Decending
+ ************************************************************************************/
+void sort_bubble(sort_t* p_sort, sort_direction_t dir)
+{
+    size_t i, j;
+    for (i = 0; i < (p_sort->size_buffer - p_sort->buffer_node_size); i += p_sort->buffer_node_size)
+    {
+        for (j = 0; j < (p_sort->size_buffer - p_sort->buffer_node_size - i); j += p_sort->buffer_node_size)
+            if (dir ^ (memcmp((p_sort->p_buffer + j + p_sort->sort_param_offset),
+                       (p_sort->p_buffer + j + p_sort->sort_param_offset + p_sort->buffer_node_size),
+                       (p_sort->sort_param_size == 0 ? p_sort->buffer_node_size : p_sort->sort_param_size)) > 0))
+            {
+                swap(p_sort->p_buffer + j,
+                     p_sort->p_buffer + j + p_sort->buffer_node_size,
+                     p_sort->p_dummy_buff, p_sort->buffer_node_size);
+            }
+    }
+
+    return;
+}
+/*******************************************************************
+ * @brief Swap 2 memory sections
+ *
+ * @param x             Memory pointer 1
+ * @param y             Memory pointer 2
+ * @param dummy_buff    Pointer to dummy buffer used as temp
+ * @param element_size  Size of one element
+ ******************************************************************/
+static void swap(char* x, char* y, char* dummy_buff, size_t element_size)
+{
+    memscpy(dummy_buff, element_size, x, element_size);
+    memscpy(x, element_size, y, element_size);
+    memscpy(y, element_size, dummy_buff, element_size);
+}
 /********************************************************************************************
  * @brief  To register a callback related to events and reorder/sort callback despatch list
  * @param cb                Pointer to callback registration
@@ -137,7 +177,7 @@ fpci_err_t fpci_evt_cb_dereg(ps_evt_cb_t cb, uint16_t evt_reg_mask)
  * @param evt         Event macro as per pwr_evt_t
  * @return FPCI_SUCCESS, FPCI_ERR
  ********************************************************************************************/
-fpci_err_t FDI_PS_TXT fpci_evt_dispatch(pwr_evt_t evt)
+fpci_err_t fpci_evt_dispatch(pwr_evt_t evt)
 {
     FPCI_ASSERT_IF_FALSE(evt < PWR_EVT_WMAC_MAX, FPCI_ERR);
 #if USE_FEATURE_FDI

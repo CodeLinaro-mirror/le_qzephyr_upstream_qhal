@@ -5,4 +5,8 @@ config QHW_SUPPORT
 	bool
 	default n
 	depends on QURT_ABSTRACTION_LAYER && QSYSTEM && QPOWER
+	select CPR_ENABLE
 
+config CPR_ENABLE
+    bool "Core power reduction by decreased core voltage"
+    default n

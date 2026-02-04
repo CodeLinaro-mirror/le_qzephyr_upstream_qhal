@@ -44,7 +44,7 @@ void nt_gpio_init(void)
  * @Return :    NULL
  */
 
-void __attribute__((section(".__sect_ps_txt"))) nt_gpio_pin_mode(gpio_register_t *GPIOx, uint32_t Pin, uint32_t Mode)
+void nt_gpio_pin_mode(gpio_register_t *GPIOx, uint32_t Pin, uint32_t Mode)
 {
 
     uint32_t value = 0;
@@ -67,7 +67,7 @@ void __attribute__((section(".__sect_ps_txt"))) nt_gpio_pin_mode(gpio_register_t
  * @Return :    NULL
  */
 
-void __attribute__((section(".__sect_ps_txt"))) nt_gpio_pin_write(gpio_register_t *GPIOx, uint32_t Pin,
+void nt_gpio_pin_write(gpio_register_t *GPIOx, uint32_t Pin,
                                                                   GPIO_PinState val)
 {
 
@@ -331,5 +331,49 @@ void nt_gpio_interrupt_enable(void)
 }
 
 void GPIO_IntHandler(void) __attribute__((weak, alias("nt_gpio_interrupt_enable")));
+
+void slp_gpio_pupd_disable(void)
+{
+#ifdef NT_GPIO_FLAG
+    uint32_t value;
+
+    gpio_config.ls_sync = NT_REG_RD(QWLAN_GPIO_GPIO_LS_SYNC_REG);
+    gpio_config.dr = NT_REG_RD(QWLAN_GPIO_GPIO_SWPORTA_DR_REG);
+    gpio_config.ddr = NT_REG_RD(QWLAN_GPIO_GPIO_SWPORTA_DDR_REG);
+    gpio_config.int_level = NT_REG_RD(QWLAN_GPIO_GPIO_INTTYPE_LEVEL_REG);
+    gpio_config.int_polar = NT_REG_RD(QWLAN_GPIO_GPIO_INR_POLARITY_REG);
+    gpio_config.int_en = NT_REG_RD(QWLAN_GPIO_GPIO_INTEN_REG);
+
+    value = NT_REG_RD(QWLAN_PMU_CFG_IOPAD_DS_REG);
+    gpio_config.ds = value;
+
+    /*Disable pull up/pull down for JTAG/UART TX/WSI data/F2A IOs before going to sleep*/
+    value = NT_REG_RD(QWLAN_PMU_CFG_IOPAD_PU_REG);
+    gpio_config.pu = value;
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PU_AON_IOPAD_TDI_PU_MASK);     // JTAG
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PU_AON_IOPAD_TMS_PU_MASK);     // JTAG
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PU_AON_IOPAD_GPIO_14_PU_MASK); // WSI data
+    NT_REG_WR(QWLAN_PMU_CFG_IOPAD_PU_REG, value);
+    value = NT_REG_RD(QWLAN_PMU_CFG_IOPAD_PD_REG);
+    gpio_config.pd = value;
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PD_AON_IOPAD_GPIO_11_PD_MASK); // UART TX
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PD_AON_IOPAD_GPIO_8_PD_MASK);  // F2A
+    /* Improve low power by disabling UART */
+#if CONFIG_BOARD_QCC730_UART_GPIO_OPTION == 3
+    /* UART: GPIO1 GPIO3*/
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PD_AON_IOPAD_GPIO_1_PD_MASK); // GPIO1 bit1
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PD_AON_IOPAD_GPIO_3_PD_MASK); // GPIO3 bit3
+#endif
+
+#if CONFIG_BOARD_QCC730_UART_GPIO_OPTION == 1
+    /* UART: GPIO13 GPIO14*/
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PD_AON_IOPAD_GPIO_13_PD_MASK); // GPIO13
+    value &= ~(QWLAN_PMU_CFG_IOPAD_PD_AON_IOPAD_GPIO_14_PD_MASK); // GPIO14
+#endif
+
+    NT_REG_WR(QWLAN_PMU_CFG_IOPAD_PD_REG, value);
+    gpio_config.saved = 1;
+#endif
+}
 
 #endif // NT_GPIO_FLAG

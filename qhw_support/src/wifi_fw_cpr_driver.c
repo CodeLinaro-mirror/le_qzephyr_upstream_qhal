@@ -8,8 +8,8 @@
  *
  *
  ******************************************************************************/
-#include "wifi_fw_pmic_driver.h"
 #include "fwconfig_cmn.h"
+#include "wifi_fw_pmic_driver.h"
 #include "nt_flags.h"
 #include "nt_socpm_sleep.h"
 
@@ -87,6 +87,12 @@ static uint32_t cpr_get_vref_from_mv(uint32_t mv)
 void wifi_fw_cpr_init(void)
 {
     uint32_t reg_val;
+
+#ifdef CONFIG_CPR_ENABLE
+    g_socpm_struct.cpr_cfg.ini_enabled = 1;
+#else
+    g_socpm_struct.cpr_cfg.ini_enabled = 0;
+#endif
 
     if (g_socpm_struct.cpr_cfg.ini_enabled == 1) {
 #if (FERMION_CHIP_VERSION == 1)

@@ -232,6 +232,8 @@ typedef enum {
     WMI_CLK_LATENCY_CMDID,                     /* Set the clock latency during the various sleep modes */
     WMI_SLP_CLK_CAL_CFG_CMDID,
     WMI_BMPS_ENABLE_CMDID,
+    WMI_BMPS_PWR_OPT_ENABLE_CMDID,
+    WMI_BMPS_CMPR_QOS_NULL_ENABLE_CMDID,
     WMI_BMPS_IGNORE_BCMC_CMDID,
     WMI_BMPS_TIMING_CFG_CMDID, // 0xa0=160
     WMI_BMPS_RX_FILTER_ENABLE_CMDID,
@@ -1672,6 +1674,14 @@ typedef PREPACK struct {
 } POSTPACK WMI_BMPS_ENABLE;
 
 typedef PREPACK struct {
+    uint8_t enable;
+} POSTPACK WMI_BMPS_PWR_OPT_ENABLE;
+
+typedef PREPACK struct {
+    uint8_t enable;
+} POSTPACK WMI_BMPS_CMPR_QOS_NULL_ENABLE;
+
+typedef PREPACK struct {
     uint32_t time;
 } POSTPACK WMI_BMPS_IDLE_TIME;
 
@@ -1847,6 +1857,7 @@ typedef enum {
 
 typedef struct WLAN_WMI_DISCONN_s {
     int32_t sta_id;
+    uint8 mac_addr[IEEE80211_ADDR_LEN];
 } WLAN_WMI_DISCONN_t;
 
 typedef void (*resp_function)(void *);

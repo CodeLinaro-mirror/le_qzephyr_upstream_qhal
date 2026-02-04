@@ -238,24 +238,29 @@ static void wmi_scan_comp_event(void *msg)
 
     qapi_WLAN_Scan_Comp_Evt_t *scan_comp_evt = (qapi_WLAN_Scan_Comp_Evt_t *)p_cxt->pScanOut;
     scan_comp_evt->evt_hdr.status = QAPI_OK;
-    if (scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
-        last_idx = scan_comp_evt->num_bss_cur;
-        num_entries = scan_comp_evt->num_bss_cur + p_scan_result->num_entries;
 
-        if (num_entries > p_cxt->scanBssMaxCount) {
-            scan_comp_evt->num_bss_cur = p_cxt->scanBssMaxCount;
-        } else {
-            scan_comp_evt->num_bss_cur = num_entries;
+    if(scan_comp_evt->total_bss < p_cxt->scanBssMaxCount) {
+        last_idx = scan_comp_evt->num_bss_cur;
+        int cur_idx = last_idx;
+        for (int i = 0; i < p_scan_result->num_entries && cur_idx < p_cxt->scanBssMaxCount; ++i) {
+            int duplicate = 0;
+            for (int j = 0; j < last_idx; ++j) {
+                if (memcmp(scan_comp_evt->scan_bss_info[j].bssid,
+                        p_scan_result->scan_bss_info[i].bssid,
+                        IEEE80211_ADDR_LEN) == 0) {
+                    duplicate = 1;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx],
+                     (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i));
+                cur_idx++;
+            }
         }
-        scan_comp_evt->scan_id = p_scan_result->scan_id;
-        int i;
-        for (i = last_idx; i < scan_comp_evt->num_bss_cur; i++) {
-            _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[i],
-                                 (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) +
-                                             sizeof(ap_info) * (i - last_idx)));
-        }
+        scan_comp_evt->num_bss_cur = cur_idx;
     }
-    scan_comp_evt->total_bss += p_scan_result->num_entries;
+    scan_comp_evt->total_bss = scan_comp_evt->num_bss_cur;
     log_printf("scan found %d bss, our capacity %d\n", scan_comp_evt->total_bss, p_cxt->scanBssMaxCount);
 
     p_cxt->scan_in_progress = false;
@@ -376,6 +381,7 @@ static void wmi_join_comp_event(void *msg)
     }
 
     PRINT_LOG_FUNC_LINE_ENTRY;
+    uint32_t event_id = QAPI_WLAN_CONNECT_CB_E;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_WLAN_Join_Comp_Evt_t *p_qapi_join_evt = &p_cxt->connect_result;
 
@@ -429,9 +435,14 @@ static void wmi_join_comp_event(void *msg)
     }
 
 done:
+    /* disconnect from station */
+    if (p_qapi_join_evt->reason_code == BSS_DISCONNECTED) {
+        event_id = QAPI_WLAN_DISCONNECT_CB_E;
+    }
+
     if (p_cxt->qapi_event_handler) {
-        info_printf("QAPI_WLAN_CONNECT_CB_E sent, status=%d\n", p_qapi_join_evt->evt_hdr.status);
-        p_cxt->qapi_event_handler(p_cxt->network_id, QAPI_WLAN_CONNECT_CB_E, p_cxt->event_application_Context,
+        info_printf("%d sent, status=%d\n", event_id, p_qapi_join_evt->evt_hdr.status);
+        p_cxt->qapi_event_handler(p_cxt->network_id, event_id, p_cxt->event_application_Context,
                                   p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
     }
 
@@ -697,12 +708,13 @@ static void wmi_wlan_suspend_event(void *msg)
 {
     qapi_Status_t err = QAPI_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    if((int)msg == 0)
+    if((uint32_t)msg == 0)
     {
         err = QAPI_OK;
     }
 
-    set_wlan_qapi_error(err);
+    set_wlan_qapi_error((uint32_t)msg);
+    gp_wlan_qapi_cxt->suspend_ret = (uint32_t)msg;
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 
@@ -795,6 +807,13 @@ qapi_Status_t wmi_get_wifi_status(uint8_t dev_id, WMI_WIFI_STATUS *status)
     ret = get_wlan_qapi_error();
     return ret;
 }
+
+#ifdef SUPPORT_UNIT_TEST_CMD
+qapi_Status_t wmi_unit_test_cmd_send(void *p_data, uint32_t data_len)
+{
+    return wmi_cmd_send(WMI_UNIT_TEST_CMDID, p_data, data_len);
+}
+#endif
 
 static void wmi_event_dispatch(uint32_t event_id, void *data)
 {
@@ -1119,7 +1138,7 @@ qapi_Status_t  wmi_suspend(void)
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
     }
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-    ret = get_wlan_qapi_error();
+    ret = p_cxt->suspend_ret;
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     PRINT_LOG_FUNC_LINE_EXIT;
     return ret;
@@ -1279,6 +1298,7 @@ qapi_Status_t wmi_disconnect(void)
     if (p_cxt->opmode == DEV_MODE_AP_E) {
         qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
         p_cxt->discon_cmd.sta_id = -1;
+        memset(p_cxt->discon_cmd.mac_addr, 0, sizeof(p_cxt->discon_cmd.mac_addr));
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
         wmi_cmd_send(WMI_DISCONNECT_CMDID, &p_cxt->discon_cmd, sizeof(WLAN_WMI_DISCONN_t));
     } else
@@ -1295,6 +1315,25 @@ qapi_Status_t wmi_disconnect(void)
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     if (p_cxt->opmode == DEV_MODE_STATION_E)
         wlan_drv_roaming_stop();
+    return ret;
+}
+
+qapi_Status_t wmi_ap_disconnect_station(const uint8_t *mac_addr, uint32_t len)
+{
+    qapi_Status_t ret = QAPI_OK;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    if (p_cxt->opmode != DEV_MODE_AP_E) {
+        return QAPI_OK;
+    }
+
+    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
+    p_cxt->discon_cmd.sta_id = -1;
+    memcpy(p_cxt->discon_cmd.mac_addr, mac_addr, sizeof(p_cxt->discon_cmd.mac_addr));
+    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+
+    wmi_cmd_send(WMI_DISCONNECT_CMDID, &p_cxt->discon_cmd, sizeof(WLAN_WMI_DISCONN_t));
+
     return ret;
 }
 
@@ -1448,7 +1487,7 @@ qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_I
     p_cxt->wps_param.auth_floor = auth_floor;
     if (mode == QAPI_WLAN_WPS_PBC_MODE_E) {
         p_cxt->wps_param.config_mode = WPS_PBC_MODE;
-    } else if (mode == QAPI_WLAN_WPS_PBC_MODE_E) {
+    } else if (mode == QAPI_WLAN_WPS_PIN_MODE_E) {
         p_cxt->wps_param.config_mode = WPS_PIN_MODE;
     } else {
         return QAPI_WLAN_ERROR;

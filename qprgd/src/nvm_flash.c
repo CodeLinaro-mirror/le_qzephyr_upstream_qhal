@@ -10,7 +10,9 @@ SPDX-License-Identifier: BSD-3-Clause
 #include <stdint.h>
 #include "qapi_status.h"
 #ifdef CONFIG_BOARD_QCC730_QSPI_ENABLE
-#include "ferm_flash.h"
+#include "ferm_qspi.h"
+#include "ferm_flash_config.h"
+#include "drv_flash.h"
 #endif
 #include "uart_print.h"
 #include "nvm_flash.h"

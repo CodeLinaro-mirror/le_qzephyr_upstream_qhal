@@ -14,6 +14,24 @@
 
 #include <zephyr/sys/printk.h>
 
+#define HAL_MAX_RX_RATEINDEX    (32)
+typedef struct qintf_device {
+	uint8_t role;
+#ifdef LWIP
+	struct netif *netif;
+#endif
+	uint8_t mac_address[NT_MAC_ADDR_SIZE];
+	uint8_t wmi_devid;
+	uint8_t occupied;
+	uint8_t dev_id;
+	uint8_t ip_address[NT_IPV4_ADDR_SIZE];
+
+	/* list of sta entries */
+	void *dev_sta;
+
+    uint32_t  rx_rate_index_counter[HAL_MAX_RX_RATEINDEX];
+} device_t;
+
 // API called by libwifi
 // Control if ftm code is linked in, so to reduce code size
 NT_BOOL wmi_pdev_utf_cmd(wmi_msg_struct_t *msg)
@@ -52,9 +70,19 @@ nt_status_t nt_dpm_forward_eth_packet_to_stack_ext(void *rx_buf, void *eth_frame
 
 void nt_dpm_network_init(void) {}
 
-void nt_dpm_add_dev_to_stack(void *dev) { (void)dev; }
+void nt_dpm_add_dev_to_stack(void *dev)
+{
+    struct qwifi_hal_t *hal = &gs_qwifi_hal;
+    device_t *device = dev;
+    hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_ADD, device->mac_address);
+}
 
-void nt_dpm_remove_dev_from_stack(void *dev) { (void)dev; }
+void nt_dpm_remove_dev_from_stack(void *dev)
+{
+    struct qwifi_hal_t *hal = &gs_qwifi_hal;
+    device_t *device = dev;
+    hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_REMOVE, device->mac_address);
+}
 
 void nt_dpm_stop_network_stack(void) {}
 
@@ -89,7 +117,13 @@ void nt_dpm_notify_network_to_set_linkdown(struct netif *netif)
 
 nt_status_t get_netif_hwaddr_from_netif_id(uint8_t netif_id, uint8_t *addr) { return NT_OK; }
 
-app_mode_id_t nt_get_app_mode(void) { return APP_MODE_MM; }
+app_mode_id_t nt_get_app_mode(void) { 
+#if CONFIG_FTM_MODE
+    return APP_MODE_FTM;
+#else
+    return APP_MODE_MM; 
+#endif
+}
 
 int32_t pmu_ts_get_current_temperature(void)
 {

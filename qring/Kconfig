@@ -1,0 +1,25 @@
+# Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+config RING_SERVICE
+	bool "Ring Service Support"
+	default n
+	select GPIO
+	select SPI
+	select SPI_ASYNC
+	select SPI_QCC730
+	help
+	  Enable ring service for efficient data transfer between
+	  Host and QCC730 via descriptor-based ring buffers.
+
+if RING_SERVICE
+
+config RING_SERVICE_LOG_LEVEL
+	int "Ring Service Log Level"
+	default 3
+	range 0 4
+	help
+	  Set log level for ring service.
+	  0 = OFF, 1 = ERROR, 2 = WARNING, 3 = INFO, 4 = DEBUG
+
+endif # RING_SERVICE

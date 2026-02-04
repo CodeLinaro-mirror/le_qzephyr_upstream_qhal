@@ -16,11 +16,12 @@
 
 #include "fwconfig_cmn.h"
 
-#ifdef SLEEP_CLK_CAL_IN_ACTIVE_MODE
+#if defined(SLEEP_CLK_CAL_IN_ACTIVE_MODE)
 
 #include "nt_socpm_sleep.h"
 #include "nt_common.h"
 #include "nt_logger_api.h"
+#include "nt_timer.h"
 #ifdef FEATURE_FPCI
 #include "wifi_fw_pwr_cb_infra.h"
 #endif
@@ -31,7 +32,11 @@
 #include "qurt_isr.h"
 #include "qcc730v2.h"
 #include "fermion_hw_reg.h"
+#include "wmi.h"
+#include <zephyr/irq.h>
 
+
+char sleep_clk_timer_name[] = "clk_cal";
 /*-----------------------------------------------------------------------------
  * Externalized Varible/Function Definitions
  * ---------------------------------------------------------------------------*/
@@ -54,6 +59,11 @@ void socpm_enable_slp_clk_cal_int(void)
 {
 #ifdef APPLY_SLEEP_CLK_CORRECTION
     uint32_t temp1;
+    /*this interrupt will be registerred when slp clk init, but it will be also registerred when timer timeout,
+    and it induces an assertion when CONFIG_ASSERT is enabled, so disable it before registering it again.
+    */
+    irq_disable(slp_clk_cal_intr);
+    
     qurt_isr_register_3(slp_clk_cal_intr, pmu_ccpu_slp_cal_done_intr);
     temp1 = HAL_REG_RD(NT_NVIC_ISER2);
     temp1 = temp1 | (0x1 << 1);
@@ -275,6 +285,7 @@ nt_status_t socpm_slp_clk_cal_init(void)
 {
     socpm_sleep_clk_cal_t *p_slp_clk_cal_params = &(g_socpm_struct.slp_clk_cal_params);
 
+    printk("socpm_slp_clk_cal_init");
     // Set Sleep Clock Calibration periodicity
     p_slp_clk_cal_params->slp_clk_cal_poll_period =
         *((uint32_t *)(nt_devcfg_get_config(NT_DEVCFG_SLP_CLK_CAL_POLL_TIMER_PERIOD_MS)));
@@ -327,6 +338,12 @@ nt_status_t socpm_slp_clk_cal_init(void)
     case 128:
         tmp1 = 112;
         break;
+    case 512:
+        tmp1 = 447;
+        break;
+    case 1024:
+        tmp1 = 895;
+        break;
     default:
         tmp1 = 28;
         break;
@@ -343,8 +360,9 @@ nt_status_t socpm_slp_clk_cal_init(void)
     /*During init, configure poll timer periodicity for a smaller value(1 sec) and
       later in the timer callback it is set to the original poll value*/
     if (!(p_slp_clk_cal_params->slp_clk_cal_poll_timer)) {
+        printk("slp_clk_cal_poll_timer\r\n");
         p_slp_clk_cal_params->slp_clk_cal_poll_timer =
-            nt_create_timer(socpm_sleep_clk_cal_timer_cb, NULL, INIT_SLP_CAL_POLL_PERIOD_MS, FALSE);
+            nt_create_pm_timer(sleep_clk_timer_name,socpm_sleep_clk_cal_timer_cb, NULL, (INIT_SLP_CAL_POLL_PERIOD_MS), FALSE);
     }
 
     if (!(p_slp_clk_cal_params->slp_clk_cal_poll_timer)) {
@@ -409,10 +427,12 @@ void socpm_actv_slp_clk_cal_monitor_resume(void)
             socpm_sleep_clk_cal_timer_cb();
         }
     }
-    socpm_slp_clk_cal_hw_init(); // to do only for MCU sleep( can be skipped if registers are retained)
+    socpm_slp_clk_cal_hw_init(); /*to do only for MCU sleep( can be skipped if registers are retained)*/
+#ifdef PMU_TS_CONFIGURATION
     if (is_pmu_ts_configured() != true) {
         pmu_ts_configure();
     }
+#endif
     p_slp_clk_cal_params->slp_clk_cal_enabled_mode = ACTIVE_MODE;
     return;
 }
@@ -458,6 +478,7 @@ nt_status_t socpm_slp_clk_cal_enable(slp_clk_cal_mode_t mode)
 {
     socpm_sleep_clk_cal_t *p_slp_clk_cal_params = &(g_socpm_struct.slp_clk_cal_params);
     uint32_t value;
+    printk("socpm_slp_clk_cal_enable %d", mode);
     if (mode == ACTIVE_MODE) {
         NT_LOG_PRINT(SOCPM, ERR, "SOCPM slp clk cal enable prev_state %u,curr_state %u",
                      p_slp_clk_cal_params->slp_clk_cal_enabled_mode, mode);

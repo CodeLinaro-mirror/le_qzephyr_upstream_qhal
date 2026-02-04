@@ -23,7 +23,7 @@ SECTION_PROLOGUE(__sect_hw_pktmem, (NOLOAD), ALIGN(0x80))
  * + Data NULL SW templates + TEMP SW templates + Beacon template + RXP address table + RRI region
  */
 
-SECTION_PROLOGUE(__sect_hw_pktmem, (NOLOAD), ALIGN(4))
+SECTION_PROLOGUE(__sect_hw_desc, (NOLOAD), ALIGN(4))
 {
 	_ln_RAM_start_addr_hw_desc__ = ABSOLUTE(.);
 	. += 22504;

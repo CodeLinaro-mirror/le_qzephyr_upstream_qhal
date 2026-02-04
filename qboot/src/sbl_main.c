@@ -16,6 +16,8 @@
 #include "sbl_version_build.h"
 #include "binary_descriptor.h"
 #include "nt_bl_common.h"
+#include "ferm_qspi.h"
+#include "ferm_flash.h"
 #include "sbl_common.h"
 #include "pbl_share.h"
 #include "boot_log.h"
@@ -25,6 +27,8 @@
 #include "sbl_mpu.h"
 #endif
 #include "safeAPI.h"
+#include "drv_flash.h"
+
 
 /*-------------------------------------------------------------------------
  * Preprocessor Definitions and Constants

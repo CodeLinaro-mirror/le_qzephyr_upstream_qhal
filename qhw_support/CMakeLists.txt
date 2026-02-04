@@ -3,8 +3,14 @@
 
 
 zephyr_library_named(qhw_support)
-zephyr_include_directories(inc)
 
+zephyr_link_libraries(
+    sensorqcc730
+    -L${CMAKE_CURRENT_SOURCE_DIR}/../zephyr/blobs/
+)
+
+zephyr_include_directories(inc)
+zephyr_include_directories(${ZEPHYR_BASE}/../modules/hal/qcom/qwifi/inc/libwifi)
 zephyr_library_sources(src/wifi_fw_pmic_driver.c)
 zephyr_library_sources(src/nt_wifi_driver.c)
 zephyr_library_sources(src/nt_sys_monitoring.c)

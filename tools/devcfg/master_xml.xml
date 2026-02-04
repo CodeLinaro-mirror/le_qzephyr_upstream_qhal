@@ -134,9 +134,9 @@
 
       <props id="23" id_name="NT_DEVCFG_BASE_EARLY_RX_US" min="100" max="4000" helptext="Base early RX time for beacon reception" type="0x00000002"> 200 </props>
 
-      <props id="24" id_name="NT_DEVCFG_BASE_BEACON_WAIT_TIME_US" min="10000" max="25000" helptext="Base beacon wait time for beacon reception in power save" type="0x00000002"> 20000 </props>
+      <props id="24" id_name="NT_DEVCFG_BASE_BEACON_WAIT_TIME_US" min="10000" max="25000" helptext="Base beacon wait time for beacon reception in power save" type="0x00000002"> 11000 </props>
 
-      <props id="25" id_name="NT_DEVCFG_BEACON_WAIT_INC_STEP_US" min="0" max="4000" helptext="Telescopic beacon wait increment step" type="0x00000002"> 1000 </props>
+      <props id="25" id_name="NT_DEVCFG_BEACON_WAIT_INC_STEP_US" min="0" max="4000" helptext="Telescopic beacon wait increment step" type="0x00000002"> 2000 </props>
 
 	  <props id="26" id_name="NT_DEVCFG_EARLY_RX_STEP_US" min="0" max="10000" helptext="Telescopic early rx increment step" type="0x00000002"> 1500 </props>
 
@@ -186,7 +186,7 @@
 
       <props id="49" id_name="NT_DEVCFG_SLP_SLOP_INTERVAL_MS" min="100" max="200" helptext="Granular interval of time to account for sleep slop offset" type="0x00000002" oem_configurable="false"> 100 </props>
 
-      <props id="50" id_name="NT_DEVCFG_SLP_SLOP_STEP_US" min="0" max="100" helptext="Slop time to be accounted for per interval time" type="0x00000002" oem_configurable="false"> 0 </props>
+      <props id="50" id_name="NT_DEVCFG_SLP_SLOP_STEP_US" min="0" max="100" helptext="Slop time to be accounted for per interval time" type="0x00000002" oem_configurable="false"> 100 </props>
 
    </device>
 

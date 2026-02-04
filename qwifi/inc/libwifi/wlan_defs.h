@@ -77,5 +77,9 @@ typedef enum {
 #define PHYMODE_IS_5G(mode) (mode == MODE_11A_ONLY || mode == MODE_11A_HT20 || mode == MODE_11ABGN_HT20)
 #define PHYMODE_IS_2G(mode) (mode == MODE_11B || mode == MODE_11G || mode == MODE_11NG_HT20 || mode == MODE_11ABGN_HT20)
 #endif /* SUPPORT_5GHZ */
+typedef enum {
+    PM_WLAN_ACTIVITY_IDLE = 0,
+    PM_WLAN_ACTIVITY_BUSY = 1,
+} PM_WLAN_ACTIVITY_STATUS;
 
 #endif /* __WLANDEFS_H__ */
