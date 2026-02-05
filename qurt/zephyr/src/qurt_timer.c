@@ -373,20 +373,6 @@ void *nt_get_timeout_arg(TimerHandle_t timer_handle)
     }
 }
 
-#if 0
-void hres_timer_us_delay(uint32_t time_us)
-{
-    uint64_t curr_time = hres_timer_curr_time_us();
-    uint64_t target_time = (curr_time + time_us);
-
-    while(curr_time < target_time)
-    {
-        curr_time = hres_timer_curr_time_us();
-    }
-}
-#else
-void hres_timer_us_delay(uint32_t time_us) { k_busy_wait(time_us); }
-#endif
 
 uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
 {
@@ -410,6 +396,17 @@ uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
     curr_time_us = (current_ticks * 1000000) / cntr_freq_hz;
     return curr_time_us;
 #endif
+}
+
+void __attribute__ ((section(".ramfunc"))) hres_timer_us_delay(uint32_t time_us)
+{
+    uint64_t curr_time = hres_timer_curr_time_us();
+    uint64_t target_time = (curr_time + time_us);
+
+    while(curr_time < target_time)
+    {
+        curr_time = hres_timer_curr_time_us();
+    }
 }
 
 /**
