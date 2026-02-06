@@ -225,7 +225,7 @@ qapi_WLAN_Commit()
 #define __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_ENABLE_HIDDEN_MODE 41
 
 /**
-Command ID to set an AP's inactivity period in minutes.
+Command ID to set an AP's inactivity period in seconds.
 
 If no keepalive frames are received from an associated station during
 this period, the AP deassociates that station.
@@ -233,9 +233,9 @@ this period, the AP deassociates that station.
 @note1hang This parameter can only be used with qapi_WLAN_Set_Param().
 
 @param[in] uint32_t        Inactivity interval for associated stations in
-                           minutes.
+                           seconds.
 */
-#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_INACTIVITY_TIME_IN_MINS 43
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_INACTIVITY_TIME_IN_SECONDS 43
 
 /**
 Command ID to change the DTIM interval when operating a virtual device
