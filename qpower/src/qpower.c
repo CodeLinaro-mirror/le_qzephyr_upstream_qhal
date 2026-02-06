@@ -56,12 +56,15 @@
 #include <zephyr/sys_clock.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/irq.h>
+#include <zephyr/arch/arm/cortex_m/scb.h>
 #include "uart_hal.h"
 #include "nt_hw_support.h"
 #include "pmu_ll.h"
 #include <zephyr/drivers/timer/system_timer.h>
 #include "aon_tmr_mgr.h"
 #include  "wifi_fw_pmu_ts_cfg.h"
+#include "nt_hw.h"
+#include "nt_common.h"
 
 #define ARRAY_SIZE_IN_TYPE(type, member) sizeof(((type *)(0))->member)
 
@@ -75,13 +78,15 @@ typedef struct {
 
 struct backup {
     _nvic_context_t nvic_context;
+    struct scb_context scb_context;
 };
 
 static __noinit struct backup backup_data;
 
+bool _socpm_mcu_sleep_wake = false;
 qpower_param_t gs_qpower_param;
 struct libpower_kconfig_t g_libpower_kconfig;
-
+extern void z_arm_reset(void);
 static void aon_set_alarm(uint64_t us)
 {
     /* !!! Caution: remove it if automatic suspend is implemented. */
@@ -107,6 +112,8 @@ qapi_Status_t qapi_pmu_init(void)
     libpower_ifc.ts_configure = pmu_ts_configure;
     libpower_ifc.slp_clk_cal_enable = socpm_slp_clk_cal_enable;
     libpower_ifc.set_sleep_exit_reason = set_sleep_exit_reason; 
+    libpower_ifc.qtmr_init = qtmr_init; 
+    libpower_ifc.nt_hal_complete_rri_restore_op = nt_hal_complete_rri_restore_op; 
     reg_libpower_ifc(&libpower_ifc);
 #endif
 
@@ -351,6 +358,7 @@ static int mcu_sleep_enter(void)
 #endif
     g_socpm_struct.woken_src = WKUP_UNKNOWN;
     g_socpm_struct.slept_time_ms = 0;
+    z_arm_save_scb_context(&backup_data.scb_context);
     nvic_suspend(&backup_data.nvic_context);
     mcusleep_init_vector_table();
     //early_printk("vecotr pointed to SRAM 0 \r\n");
@@ -365,7 +373,7 @@ static int mcu_sleep_enter(void)
 #ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
     socpm_slp_clk_cal_presleep_activites(((uint64_t)gs_qpower_param.s2ram_duration_ms) * 1000);
 #endif /* SLEEP_CLK_CAL_IN_SLEEP_MODE */
-
+    _socpm_mcu_sleep_wake = false;
     _socpm_slpcfg_mcuslp();
 
     dead_loop_cond1();
@@ -398,15 +406,14 @@ static void mcu_sleep_wakeup(void)
 
     mcusleep_restore_vector_table();
     nvic_resume(&backup_data.nvic_context);
-
-
+    z_arm_restore_scb_context(&backup_data.scb_context);
 }
 
 void qapi_enter_suspend2ram(void)
 {
     qpower_param_t *p_qpower_param = &gs_qpower_param;
+    uint32_t basepri = 0;
 
-    __disable_fault_irq();
     if (p_qpower_param->s2ram_duration_ms
             && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_AON_TIMER)
             && IS_BIT_SET(p_qpower_param->s2ram_wakeup_src, WKUP_EXT_PIN)) {
@@ -417,12 +424,19 @@ void qapi_enter_suspend2ram(void)
         early_printk("%s no valid wakeup source, skip\n", __FUNCTION__);
         goto exit;
     }
+    basepri = __get_BASEPRI();
     arch_pm_s2ram_suspend(mcu_sleep_enter);
     /* On resuming or error we return exactly *HERE* */
-    //ram_minimum_code();
+    __set_BASEPRI(basepri);
+
+    if(_socpm_mcu_sleep_wake == FALSE){
+        nt_socpm_handle_sleep_entry_failure(mcu_sleep);
+        *(uint32_t *)(0x4) = (void *)z_arm_reset;
+    }
+
     mcu_sleep_wakeup();
 exit:
-    __enable_fault_irq();
+    return;
 }
 
 void qapi_suspend2ram_exit_post_ops(void)

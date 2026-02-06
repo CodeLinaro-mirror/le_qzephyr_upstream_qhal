@@ -399,6 +399,9 @@ flag */
  * occurs in parallel to other SW execution*/
 #define SUPPORT_SW_NON_POLLED_RRI
 
+/*A WAR that clear EXT Wakeup when it happens during the warm boot*/
+/*We will need to let it returns from WFI and restore context when WFI is failed in later version.*/
+#define WAR_CLEAR_EXT_WAKEUP_INT_DURING_WARM_BOOT
 #endif // PLATFORM_FERMION
 
 #ifndef NT_GPIO_FLAG
