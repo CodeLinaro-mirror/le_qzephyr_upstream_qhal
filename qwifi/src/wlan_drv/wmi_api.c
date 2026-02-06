@@ -290,8 +290,6 @@ static void wmi_scan_result_event(void *msg)
         return;
     }
 
-    PRINT_LOG_FUNC_LINE_ENTRY;
-
     SCAN_RESULT *p_scan_result = (SCAN_RESULT *)msg;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     uint8_t num_entries, last_idx;
@@ -324,7 +322,6 @@ static void wmi_scan_result_event(void *msg)
     scan_comp_evt->total_bss += p_scan_result->num_entries;
 
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
-    PRINT_LOG_FUNC_LINE_EXIT;
 }
 
 extern void show_net_info_by_id(uint8_t id, uint8_t ip_ver);
