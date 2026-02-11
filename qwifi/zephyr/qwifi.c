@@ -12,6 +12,7 @@
 #include <zephyr/logging/log.h>
 #include "printfext.h"
 #include "nt_mem.h"
+#include <zephyr/net/net_if.h>
 
 LOG_MODULE_DECLARE(soc, CONFIG_SOC_LOG_LEVEL);
 
@@ -102,12 +103,24 @@ qapi_Status_t qwifi_hal_tx(uint8_t dev_id, void *pkt, uint16_t len)
     return nt_dpm_process_eth_packet_from_stack_ext(pkt, len);
 }
 
-struct qwifi_hal_t gs_qwifi_hal;
+struct qwifi_hal_t gs_qwifi_hal[2];
 
 qapi_Status_t qwifi_hal_reg_rxcb(void *drv_intf_data, qwifi_drv_eth_rx_cb_t fn,
                                  qwifi_link_change_handler link_fn)
 {
-    struct qwifi_hal_t *hal = &gs_qwifi_hal;
+    struct qwifi_hal_t *hal;
+    const struct device *dev = net_if_get_device(drv_intf_data);
+
+    if (dev == NULL || dev->name == NULL) {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+
+    if (strcmp(dev->name, "qwifi_sta") == 0) {
+        hal = &gs_qwifi_hal[0];
+    }
+    else {
+        hal = &gs_qwifi_hal[1];
+    }
 
     PRINT_LOG_FUNC_LINE_ENTRY;
     hal->drv_intf_data = drv_intf_data;

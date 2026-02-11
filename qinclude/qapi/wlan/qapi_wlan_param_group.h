@@ -373,6 +373,16 @@ Command ID to get Wi-Fi status that used by Zephyr.
 */
 #define __QAPI_WLAN_PARAM_GROUP_WIRELESS_WIFI_STATUS 91
 
+/**
+Command ID to set active device for concurrency mode
+
+@note1hang This parameter can only be used with qapi_WLAN_Get_Param().
+
+Set actice device id to 0/1(SAP/STA).
+
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_DEVICE_ID 92
+
 
 #define __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE 0
 
