@@ -113,6 +113,7 @@ qurt_time_t qurt_timer_get_ticks(void);
 int qurt_timer_change_period(TimerHandle_t timer, TickType_t timer_period, TickType_t block_time);
 
 qurt_time_t qurt_timer_convert_time_to_ticks(qurt_time_t time, qurt_time_unit_t unit_of_time);
+qurt_time_t qurt_timer_convert_ticks_to_time(qurt_time_t ticks, qurt_time_unit_t time_unit);
 
 TimerHandle_t nt_create_timer(void *call_back_function, void *timer_id, uint32_t time_countdown,
                               UBaseType_t auto_reload);

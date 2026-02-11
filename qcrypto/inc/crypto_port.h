@@ -17,14 +17,12 @@
 #define A_CRYPTO_ERR_INVALID_PARAM (-2)
 #define A_CRYPTO_ERR_NO_MEM (-3)
 #define A_CRYPTO_ERR_NOT_SUPP (-8)
-#define false (0)
-#define true (1)
+
 typedef uint32_t qbool_t;
-#define A_SECURE_MEMZERO(a, l) (memset(a, 0, l))
+#define A_SECURE_MEMZERO(a, l)  memset(a, 0, l)
 #define A_MEMZERO(ptr, size)    memset((ptr), 0, (size))
 #define A_MALLOC(size)          malloc(size)
 #define A_FREE(ptr)             free(ptr)
-#define A_SECURE_MEMZERO(a, l)  memset((a), 0, (l))
 typedef uint32_t A_UINT32;
 typedef int32_t A_INT32;
 typedef uint16_t A_UINT16;
