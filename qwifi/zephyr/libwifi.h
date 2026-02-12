@@ -128,3 +128,18 @@ typedef enum {
 #define PROF_IRQ_EXIT()
 
 app_mode_id_t nt_get_app_mode(void);
+
+/**
+ * @brief start to correct RTC with TSF of WLAN beacon
+ * 
+ */
+void wlan_hal_set_rtc(void);
+
+/**
+ * @brief Get the RTC padding value
+ * 
+ * @return int64_t The RTC padding offset in microseconds
+ */
+int64_t wlan_hal_get_rtc_padding(void);
+
+
