@@ -14,5 +14,10 @@ static int pka_sys_init(void)
     return 0;
 }
 
+static int prng_sys_init(void)
+{
+    return (int)nt_prng_init();
+}
+
 SYS_INIT(pka_sys_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
-SYS_INIT(nt_prng_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+SYS_INIT(prng_sys_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
