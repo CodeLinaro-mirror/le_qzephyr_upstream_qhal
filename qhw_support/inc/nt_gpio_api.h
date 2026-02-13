@@ -78,8 +78,12 @@ typedef struct gpio_reg {
 #define NT_EDGE_SENSITIVE 0x1
 #define NT_LEVEL_SENSITIVE 0x0
 
+#ifndef GPIO_OUTPUT
 #define GPIO_OUTPUT (0x01)
+#endif
+#ifndef GPIO_INPUT
 #define GPIO_INPUT (0x00)
+#endif
 
 #define NT_GPIO_HIGH (0x01)
 #define NT_GPIO_LOW (0x00)
