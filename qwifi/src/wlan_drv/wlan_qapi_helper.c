@@ -941,6 +941,12 @@ qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
     case WMI_WPA_AUTH:
         status->auth_mode = QAPI_WLAN_AUTH_WPA_E;
         break;
+    case WMI_WPA_PSK_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA_PSK_E;
+        break;
+    case WMI_WPA3_SHA256_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA3_SAE_E;
+        break;
     default:
         status->auth_mode = QAPI_WLAN_AUTH_INVALID_E;
         break;
