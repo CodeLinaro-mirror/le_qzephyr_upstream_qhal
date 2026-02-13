@@ -96,8 +96,6 @@ int8_t nt_get_macid(uint8_t *macid);
 nt_status_t nt_dpm_forward_eth_packet_to_stack_ext(void *rx_buf, void *eth_frame, uint32_t length, void *ext);
 void nt_dpm_add_dev_to_stack(void *dev);
 void nt_dpm_remove_dev_from_stack(void *dev);
-void nt_dpm_stop_network_stack(void);
-void nt_dpm_start_network_stack(void);
 void *nt_dpm_allocate_network_buffer_pool(uint32_t length);
 void *nt_dpm_allocate_network_buffer(uint32_t length);
 void nt_dpm_free_network_buffer(void *buf);

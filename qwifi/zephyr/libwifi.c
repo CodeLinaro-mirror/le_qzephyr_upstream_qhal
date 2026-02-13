@@ -41,9 +41,6 @@ typedef struct qintf_device {
     uint32_t  rx_rate_index_counter[HAL_MAX_RX_RATEINDEX];
 } device_t;
 
-/*From patch of TCP stack*/
-extern int net_tcp_stop(void);
-extern void net_tcp_start(void);
 
 // API called by libwifi
 // Control if ftm code is linked in, so to reduce code size
@@ -118,21 +115,6 @@ void nt_dpm_remove_dev_from_stack(void *dev)
 
     hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_REMOVE, device->mac_address);
 }
-
-void nt_dpm_stop_network_stack(void) 
-{   
-    if (net_tcp_stop() != 0) 
-    { 
-        printk("net_tcp_stop failed\n"); 
-    }
-}
-
-void nt_dpm_start_network_stack(void) 
-{
-    net_tcp_start();
-}
-    
-    
 
 void *nt_dpm_allocate_network_buffer_pool(uint32_t length) { return k_malloc(length); }
 
