@@ -381,6 +381,7 @@ static void wmi_join_comp_event(void *msg)
     uint32_t event_id = QAPI_WLAN_CONNECT_CB_E;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_WLAN_Join_Comp_Evt_t *p_qapi_join_evt = &p_cxt->connect_result;
+    uint8_t is_ap = ((WMI_JOIN_EVT *)msg)->is_ap;
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 
@@ -443,7 +444,7 @@ done:
                                   p_qapi_join_evt, sizeof(qapi_WLAN_Join_Comp_Evt_t));
     }
 
-    if (p_cxt->opmode == DEV_MODE_STATION_E) {
+    if ((p_cxt->opmode == DEV_MODE_STATION_E) && !is_ap) {
         if (p_cxt->connected == false) {
             wlan_drv_roaming_start();
             start_imps_cnx_wait_timer_ext();
