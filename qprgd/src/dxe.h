@@ -40,7 +40,7 @@ typedef enum
 }e_dxe_channel;
 
 
-#define NT_DXE_TOTAL_DESC_NO 30 //Total Desc available for all channels
+#define NT_DXE_TOTAL_DESC_NO 60 //Total Desc available for all channels
 #define NT_MAX_STAGING_BUFFER_SIZE 2422 //Packet Staging buffer size (2304(NT_DPM_MAC_MTU_SIZE) + 14(ethernet_header_t) + 0x68(NT_TX_BUFFER_OFFSET))
 #define NT_MAX_STAGING_BUFFER_SIZE_BA 3839
 #define NT_MAX_STAGING_BUFFER_SIZE_AMSDU 7935
