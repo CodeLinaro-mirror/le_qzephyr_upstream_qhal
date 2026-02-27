@@ -436,3 +436,15 @@ qapi_Status_t qapi_WLAN_Sap_Csa(uint8_t device_ID, uint8_t switch_mode, uint16_t
 
     return ret;
 }
+
+qapi_Status_t qapi_WLAN_ignore_bcmc_in_bmps(uint8_t device_ID, uint8_t enable)
+{
+    qapi_Status_t ret = QAPI_OK;
+    static WMI_BMPS_IGNORE_BCMC ignore_bcmc_in_bmps = {0};
+
+    ignore_bcmc_in_bmps.enable = enable;
+
+    wmi_cmd_send(WMI_BMPS_IGNORE_BCMC_CMDID, &ignore_bcmc_in_bmps, sizeof(ignore_bcmc_in_bmps));
+
+    return ret;
+}
