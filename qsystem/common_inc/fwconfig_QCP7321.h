@@ -32,6 +32,9 @@
 #define FEATURE_STA_ECSA
 /*Feature flag to support Extended Channel Switch announcement on AP Side*/
 #define FEATURE_AP_ECSA
+/* flag to enable MCC switch to SCC in AP+STA */
+#define MCC_SWITCH_TO_SCC
+
 
 #define ENABLE_TWT_EVENT_LOGGING
 
