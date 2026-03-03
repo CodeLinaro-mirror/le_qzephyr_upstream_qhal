@@ -1310,6 +1310,15 @@ qapi_Status_t qapi_WLAN_Recv_Mgmt_Frames(uint8_t *buffer, uint32_t buffer_len, u
 */
 qapi_Status_t qapi_WLAN_Sap_Csa(uint8_t device_ID, uint8_t switch_mode, uint16_t channel, uint8_t is_6g, uint8_t switch_count);
 
+/**
+@brief  API to be used for ignore BC/MC traffic in BMPS.
+@param[in]  device_id        Device ID.
+@param[in]  enable           0: disable BC/MC, 1: enable BC/MC.
+
+@return qapi_Status_t       QAPI_OK on success, other error code on failure.
+*/
+qapi_Status_t qapi_WLAN_ignore_bcmc_in_bmps(uint8_t device_ID, uint8_t enable);
+
 qapi_Status_t qapi_WLAN_Get_Activity_Status(qapi_wlan_activity_status *wifi_status);
 qapi_Status_t qapi_WLAN_Start_Check_Activity(void);
 qapi_Status_t qapi_WLAN_Stop_Check_Activity(void);

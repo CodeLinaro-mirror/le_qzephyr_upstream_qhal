@@ -76,6 +76,7 @@ qapi_Status_t qapi_bmps_power_optimization_enable(uint8_t enable)
     memset(pdata, 0, sizeof(*pdata));
     pdata->enable = enable;
     wmi_cmd_send(WMI_BMPS_PWR_OPT_ENABLE_CMDID, pdata, sizeof(*pdata));
+    return QAPI_OK;
 }
 
 /**
@@ -95,6 +96,7 @@ qapi_Status_t qapi_bmps_compress_qos_null_enable(uint8_t enable)
     memset(pdata, 0, sizeof(*pdata));
     pdata->enable = enable;
     wmi_cmd_send(WMI_BMPS_CMPR_QOS_NULL_ENABLE_CMDID, pdata, sizeof(*pdata));
+    return QAPI_OK;
 }
 
 /**
