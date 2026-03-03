@@ -1,6 +1,7 @@
-/*
- * Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause-Clear
+ /*
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <zephyr/kernel.h>
@@ -51,22 +52,22 @@ static struct {
     void *callback_data;
 } g_ring_service;
 
-/* Configure 3 rings: Ring 0 (Config), Ring 1 (Data), Ring 2 (Loopback) */
+/* Configure 3 rings: Ring 0 (AT Commands), Ring 1 (Data), Ring 2 (Loopback) */
 struct ring_config configs[] = {
     {
-        .ring_id = 0,
-        .desc_count = 8,
-        .buf_size = 1500,
+        .ring_id = RING_0,
+        .desc_count = CONFIG_RING0_DESC_COUNT,
+        .buf_size = CONFIG_RING0_BUF_SIZE,
     },
     {
-        .ring_id = 1,
-        .desc_count = 8,
-        .buf_size = 1500,
+        .ring_id = RING_1,
+        .desc_count = CONFIG_RING1_DESC_COUNT,
+        .buf_size = CONFIG_RING1_BUF_SIZE,
     },
     {
-        .ring_id = 2,
-        .desc_count = 8,
-        .buf_size = 1500,
+        .ring_id = RING_2,
+        .desc_count = CONFIG_RING2_DESC_COUNT,
+        .buf_size = CONFIG_RING2_BUF_SIZE,
     },
 };
 
@@ -552,13 +553,11 @@ int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t time
 
     k_mutex_unlock(&g_ring_service.rings[ring_id].tx_lock);
 
-    /* Trigger Host GPIO interrupt */
+    /* Trigger Host GPIO interrupt with a pulse */
     ret = gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 0);
     if (ret < 0) {
         LOG_ERR("Failed to set GPIO low: %d", ret);
     }
-
-    k_busy_wait(1); /* 1us pulse */
 
     ret = gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 1);
     if (ret < 0) {

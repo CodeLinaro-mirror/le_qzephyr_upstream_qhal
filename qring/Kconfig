@@ -1,5 +1,5 @@
-# Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause-Clear
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
 
 config RING_SERVICE
 	bool "Ring Service Support"
@@ -21,5 +21,69 @@ config RING_SERVICE_LOG_LEVEL
 	help
 	  Set log level for ring service.
 	  0 = OFF, 1 = ERROR, 2 = WARNING, 3 = INFO, 4 = DEBUG
+
+menu "Ring 0 Configuration (AT Commands)"
+
+config RING0_DESC_COUNT
+	int "Ring 0 Descriptor Count"
+	default 8
+	range 2 256
+	help
+	  Number of descriptors for Ring 0 (AT Commands).
+	  Each descriptor can hold one packet.
+	  More descriptors = more buffering but more RAM usage.
+
+config RING0_BUF_SIZE
+	int "Ring 0 Buffer Size (bytes)"
+	default 1500
+	range 64 1500
+	help
+	  Size of each buffer for Ring 0 (AT Commands).
+	  Must be large enough to hold the largest AT command/response.
+	  Typical AT commands are < 512 bytes.
+
+endmenu
+
+menu "Ring 1 Configuration (Data)"
+
+config RING1_DESC_COUNT
+	int "Ring 1 Descriptor Count"
+	default 8
+	range 2 256
+	help
+	  Number of descriptors for Ring 1 (Data).
+	  Each descriptor can hold one packet.
+	  More descriptors = more buffering but more RAM usage.
+
+config RING1_BUF_SIZE
+	int "Ring 1 Buffer Size (bytes)"
+	default 1500
+	range 64 1500
+	help
+	  Size of each buffer for Ring 1 (Data).
+	  Should match MTU size for network packets (typically 1500).
+
+endmenu
+
+menu "Ring 2 Configuration (Loopback/Test)"
+
+config RING2_DESC_COUNT
+	int "Ring 2 Descriptor Count"
+	default 8
+	range 2 256
+	help
+	  Number of descriptors for Ring 2 (Loopback/Test).
+	  Each descriptor can hold one packet.
+	  More descriptors = more buffering but more RAM usage.
+
+config RING2_BUF_SIZE
+	int "Ring 2 Buffer Size (bytes)"
+	default 1500
+	range 64 1500
+	help
+	  Size of each buffer for Ring 2 (Loopback/Test).
+	  Can be adjusted based on test requirements.
+
+endmenu
 
 endif # RING_SERVICE
