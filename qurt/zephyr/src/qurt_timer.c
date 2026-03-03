@@ -264,8 +264,8 @@ int qurt_timer_delete(TimerHandle_t timer, TickType_t block_time)
        linked to obj_type_timer; unlink to avoid stale references */
     k_obj_core_unlink(K_OBJ_CORE(timer));
 #endif
-    k_work_cancel(&_qtimer->work);
-    k_work_flush(&_qtimer->work, NULL);
+	struct k_work_sync _work_sync;
+    k_work_cancel_sync(&_qtimer->work, &_work_sync);
     k_free(timer);
 
     return QURT_EOK;
