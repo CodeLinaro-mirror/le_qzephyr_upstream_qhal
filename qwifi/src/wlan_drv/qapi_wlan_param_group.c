@@ -105,10 +105,10 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
             ret = wlan_set_ap_dtim_period(device_ID, dtim_period);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_DTIM_INTERVAL */
         }
-        case __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_INACTIVITY_TIME_IN_MINS: {
+        case __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_INACTIVITY_TIME_IN_SECONDS: {
             uint32_t inactivity_time = *((uint32_t *)data);
             ret = wlan_set_ap_inactivity(device_ID, inactivity_time);
-            break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_INACTIVITY_TIME_IN_MINS */
+            break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_INACTIVITY_TIME_IN_SECONDS */
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_AP_ENABLE_HIDDEN_MODE: {
             uint8_t hidden = *((uint8_t *)data);
