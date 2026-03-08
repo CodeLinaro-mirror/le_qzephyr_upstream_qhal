@@ -433,9 +433,23 @@ void qapi_enter_suspend2ram(void)
         nt_socpm_handle_sleep_entry_failure(mcu_sleep);
         *(uint32_t *)(0x4) = (void *)z_arm_reset;
     }
-
+    /*
+    * Wrapping mcu_sleep_wakeup() with __disable_fault_irq() prevents the AON IRQ
+    * from being serviced during the NVIC/SCB restore window. Without this, the
+    * AON ISR may run inside mcu_sleep_wakeup(), before Zephyr resumes and before
+    * wlan task becomes ready.
+    *
+    * With FAULTMASK held, the pending AON IRQ is deferred until pm_system_resume()
+    * later re-enables interrupts. At that point wlan is already marked ready, so
+    * after k_sched_unlock() the scheduler immediately switches to the wlan task.
+    *
+    * This ensures the AON ISR does not preempt too early and prevents wlan from
+    * being delayed until the next SysTick.
+    */
+    __disable_fault_irq();
     mcu_sleep_wakeup();
 exit:
+    __enable_fault_irq();
     return;
 }
 
