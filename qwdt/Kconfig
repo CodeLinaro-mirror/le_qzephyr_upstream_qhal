@@ -1,0 +1,20 @@
+# Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+if WATCHDOG
+
+config WATCH_DOG_BITE_TIME
+    int "Watchdog bite time in seconds"
+    default 8
+    range 1 3600
+    help
+      Hardware watchdog timeout in seconds. If the watchdog is not fed
+      within this time, the system will reset.
+
+      Note: The auto-feed interval is (bite_time - 1) seconds.
+      For example, if bite_time is 8 seconds, auto-feed occurs every 7 seconds.
+
+      During power save (IMPS/BMPS), the hardware watchdog continues running.
+      If imps time exceeds this value, the system will reset after wakeup.
+
+endif # WATCHDOG

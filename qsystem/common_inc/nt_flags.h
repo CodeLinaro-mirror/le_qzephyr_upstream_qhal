@@ -480,11 +480,6 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 // Set NT_FN_FUNCTION_LINE_NUM_FLAG to 1, flag for enable function name and line number.
 #define NT_FN_FUNCTION_LINE_NUM_FLAG 1
 
-// flag for enable the watchdog module
-//	#ifndef NT_FN_WATCHDOG
-//	#define NT_FN_WATCHDOG
-//	#endif
-
 // Define this flag to enable CPR debug prints in Production
 #ifdef NT_FN_CPR_DEBUG
 #define NT_FN_CPR_DEBUG
@@ -740,12 +735,6 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 
 #endif // NT_DEBUG
 
-// WDT enable only prodution builds
-#ifndef NT_DEBUG
-#ifndef NT_FN_WATCHDOG
-// #define NT_FN_WATCHDOG //wifi
-#endif // NT_FN_WATCHDOG
-#endif // NT_DEBUG
        // CPR
 #ifndef NT_FN_CPR
 // #define NT_FN_CPR //non-wifi but pwr close source, haven't change yet

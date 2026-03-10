@@ -1474,7 +1474,7 @@ uint32_t hal_dxe_resume()
     uint32_t wait_count = 0;
     regVal = regVal & (~QWLAN_DXE_0_DMA_CSR_PAUSE_MASK);
 
-    // if( halDxe->dxe_suspend )
+    if( halDxe->dxe_suspend )
     {
         HAL_REG_WR(QWLAN_DXE_0_DMA_CSR_REG, regVal);
 #ifdef DEBUG
@@ -1482,7 +1482,7 @@ uint32_t hal_dxe_resume()
 #endif
 
 	/*wait for all channels are available*/
-	nt_hal_wait_until_dxe_channel_avail();
+	// nt_hal_wait_until_dxe_channel_avail();
 
         // halDxe->dxe_suspend = 0;
         NT_LOG_DPM_INFO("hal_dxe_resume", 0, 0, 0);
@@ -1496,7 +1496,7 @@ uint32_t hal_dxe_resume()
                 break;
             }
             // Replacing taskdelay with for loop
-            nt_socpm_nop_delay(100);
+            nt_socpm_nop_delay(5000);
         }
     }
     return NDXE_SUCCESS;

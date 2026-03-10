@@ -259,8 +259,13 @@ int qurt_timer_delete(TimerHandle_t timer, TickType_t block_time)
     pm_timer_unregister_internal(timer); 
 
     k_timer_stop(timer);
-    k_work_cancel(&_qtimer->work);
-    k_work_flush(&_qtimer->work, NULL);
+#ifdef CONFIG_OBJ_CORE_TIMER
+    /* When stopping and freeing a heap-allocated k_timer it remained
+       linked to obj_type_timer; unlink to avoid stale references */
+    k_obj_core_unlink(K_OBJ_CORE(timer));
+#endif
+	struct k_work_sync _work_sync;
+    k_work_cancel_sync(&_qtimer->work, &_work_sync);
     k_free(timer);
 
     return QURT_EOK;
@@ -368,22 +373,8 @@ void *nt_get_timeout_arg(TimerHandle_t timer_handle)
     }
 }
 
-#if 0
-void hres_timer_us_delay(uint32_t time_us)
-{
-    uint64_t curr_time = hres_timer_curr_time_us();
-    uint64_t target_time = (curr_time + time_us);
 
-    while(curr_time < target_time)
-    {
-        curr_time = hres_timer_curr_time_us();
-    }
-}
-#else
-void hres_timer_us_delay(uint32_t time_us) { k_busy_wait(time_us); }
-#endif
-
-uint64_t hres_timer_curr_time_us(void)
+uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
 {
 #if 0
 #ifdef SUPPORT_HIGH_RES_TIMER
@@ -405,6 +396,17 @@ uint64_t hres_timer_curr_time_us(void)
     curr_time_us = (current_ticks * 1000000) / cntr_freq_hz;
     return curr_time_us;
 #endif
+}
+
+void __attribute__ ((section(".ramfunc"))) hres_timer_us_delay(uint32_t time_us)
+{
+    uint64_t curr_time = hres_timer_curr_time_us();
+    uint64_t target_time = (curr_time + time_us);
+
+    while(curr_time < target_time)
+    {
+        curr_time = hres_timer_curr_time_us();
+    }
 }
 
 /**

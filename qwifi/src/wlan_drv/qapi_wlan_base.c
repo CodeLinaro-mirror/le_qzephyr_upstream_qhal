@@ -425,3 +425,26 @@ qapi_Status_t qapi_WLAN_Unit_Test(uint8_t device_ID, void *p_data, uint32_t data
     return ret;
 }
 #endif
+
+qapi_Status_t qapi_WLAN_Sap_Csa(uint8_t device_ID, uint8_t switch_mode, uint16_t channel, uint8_t is_6g, uint8_t switch_count)
+{
+    qapi_Status_t ret = QAPI_WLAN_ERROR;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wlan_sap_csa(device_ID, switch_mode, channel, is_6g, switch_count);
+    WLAN_QAPI_UNLOCK();
+
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_ignore_bcmc_in_bmps(uint8_t device_ID, uint8_t enable)
+{
+    qapi_Status_t ret = QAPI_OK;
+    static WMI_BMPS_IGNORE_BCMC ignore_bcmc_in_bmps = {0};
+
+    ignore_bcmc_in_bmps.enable = enable;
+
+    wmi_cmd_send(WMI_BMPS_IGNORE_BCMC_CMDID, &ignore_bcmc_in_bmps, sizeof(ignore_bcmc_in_bmps));
+
+    return ret;
+}

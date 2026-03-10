@@ -32,6 +32,9 @@
 #define FEATURE_STA_ECSA
 /*Feature flag to support Extended Channel Switch announcement on AP Side*/
 #define FEATURE_AP_ECSA
+/* flag to enable MCC switch to SCC in AP+STA */
+#define MCC_SWITCH_TO_SCC
+
 
 #define ENABLE_TWT_EVENT_LOGGING
 
@@ -399,6 +402,9 @@ flag */
  * occurs in parallel to other SW execution*/
 #define SUPPORT_SW_NON_POLLED_RRI
 
+/*A WAR that clear EXT Wakeup when it happens during the warm boot*/
+/*We will need to let it returns from WFI and restore context when WFI is failed in later version.*/
+#define WAR_CLEAR_EXT_WAKEUP_INT_DURING_WARM_BOOT
 #endif // PLATFORM_FERMION
 
 #ifndef NT_GPIO_FLAG

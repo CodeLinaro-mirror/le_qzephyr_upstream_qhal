@@ -19,6 +19,20 @@
 lpr_wmi_t g_lowpower_wmi;
 extern bool (*wakeup_cb_dtim)(uint16_t type, bool bm_cast,void* pbuf,uint16_t len);
 
+
+qapi_Status_t qapi_bmps_rx_filter_enable(uint8_t enable)
+{
+    if (enable != 0 && enable != 1) {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+    WMI_BMPS_ENABLE *pbmps = (WMI_BMPS_ENABLE *)&g_lowpower_wmi.bmps_cfg.bmps_enable;
+    memset(pbmps, 0, sizeof(*pbmps));
+    pbmps->enable = enable;
+    wmi_cmd_send(WMI_BMPS_RX_FILTER_ENABLE_CMDID, pbmps, sizeof(*pbmps));
+    return QAPI_OK;
+}
+
+
 /**
  *  Register the callback to filter BC/MC packets
  *
@@ -62,6 +76,7 @@ qapi_Status_t qapi_bmps_power_optimization_enable(uint8_t enable)
     memset(pdata, 0, sizeof(*pdata));
     pdata->enable = enable;
     wmi_cmd_send(WMI_BMPS_PWR_OPT_ENABLE_CMDID, pdata, sizeof(*pdata));
+    return QAPI_OK;
 }
 
 /**
@@ -81,6 +96,7 @@ qapi_Status_t qapi_bmps_compress_qos_null_enable(uint8_t enable)
     memset(pdata, 0, sizeof(*pdata));
     pdata->enable = enable;
     wmi_cmd_send(WMI_BMPS_CMPR_QOS_NULL_ENABLE_CMDID, pdata, sizeof(*pdata));
+    return QAPI_OK;
 }
 
 /**

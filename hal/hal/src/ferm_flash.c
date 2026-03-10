@@ -9,6 +9,8 @@
 
 #include <string.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "fwconfig_cmn.h"
 #include "nt_flags.h"
 #ifndef CONFIG_NON_OS
@@ -23,6 +25,8 @@
 #include "drv_flash.h"
 
 #ifdef SBL_BUILD
+/* Forward declaration to avoid circular dependency with sbl_common.h */
+void sbl_printf(const char *fmt, ...);
 #undef UART_PRINT
 #define UART_PRINT(...) sbl_printf(__VA_ARGS__) 
 #endif

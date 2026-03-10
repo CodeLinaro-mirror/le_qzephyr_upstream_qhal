@@ -254,6 +254,7 @@ typedef enum {
     WMI_IMPS_TIMEDOUT_HNDL_CMDID,
     WMI_WLAN_SUSPEND_CMDID,
     WMI_DBG_TSF_CMDID,
+    WIFI_SET_SAP_CSA,
     WMI_GET_WIFI_STATUS,
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
@@ -292,6 +293,7 @@ typedef enum {
     WMI_WPS_FAIL_EVTID, // 0x1E
     WMI_WLAN_SUSPEND_EVTID,
     WMI_WLAN_RESUME_EVTID,
+    WMI_WLAN_SAP_CSA_EVTID,
     WMI_REPORT_WIFI_STATUS,
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
@@ -327,6 +329,7 @@ typedef struct {
     uint8_t bssid[IEEE80211_ADDR_LEN];          /* bssid of the ap joined */
     ssid_t ssid;                                /*ssid of joind AP */
     uint8_t passphrase[WMI_PASSPHRASE_LEN + 1]; /* passphrase of the ap joined */
+    uint8_t is_ap;                              /* type of current device */
 } POSTPACK WMI_JOIN_EVT;
 
 typedef struct {
@@ -1163,6 +1166,16 @@ typedef PREPACK struct {
 } POSTPACK WMI_DELBA_REQ_CMD;
 
 /*
+ * WMI_SAP_CSA_CMD
+ */
+typedef PREPACK struct {
+    uint8_t mode;
+    uint8_t is_6g;
+    uint16_t channel;
+    uint8_t count;
+} POSTPACK WMI_SAP_CSA_CMD;
+
+/*
  * ------- AP Mode definitions --------------
  */
 
@@ -1773,6 +1786,7 @@ typedef enum {
     WIFI_PARAM_SET_EDCCA_THRESHOLD = 20,
     WIFI_PARAM_SET_TX_POWER = 21,
     WIFI_PARAM_SET_BMISS_THRESHOLD = 22,
+    WIFI_PARAM_SET_ACTIVE_DEVICE = 23,
 } param_id;
 enum {
     WIFI_STATUS_SUCCESS,

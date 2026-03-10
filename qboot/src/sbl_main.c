@@ -378,8 +378,8 @@ loader_start( void* arg){
 				//sbl_printf("sbl image auth err=%02d\r\n", err);
 			}
 
-			err = pbl_share_func.boot_elf_load_image(&app_elf_loader, type);
-			//err = boot_elf_load_image(&app_elf_loader, type);
+			//err = pbl_share_func.boot_elf_load_image(&app_elf_loader, type);
+			err = boot_elf_load_image(&app_elf_loader, type);
 			if(err && (MEDIA_TYPE_FLASH == app_elf_media))
 			{
 		    	g_sbl_info.err_code |= (0x1<<ERROR_SBL_IMAGE_LOAD);

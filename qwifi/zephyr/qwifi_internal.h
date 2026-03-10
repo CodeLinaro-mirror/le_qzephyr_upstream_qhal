@@ -13,4 +13,4 @@ struct qwifi_hal_t {
     qwifi_link_change_handler link_change;
 };
 
-extern struct qwifi_hal_t gs_qwifi_hal;
+extern struct qwifi_hal_t gs_qwifi_hal[2];

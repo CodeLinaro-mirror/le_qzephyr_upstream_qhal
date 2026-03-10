@@ -95,11 +95,11 @@ class Config_File:
         #Application (e.g. QCLI_demo) Secondary FS default size 64KB
         self.FS2_sizeKB = 64
         #Size of RAM Dump to store core dump in Flash memory partition ID 99.
-        #Set it as 64 KB for by default.
-        self.RAMDUMP_sizeKB = 64
+        #Set it as 0 KB by default (disabled).
+        self.RAMDUMP_sizeKB = 0
         #Size of USER DATA region for users to store data in flash memory partition ID 101.
-        #Set it as 64KB for by default.
-        self.USERDATA_sizeKB = 64
+        #Set it as 0 KB by default (disabled).
+        self.USERDATA_sizeKB = 0
         #RANK value that will be set in firmware description table.
         #0: Golden, 0xFFFFFFFF: Trial, other valus: Current.
         self.RANK = 1
@@ -107,14 +107,20 @@ class Config_File:
         self.FS1IMG = ""
         self.FS2IMG = ""
 
-    def find_file(self, image, file_spec, app_path):
+    def find_file(self, image, file_spec, app_path, config_file_path=None):
         dirname = ""
         filename = ""
         
+        print(f"DEBUG: find_file called with image={image}, file_spec={file_spec}")
+        print(f"DEBUG: app_path={app_path}")
+        print(f"DEBUG: config_file_path={config_file_path}")
+        
         # First check if file_spec is already an absolute path that exists
         abs_path = os.path.abspath(file_spec)
+        print(f"DEBUG: Trying absolute path: {abs_path}")
         if os.path.isfile(abs_path):
             dirname, filename = os.path.split(abs_path)
+            print(f"DEBUG: Found as absolute path!")
             return dirname, filename
         
         # For FERMION_SBL, try to find in the standard location
@@ -124,14 +130,27 @@ class Config_File:
                 dirname, filename = os.path.split(img_name)
                 return dirname, filename
         
-        # For FDT files, also check relative to app_path
+        # For FDT files, try multiple locations
         if image == "FDT":
+            # Try relative to config file directory first
+            if config_file_path:
+                config_dir = os.path.dirname(os.path.abspath(config_file_path))
+                rel_path = os.path.normpath(os.path.join(config_dir, file_spec))
+                print(f"DEBUG: Trying relative to config: {rel_path}")
+                if os.path.isfile(rel_path):
+                    dirname, filename = os.path.split(os.path.abspath(rel_path))
+                    print(f"DEBUG: Found relative to config!")
+                    return dirname, filename
+            
             # Try relative to app_path
-            rel_path = os.path.join(app_path, file_spec)
+            rel_path = os.path.normpath(os.path.join(app_path, file_spec))
+            print(f"DEBUG: Trying relative to app_path: {rel_path}")
             if os.path.isfile(rel_path):
                 dirname, filename = os.path.split(os.path.abspath(rel_path))
+                print(f"DEBUG: Found relative to app_path!")
                 return dirname, filename
         
+        print(f"DEBUG: File not found!")
         return dirname, filename
 
     def from_xml_file(self, xml_file, app_path, is_all=False):
@@ -153,22 +172,23 @@ class Config_File:
             if child.tag == 'config':
                 self.FS1_sizeKB = int(child.attrib['FS1_sizeKB'], 0)
                 self.FS2_sizeKB = int(child.attrib['FS2_sizeKB'], 0)
-                self.RAMDUMP_sizeKB = int(child.attrib['RAMDUMP_sizeKB'], 0)
-                self.USERDATA_sizeKB = int(child.attrib['USERDATA_sizeKB'], 0)
+                # RAMDUMP and USERDATA are optional, default to 0 if not present
+                self.RAMDUMP_sizeKB = int(child.attrib.get('RAMDUMP_sizeKB', '0'), 0)
+                self.USERDATA_sizeKB = int(child.attrib.get('USERDATA_sizeKB', '0'), 0)
                 self.RANK = int(child.attrib['RANK'], 0)
                 self.FS1IMG = child.attrib['FS1IMG']
                 self.FS2IMG = child.attrib['FS2IMG']
             elif child.tag == 'flash':
                 if is_all:
                     print("find ", child.attrib['file'])
-                    dirname, filename = self.find_file(child.attrib['image'], child.attrib['file'], app_path)
+                    dirname, filename = self.find_file(child.attrib['image'], child.attrib['file'], app_path, xml_file)
                     if filename == "":
                         raise ValueError("Could not find file")
 
                     self.tables = self.tables + [("program", dirname, filename, int(child.attrib['begin'], 0), "0", child.attrib['location'])]
                 else:
                     if child.attrib['image'] == 'FDT':
-                        dirname, filename = self.find_file(child.attrib['image'], child.attrib['file'], app_path)
+                        dirname, filename = self.find_file(child.attrib['image'], child.attrib['file'], app_path, xml_file)
                         if filename == "":
                             raise ValueError("Could not find file")
 

@@ -24,6 +24,9 @@
 #define SCAN_LIST_NUM_CHANNELS 11
 #endif /* CONFIG_6GHZ */
 
+#define QCOM_DEV_STA_ID 1
+#define QCOM_DEV_AP_ID  0
+
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
 void wlan_clear_privacy(void)
 {
@@ -308,30 +311,37 @@ qapi_Status_t wlan_set_op_mode(uint8_t mode)
     WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
 
     if (((p_cxt->opmode == DEV_MODE_AP_E) && (mode == DEV_MODE_AP_E)) ||
-        ((p_cxt->opmode == DEV_MODE_STATION_E) && (mode == DEV_MODE_STATION_E))
-#ifdef NT_FN_CONCURRENCY
-        || ((p_cxt->conc_mode == DEV_MODE_AP_STA_E) && (mode == DEV_MODE_AP_STA_E))
-#endif
+        ((p_cxt->conc_mode == DEV_MODE_AP_STA_E) && (mode == DEV_MODE_AP_STA_E))
+        || ((p_cxt->opmode == DEV_MODE_STATION_E) && (mode == DEV_MODE_STATION_E) && (p_cxt->conc_mode == DEV_MODE_NO_CONC_E))
     )
         return status;
 
-    qapi_WLAN_Disconnect(0);
+    if (p_cxt->conc_mode == DEV_MODE_NO_CONC_E && mode != DEV_MODE_AP_STA_E) {
+        qapi_WLAN_Disconnect(QCOM_DEV_AP_ID);
+    }
 
     p_connect_cmd->networkType = mode;
+    p_cxt->network_id = (mode == DEV_MODE_AP_E || p_cxt->conc_mode == DEV_MODE_AP_STA_E)? QCOM_DEV_AP_ID : QCOM_DEV_STA_ID;
+
     status = wmi_set_op_mode();
     if (status == QAPI_OK) {
         qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 #ifdef NT_FN_CONCURRENCY
         if (mode == DEV_MODE_AP_STA_E) {
+            p_cxt->network_id = QCOM_DEV_STA_ID;
             p_cxt->conc_mode = DEV_MODE_AP_STA_E;
+            p_cxt->opmode = DEV_MODE_STATION_E;
         } else {
             p_cxt->conc_mode = DEV_MODE_NO_CONC_E;
         }
 #endif
-        if (mode == DEV_MODE_AP_E)
+        if (mode == DEV_MODE_AP_E) {
             p_cxt->opmode = DEV_MODE_AP_E;
-        else if (mode == DEV_MODE_STATION_E)
+            p_cxt->network_id = QCOM_DEV_AP_ID;
+        } else if (mode == DEV_MODE_STATION_E) {
             p_cxt->opmode = DEV_MODE_STATION_E;
+            p_cxt->network_id = QCOM_DEV_STA_ID;
+        }
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     }
     return status;
@@ -931,6 +941,12 @@ qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
     case WMI_WPA_AUTH:
         status->auth_mode = QAPI_WLAN_AUTH_WPA_E;
         break;
+    case WMI_WPA_PSK_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA_PSK_E;
+        break;
+    case WMI_WPA3_SHA256_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA3_SAE_E;
+        break;
     default:
         status->auth_mode = QAPI_WLAN_AUTH_INVALID_E;
         break;
@@ -941,6 +957,47 @@ qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
     status->band = wlan_freq_to_band(wifi_status.channel_frequency);
 
     return QAPI_OK;
+}
+
+qapi_Status_t wlan_set_active_device(uint8_t device_ID, uint8_t active_device_id)
+{
+    qapi_Status_t error = QAPI_OK;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    WMI_SET_PDEV_PARAM_CMD *cmd = &p_cxt->dev_param_cmd;
+
+    if (p_cxt->conc_mode != DEV_MODE_AP_STA_E) {
+        log_printf("active device only can be set under concurrency mode\n");
+        return QAPI_ERROR;
+    }
+
+    if (active_device_id != QCOM_DEV_STA_ID && active_device_id != QCOM_DEV_AP_ID) {
+        log_printf("invalid active_device_id: %d (must be 0 or 1)\n", active_device_id);
+        return QAPI_ERR_INVALID_PARAM;
+    }
+
+    if (active_device_id == QCOM_DEV_STA_ID) {
+        p_cxt->network_id = QCOM_DEV_STA_ID;
+        p_cxt->opmode = DEV_MODE_STATION_E;
+    }
+    else {
+        p_cxt->network_id = QCOM_DEV_AP_ID;
+        p_cxt->opmode = DEV_MODE_AP_E;
+    }
+
+    memset(cmd, 0, sizeof(WMI_SET_PDEV_PARAM_CMD));
+    cmd->pdev_param_id = WIFI_PARAM_SET_ACTIVE_DEVICE;
+    cmd->pdev_param_value = active_device_id;
+
+    wmi_dev_cmd_send(WMI_SET_PDEV_PARAM_CMDID, device_ID, cmd, sizeof(WMI_SET_PDEV_PARAM_CMD));
+
+    if (p_cxt->wlan_set_param_block_mode) {
+        p_cxt->param_id = WIFI_PARAM_SET_ACTIVE_DEVICE;
+        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SET_PARAM, QURT_SIGNAL_ATTR_CLEAR_MASK);
+    } else {
+        log_printf("unblock mode, should check WMI cmd done in event cb\n");
+    }
+    error = get_wlan_qapi_error();
+    return error;
 }
 
 #ifdef CONFIG_WPS

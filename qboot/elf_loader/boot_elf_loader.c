@@ -112,6 +112,22 @@ bl_error_type boot_elf_load_generic_segment(boot_elf_loader *elf_loader,
 
 	prog_hdr = &elf_loader->prog_hdrs[prog_idx];
 
+	/* If p_filesz == 0, this is a pure BSS/Heap segment with no data in the
+	 * ELF file (e.g. Zephyr BSS + Heap merged into one PT_LOAD segment).
+	 * Skip it entirely - do NOT zero-init here, as:
+	 *   1. Zephyr kernel's arch_bss_zero() (called from z_prep_c before
+	 *      z_cstart) will correctly zero the BSS region using linker symbols.
+	 *   2. The Heap region does not need to be zeroed; Zephyr's heap manager
+	 *      initialises its own metadata at runtime.
+	 * Zeroing a potentially huge p_memsz here risks wiping out RAM regions
+	 * that belong to other subsystems (e.g. WiFi firmware buffers).
+	 */
+	if (prog_hdr->p_filesz == 0) {
+		ELF_LOADER_PRINTF("Boot elf skip pure ZI/Heap segment vaddr=0x%08lx memsz=0x%08lx\r\n",
+						prog_hdr->p_vaddr, prog_hdr->p_memsz);
+		return BL_ERR_NONE;
+	}
+
 	/* Calculate the bytes_to_read.  This will be the bytes that need to be
 	 read from the storage device. */
 	if (offset >= prog_hdr->p_filesz)

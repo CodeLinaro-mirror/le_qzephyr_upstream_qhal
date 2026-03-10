@@ -373,8 +373,8 @@ int8_t nt_rram_write(uint32_t dst, const void *wdata, uint32_t length)
 
     /* check if RRAM address is RRAM_WRITE_ADR_BYTE_ALIGN byte aligned or source address is not aligned */
     if (((dst % RRAM_WRITE_ADR_BYTE_ALIGN) != 0) || ((((uint32_t)src_adr) % 4) != 0)) {
-        NT_LOG_PRINT(COMMON, ERR, "RRAM dst address or source is not algined dst 0x%X src 0x%X", dst,
-                     (uint32_t)src_adr);
+        NT_LOG_PRINT(COMMON, INFO, "RRAM dst address or source is not algined dst 0x%X src 0x%X", dst,
+                       (uint32_t)src_adr);
 
         /* go back in RRAM address so that it is algined to RRAM_WRITE_ADR_BYTE_ALIGN */
         des_adr =

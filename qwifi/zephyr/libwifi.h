@@ -96,8 +96,6 @@ int8_t nt_get_macid(uint8_t *macid);
 nt_status_t nt_dpm_forward_eth_packet_to_stack_ext(void *rx_buf, void *eth_frame, uint32_t length, void *ext);
 void nt_dpm_add_dev_to_stack(void *dev);
 void nt_dpm_remove_dev_from_stack(void *dev);
-void nt_dpm_stop_network_stack(void);
-void nt_dpm_start_network_stack(void);
 void *nt_dpm_allocate_network_buffer_pool(uint32_t length);
 void *nt_dpm_allocate_network_buffer(uint32_t length);
 void nt_dpm_free_network_buffer(void *buf);
@@ -128,3 +126,18 @@ typedef enum {
 #define PROF_IRQ_EXIT()
 
 app_mode_id_t nt_get_app_mode(void);
+
+/**
+ * @brief start to correct RTC with TSF of WLAN beacon
+ * 
+ */
+void wlan_hal_set_rtc(void);
+
+/**
+ * @brief Get the RTC padding value
+ * 
+ * @return int64_t The RTC padding offset in microseconds
+ */
+int64_t wlan_hal_get_rtc_padding(void);
+
+
