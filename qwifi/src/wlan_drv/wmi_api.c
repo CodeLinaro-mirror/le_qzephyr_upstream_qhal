@@ -16,6 +16,17 @@ typedef void (*wlan_evt_fn_table)(void *);
 
 extern qurt_pipe_t msg_wfm_wmi_id;
 extern int32_t wlan_freq_to_channel(uint16_t *channel);
+static void bmps_disable_timer_cb(struct k_timer *timer);
+K_TIMER_DEFINE(bmps_disable_timer, bmps_disable_timer_cb, NULL);
+
+static void bmps_disable_timer_cb(struct k_timer *timer)
+{   
+    uint8_t enable = 0;
+    WMI_BMPS_ENABLE *pdata = (WMI_BMPS_ENABLE *)&enable;
+    memset(pdata, 0, sizeof(*pdata));
+    wmi_cmd_send(WMI_BMPS_ENABLE_CMDID, pdata, sizeof(*pdata));
+    k_timer_stop(&bmps_disable_timer);
+}
 
 static void wmi_enabled_event(void *msg)
 {
@@ -326,7 +337,12 @@ static void wmi_scan_result_event(void *msg)
 	scan_comp_evt->total_bss = scan_comp_evt->num_bss_cur;
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 }
-
+static void wmi_bmps_disable_failed_event(void *msg)
+{
+    info_printf("BMPS disabled failed event received!, retry after 1ms\n");
+    k_timer_start(&bmps_disable_timer, K_MSEC(1), K_NO_WAIT);
+    return;
+}
 extern void show_net_info_by_id(uint8_t id, uint8_t ip_ver);
 static void wmi_ip_addr_ready_event(void *msg)
 {
@@ -919,6 +935,9 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
         break;
     case WMI_WLAN_SAP_CSA_EVTID:
         wmi_wlan_sap_csa_event(data);
+        break;
+    case WMI_BMPS_DISABLE_FAIL_EVTID:
+        wmi_bmps_disable_failed_event(data);
         break;
     default:
         break;
