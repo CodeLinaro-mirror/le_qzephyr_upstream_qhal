@@ -281,7 +281,7 @@ class Fw_Upgrade_Img_Descriptor:
         logging.warning(f'File not found in build directory: {filename}')
         return filename
 
-    def gen_whole_disk_binary(self, filename, build_dir=None, board=None):
+    def gen_whole_disk_binary(self, filename, build_dir=None, board=None, secure_boot=False):
         ''' Write to the given file name a copy of the binary blob contained
         in the partition table. Note: All files must be in current folder.
         
@@ -289,6 +289,7 @@ class Fw_Upgrade_Img_Descriptor:
             filename: Output filename
             build_dir: Optional build directory to search for ELF files
             board: Optional board name for SBL file resolution
+            secure_boot: If True, use secure boot paths for signed ELF files
         '''
 
         out = open(filename, 'wb')
@@ -312,14 +313,24 @@ class Fw_Upgrade_Img_Descriptor:
                     if build_dir and os.path.exists(build_dir):
                         if entry.image_id == 1 and board:
                             # SBL file
-                            sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', 'zephyr', f'{board}_sbl_HASHED.elf')
+                            if secure_boot:
+                                # Secure boot path: build_dir/modules/hal_qcom/qboot/zephyr_sec_sbl/qcc730/sbl/{board}_sbl.elf
+                                sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', 'zephyr_sec_sbl', 'qcc730', 'sbl', f'{board}_sbl.elf')
+                            else:
+                                # Normal path: build_dir/modules/hal_qcom/qboot/zephyr/{board}_sbl_HASHED.elf
+                                sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', 'zephyr', f'{board}_sbl_HASHED.elf')
                             if os.path.exists(sbl_path):
                                 actual_filename = sbl_path
                                 file_replaced = True
                                 logging.info(f'Using SBL file from build_dir for image_id {entry.image_id}: {sbl_path}')
                         elif entry.image_id == 10:
                             # Zephyr application file
-                            zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
+                            if secure_boot:
+                                # Secure boot path: build_dir/zephyr/zephyr_sec_app/qcc730/app/zephyr.elf
+                                zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_sec_app', 'qcc730', 'app', 'zephyr.elf')
+                            else:
+                                # Normal path: build_dir/zephyr/zephyr_HASHED.elf
+                                zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
                             if os.path.exists(zephyr_path):
                                 actual_filename = zephyr_path
                                 file_replaced = True
@@ -376,14 +387,24 @@ class Fw_Upgrade_Img_Descriptor:
                     if build_dir and os.path.exists(build_dir):
                         if entry.image_id == 1 and board:
                             # SBL file
-                            sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', f'{board}_sbl_HASHED.elf')
+                            if secure_boot:
+                                # Secure boot path: build_dir/modules/hal_qcom/qboot/zephyr_sec_sbl/qcc730/sbl/{board}_sbl.elf
+                                sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', 'zephyr_sec_sbl', 'qcc730', 'sbl', f'{board}_sbl.elf')
+                            else:
+                                # Normal path: build_dir/modules/hal_qcom/qboot/{board}_sbl_HASHED.elf
+                                sbl_path = os.path.join(build_dir, 'modules', 'hal_qcom', 'qboot', f'{board}_sbl_HASHED.elf')
                             if os.path.exists(sbl_path):
                                 actual_filename = sbl_path
                                 file_replaced = True
                                 logging.info(f'Using SBL file from build_dir for image_id {entry.image_id}: {sbl_path}')
                         elif entry.image_id == 10:
                             # Zephyr application file
-                            zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
+                            if secure_boot:
+                                # Secure boot path: build_dir/zephyr/zephyr_sec_app/qcc730/app/zephyr.elf
+                                zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_sec_app', 'qcc730', 'app', 'zephyr.elf')
+                            else:
+                                # Normal path: build_dir/zephyr/zephyr_HASHED.elf
+                                zephyr_path = os.path.join(build_dir, 'zephyr', 'zephyr_HASHED.elf')
                             if os.path.exists(zephyr_path):
                                 actual_filename = zephyr_path
                                 file_replaced = True
@@ -459,6 +480,7 @@ Run: python gen_fw_upgrade_img.py --xml fw_upgrade.xml --output fw_upgrade_img.b
     parser.add_argument('--output', type=str, required=False, help='The output file where to store the whole disk')
     parser.add_argument('-d', '--build-dir', type=str, required=False, help='Build directory to search for ELF files (e.g., qcc730mi_sbl_HASHED.elf, zephyr_HASHED.elf)')
     parser.add_argument('-b', '--board', type=str, required=False, help='Board name (e.g., qcc730mi, qcc730evbx) to determine SBL filename')
+    parser.add_argument('--secure-boot', action='store_true', help='Use secure boot paths for signed ELF files (zephyr_sec_app/qcc730/app/zephyr.elf and zephyr_sec_sbl/qcc730/sbl/{board}_sbl.elf)')
     parser.add_argument('-v', '--verbose', type=int, choices=[0,1,2,3,4,5], help='Verbose levels. Higher numbers include lower. For example, 3 means 3,2,1 and 0. 0=Critcal. 1=Error, 2=Warning 3=Info[Default], 4=Debug, 5=Everything', default=0)
     args = parser.parse_args()
 
@@ -484,7 +506,7 @@ Run: python gen_fw_upgrade_img.py --xml fw_upgrade.xml --output fw_upgrade_img.b
         return
 
     #Generate the disk image.
-    if fwd.gen_whole_disk_binary(args.output, args.build_dir, args.board) == 1:
+    if fwd.gen_whole_disk_binary(args.output, args.build_dir, args.board, args.secure_boot) == 1:
         #done here
         logging.info('Done generating the whole firmware upgrade image')
         print('Done generating the whole firmware upgrade image')
