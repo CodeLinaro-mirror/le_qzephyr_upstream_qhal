@@ -8,22 +8,26 @@
 #include "libwifi.h"
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
-static void _wlan_set_wep(void)
+static void _wlan_set_wep(uint8_t device_ID)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    WMI_CONNECT_CMD *p_cmd = &vdev->connect_cmd;
 
-    p_connect_cmd->dot11AuthMode = OPEN_AUTH;
-    p_connect_cmd->authMode = WMI_NONE_AUTH;
-    p_connect_cmd->pairwiseCryptoType = WEP_CRYPT;
+    p_cmd->dot11AuthMode = OPEN_AUTH;
+    p_cmd->authMode = WMI_NONE_AUTH;
+    p_cmd->pairwiseCryptoType = WEP_CRYPT;
 }
 
-qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID, uint16_t group_ID, uint16_t param_ID,
+qapi_Status_t qapi_WLAN_Set_Param(uint8_t device_ID, uint16_t group_ID, uint16_t param_ID,
                                   const void *data, uint32_t length,
                                   qapi_WLAN_Wait_For_Status_e __attribute__((__unused__)) wait_For_Status)
 {
     qapi_Status_t ret = QAPI_OK;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    WMI_CONNECT_CMD *p_cmd = &vdev->connect_cmd;
+
     if (gp_wlan_qapi_cxt->wlanEnabled == false) {
         warn_printf("wlan is not enabled\n");
         return QAPI_ERROR;
@@ -43,7 +47,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 }
             }
             qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-            wlan_set_connect_ssid((unsigned char *)data, (uint8_t)length);
+            wlan_set_connect_ssid(device_ID, (unsigned char *)data, (uint8_t)length);
             qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_SSID */
         }
@@ -58,7 +62,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 }
             }
             qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-            wlan_set_connect_bssid((uint8_t *)data, (uint8_t)length);
+            wlan_set_connect_bssid(device_ID, (uint8_t *)data, (uint8_t)length);
             qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_BSSID */
         }
@@ -85,7 +89,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_OPERATION_MODE: {
             uint8_t mode = *((uint8_t *)data);
-            ret = (qapi_Status_t)wlan_set_op_mode(mode);
+            ret = (qapi_Status_t)wlan_set_op_mode(device_ID, mode);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_OPERATION_MODE */
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_COUNTRY_CODE: {
@@ -205,7 +209,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 }
             }
             qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-            wlan_set_passphrase((uint8_t *)data, (uint8_t)length);
+            wlan_set_passphrase(device_ID, (uint8_t *)data, (uint8_t)length);
             qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_PASSPHRASE */
         }
@@ -213,20 +217,19 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
             if (!data || !length) {
                 warn_printf("clear authMode\n");
             }
-            WMI_CONNECT_CMD *p_cmd = &p_cxt->connect_cmd;
             qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             if (!data || !length) {
-                wlan_clear_privacy();
+                wlan_clear_privacy(device_ID);
                 info_printf("clear dot11AuthMode/authMode as open\n");
             } else {
                 qapi_WLAN_Auth_Mode_e e_wpa_ver = (qapi_WLAN_Auth_Mode_e)(*(uint32_t *)data);
                 info_printf("set e_wpa_ver=%d\n", e_wpa_ver);
                 switch (e_wpa_ver) {
                 case QAPI_WLAN_AUTH_NONE_E:
-                    wlan_clear_privacy();
+                    wlan_clear_privacy(device_ID);
                     break;
                 case QAPI_WLAN_AUTH_WEP_E:
-                    _wlan_set_wep();
+                    _wlan_set_wep(device_ID);
                     break;
                 case QAPI_WLAN_AUTH_WPA_PSK_E:
                     p_cmd->dot11AuthMode = OPEN_AUTH;
@@ -270,15 +273,14 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
                 ret = QAPI_WLAN_ERR_EINVAL;
                 break;
             }
-            WMI_CONNECT_CMD *p_cmd = &p_cxt->connect_cmd;
             qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
             info_printf("set e_cipher=%d\n", e_cipher);
             switch (e_cipher) {
             case QAPI_WLAN_CRYPT_NONE_E:
-                wlan_clear_privacy();
+                wlan_clear_privacy(device_ID);
                 break;
             case QAPI_WLAN_CRYPT_WEP_CRYPT_E:
-                _wlan_set_wep();
+                _wlan_set_wep(device_ID);
                 break;
             case QAPI_WLAN_CRYPT_TKIP_CRYPT_E:
                 p_cmd->pairwiseCryptoType = TKIP_CRYPT;
@@ -321,12 +323,15 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t __attribute__((__unused__)) device_ID,
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_Get_Param(uint8_t __attribute__((__unused__)) device_ID, uint16_t group_ID, uint16_t param_ID,
+qapi_Status_t qapi_WLAN_Get_Param(uint8_t device_ID, uint16_t group_ID, uint16_t param_ID,
                                   void *data, uint32_t *length)
 
 {
     qapi_Status_t ret = QAPI_OK;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    uint8_t opmode = vdev->opmode;
+    WMI_CONNECT_CMD *p_connect_cmd = &vdev->connect_cmd;
 
     if (gp_wlan_qapi_cxt->wlanEnabled == false) {
         warn_printf("wlan is not enabled\n");
@@ -345,7 +350,7 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t __attribute__((__unused__)) device_ID,
             if (*length < sizeof(qapi_WLAN_DEV_Mode_e)) {
                 return QAPI_WLAN_ERR_EINVAL;
             }
-            if (p_cxt->opmode == DEV_MODE_AP_E)
+            if (opmode == DEV_MODE_AP_E)
                 *mode = DEV_MODE_AP_E;
             else
                 *mode = DEV_MODE_STATION_E;
@@ -492,8 +497,8 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t __attribute__((__unused__)) device_ID,
     case __QAPI_WLAN_PARAM_GROUP_WIRELESS_SECURITY: {
         switch (param_ID) {
         case __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE: {
-            uint8_t authMode = p_cxt->connect_cmd.authMode;
-            uint8_t pairwiseCryptoType = p_cxt->connect_cmd.pairwiseCryptoType;
+            uint8_t authMode = p_connect_cmd->authMode;
+            uint8_t pairwiseCryptoType = p_connect_cmd->pairwiseCryptoType;
             qapi_WLAN_Auth_Mode_e *p_e_wpa_ver = (qapi_WLAN_Auth_Mode_e *)data;
             if (*length < sizeof(qapi_WLAN_Auth_Mode_e)) {
                 return QAPI_WLAN_ERR_EINVAL;

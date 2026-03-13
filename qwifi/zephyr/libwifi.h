@@ -63,6 +63,7 @@ uint8_t get_ap_dev_numConn(void *dev_p);
 uint32_t get_ap_dev_ic_flags(void *dev_p);
 uint32_t get_ap_dev_ic_flags2(void *dev_p);
 uint8_t *get_dev_ic_myaddr(void);
+uint8_t *get_dev_ic_myaddr_by_devid (uint8_t dev_id);
 uint8_t get_currently_enabled_powersave_ext(void);
 uint8_t get_dev_phymode(void);
 uint16_t wlan_get_listen_interval_ext(uint16_t beaconInterval);

@@ -111,7 +111,7 @@ qapi_Status_t qapi_WLAN_Start_Scan(uint8_t device_ID, const qapi_WLAN_Start_Scan
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_Get_Scan_Results(uint8_t __attribute__((__unused__)) device_ID,
+qapi_Status_t qapi_WLAN_Get_Scan_Results(uint8_t device_ID,
                                          qapi_WLAN_Scan_Comp_Evt_t *scan_Res, int16_t *num_Bss)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
@@ -127,40 +127,46 @@ qapi_Status_t qapi_WLAN_Get_Scan_Results(uint8_t __attribute__((__unused__)) dev
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_Disconnect(uint8_t __attribute__((__unused__)) device_ID)
+qapi_Status_t qapi_WLAN_Disconnect(uint8_t device_ID)
 {
     qapi_Status_t ret = QAPI_OK;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    qbool_t connected = vdev->connected;
+    qbool_t connect_in_progress = vdev->connect_in_progress;
+    WMI_CONNECT_CMD *pcmd = &vdev->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *passphrase_cmd = &vdev->passphrase_cmd;
 
     WLAN_QAPI_LOCK();
-    if (p_cxt->connected == true || p_cxt->connect_in_progress || p_cxt->wlan_roaming_started) {
-        ret = wmi_disconnect();
+    if (connected == true || connect_in_progress || p_cxt->wlan_roaming_started) {
+        ret = wmi_disconnect(device_ID);
     }
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-    memset(&p_cxt->connect_cmd, 0, sizeof(WMI_CONNECT_CMD));
-    memset(&p_cxt->passphrase_cmd, 0, sizeof(WMI_SET_PASSPHRASE_CMD));
-    wlan_clear_privacy();
-    wlan_preset_specific_param();
+    memset(pcmd, 0, sizeof(WMI_CONNECT_CMD));
+    memset(passphrase_cmd, 0, sizeof(WMI_SET_PASSPHRASE_CMD));
+    wlan_clear_privacy(device_ID);
+    wlan_preset_specific_param(device_ID);
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
     WLAN_QAPI_UNLOCK();
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t __attribute__((__unused__)) device_ID, const uint8_t *mac_addr, uint32_t len)
+qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len)
 {
     WLAN_QAPI_LOCK();
-    qapi_Status_t ret = wmi_ap_disconnect_station(mac_addr, len);
+    qapi_Status_t ret = wmi_ap_disconnect_station(device_ID, mac_addr, len);
     WLAN_QAPI_UNLOCK();
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_Commit(uint8_t __attribute__((__unused__)) device_ID)
+qapi_Status_t qapi_WLAN_Commit(uint8_t device_ID)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    uint8_t authMode = p_cxt->connect_cmd.authMode;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    uint8_t authMode = vdev->connect_cmd.authMode;
 
     WLAN_QAPI_LOCK();
     if ((authMode == WMI_WPA_PSK_AUTH)
@@ -169,38 +175,17 @@ qapi_Status_t qapi_WLAN_Commit(uint8_t __attribute__((__unused__)) device_ID)
 		   || (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))
 		   || (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH
 				   | WMI_WPA_PSK_AUTH))) {
-        wmi_set_passphrase();
+        wmi_set_passphrase(device_ID);
     }
-    ret = wmi_connect();
+    ret = wmi_connect(device_ID);
     WLAN_QAPI_UNLOCK();
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_Set_11d(uint32_t __attribute__((__unused__)) enable)
+qapi_Status_t qapi_WLAN_Get_Regulatory_Info(qapi_WLAN_Reg_Evt_t *reg) 
 {
-    WLAN_QAPI_LOCK();
-    PRINT_ERR_NOT_SUPPORTED;
-    WLAN_QAPI_UNLOCK();
-    return QAPI_WLAN_ERROR;
+    return wlan_sta_get_reg_info(reg);
 }
-
-qapi_Status_t qapi_WLAN_Get_11d(uint32_t __attribute__((__unused__)) * result)
-{
-    WLAN_QAPI_LOCK();
-    PRINT_ERR_NOT_SUPPORTED;
-    WLAN_QAPI_UNLOCK();
-    return QAPI_WLAN_ERROR;
-}
-
-qapi_Status_t qapi_WLAN_Get_Country_Code(char __attribute__((__unused__)) * country_code)
-{
-    WLAN_QAPI_LOCK();
-    PRINT_ERR_NOT_SUPPORTED;
-    WLAN_QAPI_UNLOCK();
-    return QAPI_WLAN_ERROR;
-}
-
-qapi_Status_t qapi_WLAN_Get_Regulatory_Info(qapi_WLAN_Reg_Evt_t *reg) { return wlan_sta_get_reg_info(reg); }
 
 qapi_Status_t qapi_WLAN_Get_Activity_Status(qapi_wlan_activity_status *wifi_status)
 {
@@ -266,7 +251,7 @@ qapi_Status_t qapi_WLAN_Get_Rate(qapi_WLAN_Set_Rate_Params_t *prate_para)
     return ret;
 }
 
-qapi_Status_t qapi_WLAN_Raw_Send(qapi_WLAN_Raw_Send_Params_t *raw_Params)
+qapi_Status_t qapi_WLAN_Raw_Send(uint8_t device_ID, qapi_WLAN_Raw_Send_Params_t *raw_Params)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -294,7 +279,9 @@ qapi_Status_t qapi_WLAN_Raw_Send(qapi_WLAN_Raw_Send_Params_t *raw_Params)
     channel[0] = raw_Params->channel;
     channel[1] = 0;
 
-    if (p_cxt->connected != true) {
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    if (vdev->connected != true)
+    {
         if (raw_Params->channel != 0) {
             ret = qapi_WLAN_Set_Param(raw_frame.deviceId, __QAPI_WLAN_PARAM_GROUP_WIRELESS,
                                       __QAPI_WLAN_PARAM_GROUP_WIRELESS_CHANNEL, (void *)&channel, sizeof(channel),
@@ -392,15 +379,18 @@ qapi_Status_t qapi_WLAN_Stop_Wps(uint8_t device_ID, uint8_t wps_stage)
     qapi_Status_t ret = QAPI_OK;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     p_cxt->wps_stage = wps_stage;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
+    WMI_CONNECT_CMD *pcmd = &vdev->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *passphrase_cmd = &vdev->passphrase_cmd;
 
     if (p_cxt->wps_stage == WPS_CONNECTED && p_cxt->wps_in_progress) {
         WLAN_QAPI_LOCK();
-        ret = wmi_disconnect();
+        ret = wmi_disconnect(device_ID);
         qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-        memset(&p_cxt->connect_cmd, 0, sizeof(WMI_CONNECT_CMD));
-        memset(&p_cxt->passphrase_cmd, 0, sizeof(WMI_SET_PASSPHRASE_CMD));
-        wlan_clear_privacy();
-        wlan_preset_specific_param();
+        memset(pcmd, 0, sizeof(WMI_CONNECT_CMD));
+        memset(passphrase_cmd, 0, sizeof(WMI_SET_PASSPHRASE_CMD));
+        wlan_clear_privacy(device_ID);
+        wlan_preset_specific_param(device_ID);
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
         WLAN_QAPI_UNLOCK();
     } else if (p_cxt->wps_stage == WPS_SCAN && p_cxt->wps_in_progress) {
