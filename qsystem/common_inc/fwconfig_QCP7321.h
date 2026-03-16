@@ -34,6 +34,8 @@
 #define FEATURE_AP_ECSA
 /* flag to enable MCC switch to SCC in AP+STA */
 #define MCC_SWITCH_TO_SCC
+/* flag to enable dual vdev */
+#define FEATURE_DUAL_VDEV
 
 
 #define ENABLE_TWT_EVENT_LOGGING

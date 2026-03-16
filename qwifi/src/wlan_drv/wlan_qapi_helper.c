@@ -24,15 +24,12 @@
 #define SCAN_LIST_NUM_CHANNELS 11
 #endif /* CONFIG_6GHZ */
 
-#define QCOM_DEV_STA_ID 1
-#define QCOM_DEV_AP_ID  0
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
-void wlan_clear_privacy(void)
+void wlan_clear_privacy(uint8_t vdev_id)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_SET_PASSPHRASE_CMD *p_passphrase_cmd = &p_cxt->passphrase_cmd;
-    WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *p_passphrase_cmd = &WLAN_VDEV_CXT(vdev_id)->passphrase_cmd;
+    WMI_CONNECT_CMD *p_connect_cmd = &WLAN_VDEV_CXT(vdev_id)->connect_cmd;
 
     p_connect_cmd->dot11AuthMode = OPEN_AUTH;
     p_connect_cmd->authMode = WMI_NONE_AUTH;
@@ -46,11 +43,10 @@ void wlan_clear_privacy(void)
 }
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
-void wlan_set_connect_ssid(const unsigned char *ssid, uint8_t ssidLength)
+void wlan_set_connect_ssid(uint8_t vdev_id, const unsigned char *ssid, uint8_t ssidLength)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_SET_PASSPHRASE_CMD *p_passphrase_cmd = &p_cxt->passphrase_cmd;
-    WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *p_passphrase_cmd = &WLAN_VDEV_CXT(vdev_id)->passphrase_cmd;
+    WMI_CONNECT_CMD *p_connect_cmd = &WLAN_VDEV_CXT(vdev_id)->connect_cmd;
 
     if (!ssid || !ssidLength) {
         info_printf("clear WMI_CONNECT_CMD ssid\n");
@@ -68,10 +64,9 @@ void wlan_set_connect_ssid(const unsigned char *ssid, uint8_t ssidLength)
 }
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
-void wlan_set_connect_bssid(const uint8_t *bssid, uint8_t bssid_length)
+void wlan_set_connect_bssid(uint8_t vdev_id, const uint8_t *bssid, uint8_t bssid_length)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_CONNECT_CMD *p_cmd = &p_cxt->connect_cmd;
+    WMI_CONNECT_CMD *p_cmd = &WLAN_VDEV_CXT(vdev_id)->connect_cmd;
 
     if (!bssid || !bssid_length) {
         info_printf("clear WMI_CONNECT_CMD bssid\n");
@@ -84,14 +79,13 @@ void wlan_set_connect_bssid(const uint8_t *bssid, uint8_t bssid_length)
 }
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
-void wlan_set_passphrase(const uint8_t *passphrase, uint8_t passphrase_len)
+void wlan_set_passphrase(uint8_t vdev_id, const uint8_t *passphrase, uint8_t passphrase_len)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_SET_PASSPHRASE_CMD *p_passphrase_cmd = &p_cxt->passphrase_cmd;
-    WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *p_passphrase_cmd = &WLAN_VDEV_CXT(vdev_id)->passphrase_cmd;
+    WMI_CONNECT_CMD *p_connect_cmd = &WLAN_VDEV_CXT(vdev_id)->connect_cmd;
 
     if (!passphrase || !passphrase_len) {
-        wlan_clear_privacy();
+        wlan_clear_privacy(vdev_id);
         info_printf("clear passphrase\n");
     } else if (passphrase_len <= __QAPI_WLAN_PASSPHRASE_LEN) {
         info_printf("set passphrase=%s\n", passphrase);
@@ -127,15 +121,13 @@ void wlan_set_scan_param(WMI_START_SCAN_CMD *p_cmd, const qapi_WLAN_Start_Scan_P
 }
 
 // ToDo: should be set but not hard code
-void wlan_preset_specific_param(void)
+void wlan_preset_specific_param(uint8_t vdev_id)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(vdev_id);
+    WMI_CONNECT_CMD *p_connect_cmd = &vdev->connect_cmd;
+    uint8_t opmode = vdev->opmode;
 
-    if (p_cxt->opmode == DEV_MODE_AP_E)
-        p_connect_cmd->networkType = AP_NETWORK;
-    else
-        p_connect_cmd->networkType = INFRA_NETWORK;
+    p_connect_cmd->networkType = (opmode == DEV_MODE_AP_E) ? AP_NETWORK : INFRA_NETWORK;
     p_connect_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
     for (int i = 0; i < p_connect_cmd->num_channels; i++) {
         p_connect_cmd->channel_list[i] = i;
@@ -304,15 +296,17 @@ int32_t wlan_set_11n_ht(uint8_t __attribute__((__unused__)) device_id, uint8_t h
     return error;
 }
 
-qapi_Status_t wlan_set_op_mode(uint8_t mode)
+qapi_Status_t wlan_set_op_mode(uint8_t vdev_id, uint8_t mode)
 {
     qapi_Status_t status = QAPI_OK;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    WMI_CONNECT_CMD *p_connect_cmd = &p_cxt->connect_cmd;
+    wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(vdev_id);
+    WMI_CONNECT_CMD *p_connect_cmd = &vdev->connect_cmd;
+    uint8_t *p_opmode = &vdev->opmode;
 
-    if (((p_cxt->opmode == DEV_MODE_AP_E) && (mode == DEV_MODE_AP_E)) ||
+    if (((*p_opmode == DEV_MODE_AP_E) && (mode == DEV_MODE_AP_E)) ||
         ((p_cxt->conc_mode == DEV_MODE_AP_STA_E) && (mode == DEV_MODE_AP_STA_E))
-        || ((p_cxt->opmode == DEV_MODE_STATION_E) && (mode == DEV_MODE_STATION_E) && (p_cxt->conc_mode == DEV_MODE_NO_CONC_E))
+        || ((*p_opmode == DEV_MODE_STATION_E) && (mode == DEV_MODE_STATION_E) && (p_cxt->conc_mode == DEV_MODE_NO_CONC_E))
     )
         return status;
 
@@ -321,26 +315,25 @@ qapi_Status_t wlan_set_op_mode(uint8_t mode)
     }
 
     p_connect_cmd->networkType = mode;
-    p_cxt->network_id = (mode == DEV_MODE_AP_E || p_cxt->conc_mode == DEV_MODE_AP_STA_E)? QCOM_DEV_AP_ID : QCOM_DEV_STA_ID;
 
-    status = wmi_set_op_mode();
+    status = wmi_set_op_mode(vdev_id);
     if (status == QAPI_OK) {
         qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
 #ifdef NT_FN_CONCURRENCY
         if (mode == DEV_MODE_AP_STA_E) {
-            p_cxt->network_id = QCOM_DEV_STA_ID;
             p_cxt->conc_mode = DEV_MODE_AP_STA_E;
-            p_cxt->opmode = DEV_MODE_STATION_E;
+            WLAN_AP_CXT->opmode  = DEV_MODE_AP_E;
+            WLAN_STA_CXT->opmode = DEV_MODE_STATION_E;
+            WLAN_AP_CXT->network_id  = QCOM_DEV_AP_ID;
+            WLAN_STA_CXT->network_id = QCOM_DEV_STA_ID;
         } else {
             p_cxt->conc_mode = DEV_MODE_NO_CONC_E;
         }
 #endif
         if (mode == DEV_MODE_AP_E) {
-            p_cxt->opmode = DEV_MODE_AP_E;
-            p_cxt->network_id = QCOM_DEV_AP_ID;
+            *p_opmode = DEV_MODE_AP_E;
         } else if (mode == DEV_MODE_STATION_E) {
-            p_cxt->opmode = DEV_MODE_STATION_E;
-            p_cxt->network_id = QCOM_DEV_STA_ID;
+            *p_opmode = DEV_MODE_STATION_E;
         }
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     }
@@ -352,6 +345,18 @@ qapi_Status_t wlan_get_mac_address(uint8_t __attribute__((__unused__)) device_ID
     memscpy(mac_addr, __QAPI_WLAN_MAC_LEN, get_dev_ic_myaddr(), __QAPI_WLAN_MAC_LEN);
     return QAPI_OK;
 }
+qapi_Status_t wlan_get_mac_address_by_devid(uint8_t dev_id, uint8_t mac_addr[__QAPI_WLAN_MAC_LEN])
+{
+    uint8_t *p_mac = get_dev_ic_myaddr_by_devid(dev_id);
+
+    if (!p_mac) {
+        return QAPI_ERROR;
+    }
+    memscpy(mac_addr, __QAPI_WLAN_MAC_LEN, p_mac, __QAPI_WLAN_MAC_LEN);
+    return QAPI_OK;
+}
+
+
 
 qapi_Status_t wlan_get_power_mode(uint8_t __attribute__((__unused__)) device_ID, uint8_t *powermode)
 {
@@ -973,15 +978,6 @@ qapi_Status_t wlan_set_active_device(uint8_t device_ID, uint8_t active_device_id
     if (active_device_id != QCOM_DEV_STA_ID && active_device_id != QCOM_DEV_AP_ID) {
         log_printf("invalid active_device_id: %d (must be 0 or 1)\n", active_device_id);
         return QAPI_ERR_INVALID_PARAM;
-    }
-
-    if (active_device_id == QCOM_DEV_STA_ID) {
-        p_cxt->network_id = QCOM_DEV_STA_ID;
-        p_cxt->opmode = DEV_MODE_STATION_E;
-    }
-    else {
-        p_cxt->network_id = QCOM_DEV_AP_ID;
-        p_cxt->opmode = DEV_MODE_AP_E;
     }
 
     memset(cmd, 0, sizeof(WMI_SET_PDEV_PARAM_CMD));

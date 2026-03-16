@@ -43,11 +43,11 @@ extern qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_I
                                     const qapi_WLAN_Start_Scan_Params_t *scan_Params);
 extern qapi_Status_t wlan_get_scan_results(uint8_t __attribute__((__unused__)) device_ID,
                                            qapi_WLAN_Scan_Comp_Evt_t *scan_Res, int16_t *num_Bss);
-extern qapi_Status_t wmi_set_passphrase(void);
-extern qapi_Status_t wmi_connect(void);
-extern qapi_Status_t wmi_disconnect(void);
-extern qapi_Status_t wmi_ap_disconnect_station(const uint8_t *mac_addr, uint32_t len);
-extern qapi_Status_t wmi_set_op_mode(void);
+extern qapi_Status_t wmi_set_passphrase(uint8_t vdev_id);
+extern qapi_Status_t wmi_connect(uint8_t vdev_id);
+extern qapi_Status_t wmi_disconnect(uint8_t vdev_id);
+extern qapi_Status_t wmi_ap_disconnect_station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len);
+extern qapi_Status_t wmi_set_op_mode(uint8_t device_ID);
 extern qapi_Status_t wmi_wlan_get_statistics(uint8_t device_ID);
 extern qapi_Status_t wmi_wlan_get_regulatory(void);
 extern qapi_Status_t wmi_set_rate(void);

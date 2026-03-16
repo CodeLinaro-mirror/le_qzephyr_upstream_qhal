@@ -1088,7 +1088,7 @@ Nonzero value -- Disconnection failed.
 @dependencies
 None.
 */
-qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t __attribute__((__unused__)) device_ID, const uint8_t *mac_addr, uint32_t len);
+qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len);
 /**
 @ingroup qapi_wlan
 Executes a unit test command for WLAN.
@@ -1163,54 +1163,6 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
 
 /**
 @ingroup qapi_wlan
-Enables or disables 802.11d feature.
-
-If enabled, the country code of the device will be set according to scan results.
-
-@param[in] enable		- 0: Disable 802.11d.
-                        - 1: Enable 802.11d.
-
-@return
-QAPI_OK -- Command send success.\n
-Nonzero value -- Command failed.
-
-@dependencies
-The device works in STA mode, or has not connected with AP.
-*/
-qapi_Status_t qapi_WLAN_Set_11d(uint32_t enable);
-/**
-@ingroup qapi_wlan
-Determines whether 802.11d feature is enabled or not.
-
-@param[out] result		Result retrieved from WLAN firmware.\n
-                        - 0: 802.11d disabled.
-                        - 1: 802.11d enabled.
-
-@return
-QAPI_OK -- Result was retrieved from WLAN firmware. \n
-Nonzero value -- Result retrieval failed.
-
-@dependencies
-None.
-*/
-qapi_Status_t qapi_WLAN_Get_11d(uint32_t *result);
-/**
-@ingroup qapi_wlan
-Gets country code of the device.
-
-@param[out] country_code	Country code retrieved from the WLAN firmware.
-
-@return
-QAPI_OK -- Country code was retrieved from WLAN firmware. \n
-Nonzero value -- Country code retrieval failed.
-
-@dependencies
-None.
-*/
-qapi_Status_t qapi_WLAN_Get_Country_Code(char *country_code);
-
-/**
-@ingroup qapi_wlan
 Gets regulatory infrmationo of the device.
 
 @param[out] reg        regulatory information retrieved from the WLAN firmware.
@@ -1267,7 +1219,7 @@ Nonzero value -- Send frame failed.
 @dependencies
 None.
 */
-qapi_Status_t qapi_WLAN_Raw_Send(qapi_WLAN_Raw_Send_Params_t *raw_para);
+qapi_Status_t qapi_WLAN_Raw_Send(uint8_t device_ID, qapi_WLAN_Raw_Send_Params_t *raw_para);
 
 /**
 @brief  API to be used to enable wlan management frame filter

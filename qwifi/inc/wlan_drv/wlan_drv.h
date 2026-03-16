@@ -19,6 +19,10 @@
 #define QAPI_EVENT_LARGE_PAYLOAD_BUF_NUM 3
 #define QAPI_EVENT_SMALL_PAYLOAD_LENGTH_MAX 256
 #define QAPI_EVENT_SMALL_PAYLOAD_BUF_NUM 5
+#define WLAN_MAX_VDEV_NUM 2
+#define QCOM_DEV_STA_ID 1
+#define QCOM_DEV_AP_ID  0
+
 
 #ifndef DEF_AP_COUNTRY_CODE
 #define DEF_AP_COUNTRY_CODE "US "
@@ -34,7 +38,22 @@ typedef struct {
     uint16_t buf_write_pointer;
 } wlan_evt_payload_t;
 
+typedef struct {
+    uint8_t                     vdev_id;
+    qbool_t                     connected;
+    qbool_t                     connect_in_progress;
+    qbool_t                     disconnect_in_progress;
+    WMI_CONNECT_CMD             connect_cmd;
+    WMI_SET_PASSPHRASE_CMD      passphrase_cmd;
+    qapi_WLAN_Join_Comp_Evt_t   connect_result;
+    uint8_t                     network_id;
+    uint8_t                     opmode;
+    uint32_t                    roaming_time_out;
+    struct k_work_delayable     roaming_work;
+} wlan_vdev_cxt_t;
+
 typedef struct wlan_qapi_cxt_s {
+    wlan_vdev_cxt_t        vdev_cxt[WLAN_MAX_VDEV_NUM];
     qbool_t wlanEnabled;
     qapi_WLAN_Callback_t qapi_event_handler;
     void *event_application_Context;
@@ -65,19 +84,14 @@ typedef struct wlan_qapi_cxt_s {
     uint32_t wlan_sap_csa_block_mode: 1;
     qapi_Status_t wlan_qapi_error;
     wlan_evt_payload_t event_payload_buf[EVT_PAYLOAD_MAX];
-    WMI_CONNECT_CMD connect_cmd;
     WMI_START_SCAN_CMD scan_cmd;
-    WMI_SET_PASSPHRASE_CMD passphrase_cmd;
 #ifdef CONFIG_WPS
     WMI_WPS_START_CMD wps_process_cmd;
 #endif
     WLAN_WMI_DISCONN_t discon_cmd;
     WMI_SET_PDEV_PARAM_CMD dev_param_cmd;
-    qapi_WLAN_Join_Comp_Evt_t connect_result;
     qapi_WLAN_Reg_Evt_t reg_result;
     uint8_t param_id;
-    qbool_t connect_in_progress;
-    qbool_t disconnect_in_progress;
     qbool_t scan_in_progress;
 #ifdef CONFIG_WPS
     qbool_t stop_scan_in_progress;
@@ -85,15 +99,11 @@ typedef struct wlan_qapi_cxt_s {
     qbool_t wps_stage;
 #endif
     qbool_t wait_scan_comp_evt;
-    qbool_t connected;
     uint8_t *pScanOut; /* callers buffer to hold results. */
     uint16_t pScanOutSize;
     uint16_t scanBssMaxCount;
     uint8_t conc_mode;
-    uint8_t opmode;
     uint8_t rssi;
-    uint8_t network_id;
-    uint32_t roaming_time_out;
     char country_code[3];
     uint8_t frame_queued_flag;
     qapi_WLAN_Set_Rate_Params_t rate_param;
@@ -105,12 +115,15 @@ typedef struct wlan_qapi_cxt_s {
 #ifdef CONFIG_WPS
     WMI_WPS_START_CMD wps_param;
 #endif
-    struct k_work_delayable roaming_work;
     uint32_t suspend_ret;
     WMI_SAP_CSA_CMD sap_csa;
 } wlan_qapi_cxt_t;
 
 extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;
+
+#define WLAN_VDEV_CXT(id)  (&gp_wlan_qapi_cxt->vdev_cxt[(id)])
+#define WLAN_AP_CXT        WLAN_VDEV_CXT(QCOM_DEV_AP_ID)
+#define WLAN_STA_CXT       WLAN_VDEV_CXT(QCOM_DEV_STA_ID)
 
 #define set_wlan_qapi_error(x) (gp_wlan_qapi_cxt->wlan_qapi_error = (x))
 #define get_wlan_qapi_error() (gp_wlan_qapi_cxt->wlan_qapi_error)

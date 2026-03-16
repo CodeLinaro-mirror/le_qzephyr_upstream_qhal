@@ -44,7 +44,10 @@ qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_C
 
 static void roam_handler(struct k_work *item)
 {
+    struct k_work_delayable *dwork = k_work_delayable_from_work(item);
+    wlan_vdev_cxt_t *vdev_cxt = CONTAINER_OF(dwork, wlan_vdev_cxt_t, roaming_work);
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
     static uint8_t cnt_for_current_time_period = 1;
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
@@ -52,60 +55,62 @@ static void roam_handler(struct k_work *item)
     if (cnt_for_current_time_period >= WLAN_ROAMING_CNT_FOR_NXT_TIMER_PERIOD) {
         cnt_for_current_time_period = 0;
 
-        if (p_cxt->roaming_time_out < WLAN_ROAMING_TIMER_PERIOD_NICREASE2) {
-            p_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE1;
-        } else if (p_cxt->roaming_time_out < WLAN_ROAMING_TIMER_PERIOD_NICREASE3) {
-            p_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE2;
+        if (vdev_cxt->roaming_time_out < WLAN_ROAMING_TIMER_PERIOD_NICREASE2) {
+            vdev_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE1;
+        } else if (vdev_cxt->roaming_time_out < WLAN_ROAMING_TIMER_PERIOD_NICREASE3) {
+            vdev_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE2;
         } else {
-            p_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE3;
+            vdev_cxt->roaming_time_out += WLAN_ROAMING_TIMER_PERIOD_NICREASE3;
         }
     }
 
     cnt_for_current_time_period += 1;
 
-    if (p_cxt->roaming_time_out <= WLAN_ROAMING_TIMER_PERIOD_MAX) {
-        uint8_t authMode = p_cxt->connect_cmd.authMode;
+    if (vdev_cxt->roaming_time_out <= WLAN_ROAMING_TIMER_PERIOD_MAX) {
+        uint8_t authMode = vdev_cxt->connect_cmd.authMode;
         if ((authMode == WMI_WPA_PSK_AUTH)
-		|| (authMode == WMI_WPA2_PSK_AUTH)
-		|| (authMode == WMI_WPA3_SHA256_AUTH)
-		|| (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))
-		|| (authMode == (WMI_WPA_PSK_AUTH | WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))) {
-            wmi_set_passphrase();
+            || (authMode == WMI_WPA2_PSK_AUTH)
+            || (authMode == WMI_WPA3_SHA256_AUTH)
+            || (authMode == (WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))
+            || (authMode == (WMI_WPA_PSK_AUTH | WMI_WPA2_PSK_AUTH | WMI_WPA3_SHA256_AUTH))) {
+            wmi_set_passphrase(vdev_cxt->vdev_id);
         }
-        wmi_connect();
-        k_work_reschedule(&p_cxt->roaming_work, K_MSEC(p_cxt->roaming_time_out));
+        wmi_connect(vdev_cxt->vdev_id);
+        k_work_reschedule(&vdev_cxt->roaming_work, K_MSEC(vdev_cxt->roaming_time_out));
     } else {
         p_cxt->wlan_roaming_started = 0;
     }
 
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
-
-    return;
 }
 
 qapi_Status_t wlan_drv_roaming_start(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    if (!p_cxt)
+        return QAPI_ERROR;
+    wlan_vdev_cxt_t *vdev_cxt = WLAN_STA_CXT;
 
     if ((p_cxt) && (p_cxt->wlan_roaming_started == 0) &&
-        (p_cxt->connect_cmd.ssidLength != 0)) {
-         p_cxt->wlan_roaming_started = 1;
-        p_cxt->roaming_time_out = WLAN_ROAMING_TIMER_PERIOD_DEFAULT;
-        k_work_reschedule(&p_cxt->roaming_work, K_MSEC(p_cxt->roaming_time_out));
+        (vdev_cxt->connect_cmd.ssidLength != 0)) {
+        p_cxt->wlan_roaming_started = 1;
+        vdev_cxt->roaming_time_out = WLAN_ROAMING_TIMER_PERIOD_DEFAULT;
+        k_work_reschedule(&vdev_cxt->roaming_work, K_MSEC(vdev_cxt->roaming_time_out));
     }
-
     return QAPI_OK;
 }
 
 qapi_Status_t wlan_drv_roaming_stop(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    if (!p_cxt)
+        return QAPI_ERROR;
+    wlan_vdev_cxt_t *vdev_cxt = WLAN_STA_CXT;
 
     if ((p_cxt) && (p_cxt->wlan_roaming_started)) {
         p_cxt->wlan_roaming_started = 0;
-        k_work_cancel_delayable(&p_cxt->roaming_work);
+        k_work_cancel_delayable(&vdev_cxt->roaming_work);
     }
-
     return QAPI_OK;
 }
 
@@ -123,7 +128,7 @@ int wlan_qapi_init(void)
     }
     qurt_signal_create(&p_cxt->wlan_cmd_done);
     qurt_mutex_create(&p_cxt->wlan_qapi_block_mutex);
-    p_cxt->network_id = __QAPI_NETWORK_ID_UNSPECIFIED;
+
     p_cxt->wlan_enable_block_mode = true;
 
     p_cxt->wlan_scan_start_block_mode = true;
@@ -159,16 +164,28 @@ int wlan_qapi_init(void)
     p_cxt->pScanOutSize =
         sizeof(qapi_WLAN_Scan_Comp_Evt_t) + sizeof(qapi_WLAN_BSS_Scan_Info_t) * p_cxt->scanBssMaxCount;
     p_cxt->pScanOut = malloc(p_cxt->pScanOutSize);
-    p_cxt->opmode = DEV_MODE_AP_E;
     p_cxt->conc_mode = DEV_MODE_NO_CONC_E;
-    wlan_clear_privacy();
-    wlan_preset_specific_param();
-
     p_cxt->wlan_roaming_started = 0;
-    k_work_init_delayable(&p_cxt->roaming_work, roam_handler);
 
     memscpy(p_cxt->country_code, 3, DEF_AP_COUNTRY_CODE, 3);
     p_cxt->mgmt_filter.recv_queue = nt_qurt_pipe_create(100, sizeof(WMI_MGMT_FRAME_RECV_MSG));
+
+    for (int i = 0; i < WLAN_MAX_VDEV_NUM; i++) {
+        wlan_vdev_cxt_t *vdev_ctx = WLAN_VDEV_CXT(i);
+        memset(vdev_ctx, 0, sizeof(wlan_vdev_cxt_t));
+        vdev_ctx->vdev_id = i;
+        vdev_ctx->connected = false;
+        vdev_ctx->connect_in_progress = false;
+        vdev_ctx->disconnect_in_progress = false;
+        wlan_clear_privacy(i);
+        wlan_preset_specific_param(i);
+    }
+    k_work_init_delayable(&WLAN_STA_CXT->roaming_work, roam_handler);
+    WLAN_AP_CXT->opmode  = 0; //use an invalid value;
+    WLAN_STA_CXT->opmode = 0; //use an invalid value;
+    WLAN_AP_CXT->network_id  = QCOM_DEV_AP_ID;
+    WLAN_STA_CXT->network_id = QCOM_DEV_STA_ID;
+
     return (int)QAPI_OK;
 }
 
@@ -178,7 +195,8 @@ void wlan_qapi_exit(void)
 
     if (p_cxt->wlan_roaming_started) {
         p_cxt->wlan_roaming_started = 0;
-        k_work_cancel_delayable(&p_cxt->roaming_work);
+
+        k_work_cancel_delayable(&WLAN_STA_CXT->roaming_work);
     }
 
     PRINT_LOG_FUNC_LINE;
