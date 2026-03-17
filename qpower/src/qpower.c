@@ -114,6 +114,9 @@ qapi_Status_t qapi_pmu_init(void)
     libpower_ifc.set_sleep_exit_reason = set_sleep_exit_reason; 
     libpower_ifc.qtmr_init = qtmr_init; 
     libpower_ifc.nt_hal_complete_rri_restore_op = nt_hal_complete_rri_restore_op; 
+#ifdef NT_SOCPM_SW_MTUSR
+    libpower_ifc.nt_socpm_mtusr_restore_mtu_time = nt_socpm_mtusr_restore_mtu_time; 
+#endif
     reg_libpower_ifc(&libpower_ifc);
 #endif
 
