@@ -15,6 +15,7 @@ typedef nt_status_t (*slp_clk_cal_enable_cb)(slp_clk_cal_mode_t mode);
 typedef void (*set_sleep_exit_reason_cb)(void *reason);
 typedef void (*qtmr_init_cb)(void);
 typedef void (*nt_hal_complete_rri_restore_op_cb)(void);
+typedef void (*nt_socpm_mtusr_restore_mtu_time_cb)(void);
 typedef struct libpower_ifc {
     wifi_pre_sleep_ulpsmps2_cb ulpsmps2;
     pmu_ts_init_cb  ts_init;
@@ -23,6 +24,7 @@ typedef struct libpower_ifc {
     set_sleep_exit_reason_cb set_sleep_exit_reason;
     qtmr_init_cb qtmr_init;
     nt_hal_complete_rri_restore_op_cb nt_hal_complete_rri_restore_op;
+    nt_socpm_mtusr_restore_mtu_time_cb nt_socpm_mtusr_restore_mtu_time;
 } libpower_ifc_t;
 
 #define LIBPOWER_IFC_CALL(func, ...) \
