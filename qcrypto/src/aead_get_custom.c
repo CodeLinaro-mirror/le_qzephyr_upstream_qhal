@@ -38,8 +38,8 @@ psa_status_t secure_storage_its_transform_aead_get_key(
 		return PSA_ERROR_HARDWARE_FAILURE;
 	}
 
-	/* set key to all zero to enable KDF key in CCM encryption */
-	memset(key, 0, CONFIG_SECURE_STORAGE_ITS_TRANSFORM_AEAD_KEY_SIZE);
+	/* set key to 0xFF to enable KDF key in CCM encryption */
+	memset(key, 0xFF, CONFIG_SECURE_STORAGE_ITS_TRANSFORM_AEAD_KEY_SIZE);
 
 	return ret;
 }
