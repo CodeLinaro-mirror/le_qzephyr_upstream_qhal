@@ -689,6 +689,7 @@ typedef struct // qapi_WLAN_Aggregation_Params_s
 Enumeration that identifies the device concurrency mode.
 */
 typedef enum {
+    DEV_MODE_INVALID_E = 0,    /**< Invalid mode */
     DEV_MODE_STATION_E = 0x01, /**< Station mode */
     DEV_MODE_AP_E = 0x10,      /**< SoftAP mode */
     DEV_MODE_AP_STA_E = 0x11,  /**< AP_STA Concurrency */

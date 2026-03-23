@@ -451,7 +451,7 @@ static void wmi_join_comp_event(void *msg)
                                       sizeof(qapi_WLAN_Join_Comp_Evt_t));
         }
         if (p_cxt->wlan_disconnect_block_mode) {
-            info_printf("wakeup qapi_WLAN_Disconnect about disconnect complete\n");
+            info_printf("wakeup qapi_wlan_disconnect about disconnect complete\n");
             qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             qurt_signal_set(p_cxt->wlan_cmd_done,
                             WLAN_WMI_CMD_SIG_MASK_DISCONNECTED);

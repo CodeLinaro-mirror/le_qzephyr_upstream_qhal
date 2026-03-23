@@ -304,14 +304,29 @@ qapi_Status_t wlan_set_op_mode(uint8_t vdev_id, uint8_t mode)
     WMI_CONNECT_CMD *p_connect_cmd = &vdev->connect_cmd;
     uint8_t *p_opmode = &vdev->opmode;
 
+    if(vdev_id > 1)
+        return QAPI_ERROR;
+
     if (((*p_opmode == DEV_MODE_AP_E) && (mode == DEV_MODE_AP_E)) ||
         ((p_cxt->conc_mode == DEV_MODE_AP_STA_E) && (mode == DEV_MODE_AP_STA_E))
         || ((*p_opmode == DEV_MODE_STATION_E) && (mode == DEV_MODE_STATION_E) && (p_cxt->conc_mode == DEV_MODE_NO_CONC_E))
     )
         return status;
 
-    if (p_cxt->conc_mode == DEV_MODE_NO_CONC_E && mode != DEV_MODE_AP_STA_E) {
-        qapi_WLAN_Disconnect(QCOM_DEV_AP_ID);
+    if (mode != DEV_MODE_AP_STA_E) {
+        if (p_cxt->conc_mode == DEV_MODE_AP_STA_E) {
+            if (mode == DEV_MODE_STATION_E) {
+                qapi_WLAN_Disconnect(QCOM_DEV_AP_ID);
+                WLAN_AP_CXT->opmode = DEV_MODE_INVALID_E;
+            } else if (mode == DEV_MODE_AP_E) {
+                qapi_WLAN_Disconnect(QCOM_DEV_STA_ID);
+                WLAN_STA_CXT->opmode = DEV_MODE_INVALID_E;
+            }
+        } else if (p_cxt->conc_mode == DEV_MODE_NO_CONC_E) {
+            if (WLAN_VDEV_CXT(1 - vdev_id)->opmode != 0) {
+                qapi_WLAN_Disconnect(1 - vdev_id);
+            }
+        }
     }
 
     p_connect_cmd->networkType = mode;
@@ -332,8 +347,10 @@ qapi_Status_t wlan_set_op_mode(uint8_t vdev_id, uint8_t mode)
 #endif
         if (mode == DEV_MODE_AP_E) {
             *p_opmode = DEV_MODE_AP_E;
+            WLAN_STA_CXT->opmode = DEV_MODE_INVALID_E;
         } else if (mode == DEV_MODE_STATION_E) {
             *p_opmode = DEV_MODE_STATION_E;
+            WLAN_AP_CXT->opmode = DEV_MODE_INVALID_E;
         }
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
     }
