@@ -1198,12 +1198,12 @@ qapi_Status_t  wmi_suspend(void)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     qapi_Status_t ret = QAPI_ERROR;
-
+    unsigned int out_signal = 0;
 
     wmi_cmd_send(WMI_WLAN_SUSPEND_CMDID, NULL, 0);
     if (p_cxt->wlan_suspend_block_mode) {
 
-        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SUSPEND, QURT_SIGNAL_ATTR_CLEAR_MASK);
+        out_signal = qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_SUSPEND, QURT_SIGNAL_ATTR_CLEAR_MASK);
 
     } else {
         log_printf("unblock mode, should check WMI cmd done in event cb\n");
@@ -1211,7 +1211,9 @@ qapi_Status_t  wmi_suspend(void)
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     ret = p_cxt->suspend_ret;
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
-
+    if(out_signal == 0){
+        ret = NT_EFAIL;
+    }
     return ret;
 }
 
