@@ -31,4 +31,5 @@ zephyr_compile_definitions(
     MBEDTLS_SHA1_ALT
     MBEDTLS_SHA256_ALT
     MBEDTLS_CCM_C
+    MBEDTLS_ENTROPY_HARDWARE_ALT
 )
