@@ -104,7 +104,9 @@ typedef enum IRQn {
     CMEM_cmn_ccpu_auto_pw,
     CPR_intr,
     SPI_intr,
-    CSS_ahb_pd_err
+    CSS_ahb_pd_err,
+    PMU_ccpu_temp_mon_done_intr = 79, /* device specific interrupt for temperature measurement */
+    PMU_ccpu_vbat_mon_done_intr = 80, /* device specific interrupt for Vbatt measurement */
 } IRQn_Type;
 
 #define __NVIC_PRIO_BITS 2       /*!< Number of Bits used for Priority Levels          */

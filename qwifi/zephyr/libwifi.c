@@ -153,9 +153,3 @@ app_mode_id_t nt_get_app_mode(void) {
 #endif
 }
 
-int32_t pmu_ts_get_current_temperature(void)
-{
-    // room temperature in degree
-    return 25;
-}
-

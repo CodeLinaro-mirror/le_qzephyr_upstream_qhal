@@ -62,12 +62,12 @@ uint32_t hkadc_vbat_raw2mV(uint32_t raw);
 uint32_t hkadc_vbat_raw2mV_trimmed(uint32_t raw);
 uint32_t hkadc_vbat_mV2raw(uint32_t mV);
 
-inline void hkadc_set_auto_monitor_interval(uint32_t xo_clk_cnt)
+static inline void hkadc_set_auto_monitor_interval(uint32_t xo_clk_cnt)
 {
     p_hkadc_reg->PMU_CFG_TEMP_MON_INTERVAL.reg = xo_clk_cnt;
 }
 
-inline uint32_t hkadc_get_auto_monitor_interval(void)
+static inline uint32_t hkadc_get_auto_monitor_interval(void)
 {
     return p_hkadc_reg->PMU_CFG_TEMP_MON_INTERVAL.reg;
 }
