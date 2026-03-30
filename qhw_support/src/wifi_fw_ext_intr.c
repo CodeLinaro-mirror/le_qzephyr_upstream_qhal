@@ -218,6 +218,10 @@ void aon_ext_interrupt_wake_up(void)
     aon_ext_interrupt_wake_up_cnt++;
     aon_ext_interrupt_wake_up_processed = 1;
     early_printk("wakeup\r\n");
+#if defined(CONFIG_SPI_QCC730) && defined(CONFIG_PM_DEVICE)
+    extern void spi_set_ext_wakeup_flag(void);
+    spi_set_ext_wakeup_flag();
+#endif
     // Clear the interrupt
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 1);
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 0);

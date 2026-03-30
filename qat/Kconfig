@@ -1,0 +1,9 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
+
+config QAT
+	bool "QAT (Qualcomm AT Command) Support"
+	depends on CAT && RING_SERVICE
+	help
+	  Enable QAT module for AT command processing over ring using libcat.
+	  This module provides AT command interface for QCC730 communication.
