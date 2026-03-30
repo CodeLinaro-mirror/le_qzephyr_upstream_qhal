@@ -7,3 +7,16 @@ config QAT
 	help
 	  Enable QAT module for AT command processing over ring using libcat.
 	  This module provides AT command interface for QCC730 communication.
+
+config QAT_SERVICE_STACK_SIZE
+	int "QAT service thread stack size"
+	depends on QAT
+	range 1024 16384
+	default 4096 if HTTPC_AT
+	default 2048
+	help
+	  Stack size, in bytes, for the QAT service thread that runs libcat and
+	  all AT command handlers.
+
+	  HTTPC AT commands have a materially larger stack footprint than the
+	  basic command set, so the default is raised when HTTPC_AT is enabled.

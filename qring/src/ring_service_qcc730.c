@@ -24,7 +24,7 @@ __attribute__((section(".ring_ctrl"))) struct ring_control_block g_ring_ctrl_blo
 
 /* Work queue for deferred processing */
 static struct k_work_q ring_work_q;
-static K_THREAD_STACK_DEFINE(ring_work_stack, 2048);
+static K_THREAD_STACK_DEFINE(ring_work_stack, CONFIG_RING_SERVICE_WORKQ_STACK_SIZE);
 
 /* Work item context for each ring */
 struct ring_work_context {
@@ -292,6 +292,7 @@ int ring_service_slave_init(const struct ring_config *configs, uint32_t num_ring
     /* Initialize work queue for deferred processing */
     k_work_queue_init(&ring_work_q);
     k_work_queue_start(&ring_work_q, ring_work_stack, K_THREAD_STACK_SIZEOF(ring_work_stack), K_PRIO_COOP(7), NULL);
+    k_thread_name_set(&ring_work_q.thread, "ring_work_q");
 
     /* Initialize work items for each ring */
     for (uint32_t i = 0; i < num_rings; i++) {
