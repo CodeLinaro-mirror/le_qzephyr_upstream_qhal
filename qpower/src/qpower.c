@@ -66,6 +66,10 @@
 #include "nt_hw.h"
 #include "nt_common.h"
 
+#ifdef CONFIG_WATCHDOG
+extern int qwdt_feed_now_direct(void);
+#endif
+
 #define ARRAY_SIZE_IN_TYPE(type, member) sizeof(((type *)(0))->member)
 
 typedef struct {
@@ -114,6 +118,11 @@ qapi_Status_t qapi_pmu_init(void)
     libpower_ifc.set_sleep_exit_reason = set_sleep_exit_reason; 
     libpower_ifc.qtmr_init = qtmr_init; 
     libpower_ifc.nt_hal_complete_rri_restore_op = nt_hal_complete_rri_restore_op; 
+#ifdef CONFIG_WATCHDOG
+    libpower_ifc.watchdog_feed = qwdt_feed_now_direct;
+#else
+    libpower_ifc.watchdog_feed = NULL;
+#endif
 #ifdef NT_SOCPM_SW_MTUSR
     libpower_ifc.nt_socpm_mtusr_restore_mtu_time = nt_socpm_mtusr_restore_mtu_time; 
 #endif
