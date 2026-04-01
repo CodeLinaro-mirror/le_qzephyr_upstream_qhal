@@ -91,6 +91,11 @@ int qat_get_cmd_groups(struct cat_command_group ***groups, uint8_t *count)
 /* libcat object */
 static struct cat_object qat_cat;
 
+struct cat_object *qat_get_cat_object(void)
+{
+    return &qat_cat;
+}
+
 /**
  * Output data to the AT command interface
  * This function writes data directly to the ring service
@@ -102,14 +107,27 @@ static struct cat_object qat_cat;
 int QAT_Output(uint32_t Length, const char *Buffer)
 {
     int ret;
+    int retries = 1500; /* up to 1500 × 20 ms = 30 s total wait */
 
     if (Buffer == NULL || Length == 0) {
         return -EINVAL;
     }
 
-    ret = ring_send(QAT_RING_ID, (const uint8_t *)Buffer, Length, K_MSEC(100));
+    do {
+        ret = ring_send(QAT_RING_ID, (const uint8_t *)Buffer, Length, K_MSEC(100));
+        if (ret == 0) {
+            break;
+        }
+        if (ret != -EAGAIN) {
+            LOG_ERR("Failed to send %u bytes via ring: %d", Length, ret);
+            return -EIO;
+        }
+        /* Ring full — give the host time to drain one SPI transfer */
+        k_sleep(K_MSEC(20));
+    } while (--retries > 0);
+
     if (ret < 0) {
-        LOG_ERR("Failed to send %u bytes via ring: %d", Length, ret);
+        LOG_ERR("Failed to send %u bytes via ring after retries: %d", Length, ret);
         return -EIO;
     }
 
