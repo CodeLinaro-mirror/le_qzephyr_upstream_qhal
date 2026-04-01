@@ -386,12 +386,16 @@ uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
 #endif /* SUPPORT_HIGH_RES_TIMER */
 #else
     uint64_t current_ticks;
-    uint32_t count_lo, count_hi;
+    uint32_t count_lo, count_hi, count_hi2;
     uint64_t cntr_freq_hz = 38400000u;
     uint64_t curr_time_us;
 
-    count_hi = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
-    count_lo = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+    do {
+        count_hi  = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+        count_lo  = HWIO_QTMR_V1_QTMR_V1_CNTPCT_LO_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+        count_hi2 = HWIO_QTMR_V1_QTMR_V1_CNTPCT_HI_IN(SEQ_WCSS_QTMR_V1_T4_OFFSET);
+    } while (count_hi != count_hi2);
+
     current_ticks = (((uint64_t)count_hi << 32) | count_lo);
     curr_time_us = (current_ticks * 1000000) / cntr_freq_hz;
     return curr_time_us;
