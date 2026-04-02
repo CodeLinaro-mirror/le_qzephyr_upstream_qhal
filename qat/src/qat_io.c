@@ -223,15 +223,30 @@ static int qat_read_char(char *ch)
 static int qat_flush_tx_buffer(void)
 {
     int ret;
+    int retries = 1500; /* up to 1500 × 20 ms = 30 s total wait */
 
     if (tx_count == 0) {
         return 0;
     }
 
-    ret = ring_send(QAT_RING_ID, tx_buffer, tx_count, K_MSEC(QAT_RING_SEND_TIMEOUT));
+    do {
+        ret = ring_send(QAT_RING_ID, tx_buffer, tx_count, K_MSEC(QAT_RING_SEND_TIMEOUT));
+        if (ret == 0) {
+            break;
+        }
+        if (ret != -EAGAIN) {
+            LOG_ERR("Failed to send %zu bytes: %d", tx_count, ret);
+            tx_count = 0;
+            return ret;
+        }
+        /* Ring full — nudge the host to drain, then wait */
+        ring_notify_host(QAT_RING_ID);
+        k_sleep(K_MSEC(20));
+    } while (--retries > 0);
+
     if (ret < 0) {
-        LOG_ERR("Failed to send %zu bytes: %d", tx_count, ret);
-        tx_count = 0; /* Reset buffer even on error */
+        LOG_ERR("Failed to send %zu bytes after retries: %d", tx_count, ret);
+        tx_count = 0;
         return ret;
     }
 

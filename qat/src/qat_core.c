@@ -122,7 +122,8 @@ int QAT_Output(uint32_t Length, const char *Buffer)
             LOG_ERR("Failed to send %u bytes via ring: %d", Length, ret);
             return -EIO;
         }
-        /* Ring full — give the host time to drain one SPI transfer */
+        /* Ring full — nudge the host to drain, then wait for a descriptor to free */
+        ring_notify_host(QAT_RING_ID);
         k_sleep(K_MSEC(20));
     } while (--retries > 0);
 

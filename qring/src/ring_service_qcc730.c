@@ -471,6 +471,20 @@ int ring_get_rx_available(uint8_t ring_id)
 }
 
 /**
+ * @brief Pulse the host interrupt GPIO without writing a descriptor.
+ *
+ * Use this when the TX ring is full and the DUT needs to wake the host so it
+ * drains pending descriptors (advances rx_rd_idx), freeing space for the next
+ * ring_send() attempt.
+ */
+void ring_notify_host(uint8_t ring_id)
+{
+    ARG_UNUSED(ring_id);
+    gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 0);
+    gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 1);
+}
+
+/**
  * @brief Send data through ring buffer (Slave→Host)
  *
  * For Slave, sending means writing to RX ring (from Host's perspective)
@@ -561,15 +575,7 @@ int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t time
         pm_device_busy_set(spi_dev);
 #endif
     /* Trigger Host GPIO interrupt with a pulse */
-    ret = gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 0);
-    if (ret < 0) {
-        LOG_ERR("Failed to set GPIO low: %d", ret);
-    }
-
-    ret = gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 1);
-    if (ret < 0) {
-        LOG_ERR("Failed to set GPIO high: %d", ret);
-    }
+    ring_notify_host(ring_id);
 
     return 0;
 }
