@@ -81,6 +81,16 @@ void qurt_pipe_delete(qurt_pipe_t pipe)
     k_free(msg_q);
 }
 
+int qurt_pipe_num_free_get(qurt_pipe_t pipe)
+{
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+    if (!msg_q) {
+        return 0;
+    }
+
+    return k_msgq_num_free_get(msg_q);
+}
+
 int qurt_pipe_send_timed(qurt_pipe_t pipe, void *data, qurt_time_t q_timeout)
 {
     int ret;
@@ -116,7 +126,7 @@ int qurt_pipe_try_send(qurt_pipe_t pipe, void *data, BaseType_t *timeout)
 
     ret = k_msgq_put(msg_q, (const void *)data, K_NO_WAIT);
     if (ret) {
-        return QURT_EFAILED;
+        return QURT_EFAILED_TIMEOUT;
     }
 
     return ret;

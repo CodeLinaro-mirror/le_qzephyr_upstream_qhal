@@ -1212,9 +1212,12 @@ eRet_t ndxe_irq_handler()
         // Channel 5
         if (regVal & QWLAN_DXE_0_INT_SRC_RAW_CH5_INT_MASK) {
             rWrite(QWLAN_DXE_0_INT_CLR_REG, QWLAN_DXE_0_INT_CLR_CH5_INT_CLR_MASK);
-            pDxeCCB = (volatile DxeCCB_t *)&(halDxe->DxeCCB[DXE_CHANNEL_5]);
-            if (pDxeCCB->cbfn) {
-                (pDxeCCB->cbfn)(pDxeCCB->arg);
+            uint32_t regval_mask = rRead(QWLAN_DXE_0_INT_MSK_REG);
+            if (regval_mask & QWLAN_DXE_0_INT_MSK_CH5_INTEN_MASK) {
+                pDxeCCB = (volatile DxeCCB_t *)&(halDxe->DxeCCB[DXE_CHANNEL_5]);
+                if (pDxeCCB->cbfn) {
+                    (pDxeCCB->cbfn)(pDxeCCB->arg);
+                }
             }
         }
 
