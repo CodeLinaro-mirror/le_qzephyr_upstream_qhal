@@ -87,7 +87,7 @@ class GDB_Server(object):
 
             print('Using OpenOCD GDB server')
             print(' '.join(command))
-            self.server_proc = subprocess.Popen(command)
+            self.server_proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             # Wait for the server to be ready
             time.sleep(1)
