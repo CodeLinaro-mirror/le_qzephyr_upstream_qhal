@@ -440,6 +440,11 @@ class NVM_Programmer(GDB_Framework):
 
             self.write_int(self.param_buf + NVM_Programmer.JTAG_PARAM_COMMAND, NVM_Programmer.JTAG_COMMAND_SYSTEM_RESET)
             self.gdb_execute('c')
+            try:
+                self.gdb_execute('c', timeout=3)
+            except:
+                pass
+            print('Reset system.')
 
             self.cleanup()
             return
@@ -525,6 +530,11 @@ class NVM_Programmer(GDB_Framework):
                     if self.config['reset']:
                         self.write_int(self.param_buf + NVM_Programmer.JTAG_PARAM_COMMAND, NVM_Programmer.JTAG_COMMAND_SYSTEM_RESET)
                         self.gdb_execute('c')
+                        try:
+                            self.gdb_execute('c', timeout=3)
+                        except:
+                            pass
+                        print('Reset system.')
 
                 elif self.config['chip_erase']:
                     self.chip_erase()
@@ -532,6 +542,11 @@ class NVM_Programmer(GDB_Framework):
                     if self.config['reset']:
                         self.write_int(self.param_buf + NVM_Programmer.JTAG_PARAM_COMMAND, NVM_Programmer.JTAG_COMMAND_SYSTEM_RESET)
                         self.gdb_execute('c')
+                        try:
+                            self.gdb_execute('c', timeout=3)
+                        except:
+                            pass
+                        print('Reset system.')
 
                 elif self.config['read']:
                     self.read(self.config['file'], self.config['begin_address'], self.config['size'])
@@ -539,6 +554,11 @@ class NVM_Programmer(GDB_Framework):
                     if self.config['reset']:
                         self.write_int(self.param_buf + NVM_Programmer.JTAG_PARAM_COMMAND, NVM_Programmer.JTAG_COMMAND_SYSTEM_RESET)
                         self.gdb_execute('c')
+                        try:
+                            self.gdb_execute('c', timeout=3)
+                        except:
+                            pass
+                        print('Reset system.')
 
                 elif self.config['file']:
                 #    if self.config['partition']:
@@ -549,12 +569,21 @@ class NVM_Programmer(GDB_Framework):
 
                     if self.config['reset']:
                         self.write_int(self.param_buf + NVM_Programmer.JTAG_PARAM_COMMAND, NVM_Programmer.JTAG_COMMAND_SYSTEM_RESET)
-                        self.gdb_execute('c')
+                        self.gdb_execute('c')       # ELF sets System_Reset flag, halts at breakpoint
+                        try:
+                            self.gdb_execute('c', timeout=3)  # ELF executes reset; board resets, GDB blocks, timeout expected
+                        except:
+                            pass  # timeout/disconnect expected after board reset
+                        print('Reset system.')
 
                 elif self.config['reset']:
-                    print('Reset system.')
                     self.write_int(self.param_buf + NVM_Programmer.JTAG_PARAM_COMMAND, NVM_Programmer.JTAG_COMMAND_SYSTEM_RESET)
                     self.gdb_execute('c')
+                    try:
+                        self.gdb_execute('c', timeout=3)
+                    except:
+                        pass
+                    print('Reset system.')
                     
                 #elif self.config['table']:
                 #    self.write_download_table(self.config['table'])
