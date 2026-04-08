@@ -1,6 +1,6 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
- * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 #ifndef SME_MLME_INC_NT_TIMER_H_
 #define SME_MLME_INC_NT_TIMER_H_

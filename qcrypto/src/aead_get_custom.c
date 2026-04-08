@@ -1,6 +1,6 @@
 /**
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
- * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
  
 #if CONFIG_SECURE_STORAGE_ITS_IMPLEMENTATION_ZEPHYR

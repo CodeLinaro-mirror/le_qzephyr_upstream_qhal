@@ -5,7 +5,7 @@
  */
 /*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
- * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 #ifndef MBEDTLS_AES_ALT_H
 #define MBEDTLS_AES_ALT_H

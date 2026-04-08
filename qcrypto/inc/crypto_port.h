@@ -5,8 +5,8 @@
   * \brief   This file contains qualcomm hardware crypto porting support definitons.
   */
 /*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 #ifndef __CRYPTO_PORT__
 #define __CRYPTO_PORT__
