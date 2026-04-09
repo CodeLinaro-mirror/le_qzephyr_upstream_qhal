@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -58,16 +58,6 @@ int qat_register_cmd_group(struct cat_command_group *(*get_cmd_group)(void), con
  * @return 0 on success, negative error code on failure
  */
 int qat_get_cmd_groups(struct cat_command_group ***groups, uint8_t *count);
-
-/**
- * @brief Get the libcat object used by QAT.
- *
- * This is used by command handlers that need to exit libcat hold state
- * asynchronously after online data mode completes.
- *
- * @return Pointer to the global QAT cat object
- */
-struct cat_object *qat_get_cat_object(void);
 
 /**
  * @brief Output data to the AT command interface

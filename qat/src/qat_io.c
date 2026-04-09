@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -239,8 +239,6 @@ static int qat_flush_tx_buffer(void)
             tx_count = 0;
             return ret;
         }
-        /* Ring full — nudge the host to drain, then wait */
-        ring_notify_host(QAT_RING_ID);
         k_sleep(K_MSEC(20));
     } while (--retries > 0);
 

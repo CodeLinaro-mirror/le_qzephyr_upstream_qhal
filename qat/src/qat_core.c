@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -18,8 +18,8 @@ LOG_MODULE_REGISTER(qat_core, LOG_LEVEL_INF);
 #define QAT_WORK_BUF_SIZE QAT_RESPONSE_BUF_SIZE /* libcat working buffer size */
 #define MAX_CMD_GROUPS 8                        /* Maximum number of command groups */
 #define QAT_SERVICE_STACK_SIZE CONFIG_QAT_SERVICE_STACK_SIZE
-#define QAT_SERVICE_PRIORITY 7                  /* Service thread priority */
-#define QAT_SERVICE_POLL_MS 1                   /* Service polling interval in milliseconds */
+#define QAT_SERVICE_PRIORITY 7 /* Service thread priority */
+#define QAT_SERVICE_POLL_MS 1  /* Service polling interval in milliseconds */
 
 /* External functions */
 extern int qat_io_init(void);
@@ -91,11 +91,6 @@ int qat_get_cmd_groups(struct cat_command_group ***groups, uint8_t *count)
 /* libcat object */
 static struct cat_object qat_cat;
 
-struct cat_object *qat_get_cat_object(void)
-{
-    return &qat_cat;
-}
-
 /**
  * Output data to the AT command interface
  * This function writes data directly to the ring service
@@ -122,8 +117,7 @@ int QAT_Output(uint32_t Length, const char *Buffer)
             LOG_ERR("Failed to send %u bytes via ring: %d", Length, ret);
             return -EIO;
         }
-        /* Ring full — nudge the host to drain, then wait for a descriptor to free */
-        ring_notify_host(QAT_RING_ID);
+        /* Ring full — wait for a descriptor to free */
         k_sleep(K_MSEC(20));
     } while (--retries > 0);
 
