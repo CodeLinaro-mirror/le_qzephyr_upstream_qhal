@@ -115,7 +115,8 @@ int QAT_Output(uint32_t Length, const char *Buffer)
 
     LOG_DBG("Sent %u bytes via ring", Length);
 
-    k_usleep(10);
+    if (!k_is_in_isr())
+        k_usleep(10);
 
     return 0;
 }

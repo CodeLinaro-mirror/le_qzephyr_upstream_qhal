@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/pm/device.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ring_service.h"
@@ -552,7 +553,12 @@ int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t time
     g_ring_service.rings[ring_id].stats.tx_count++;
 
     k_mutex_unlock(&g_ring_service.rings[ring_id].tx_lock);
-
+#ifdef CONFIG_SPI
+    /* Prevent BMPS sleep until host reads the data */
+    const struct device *spi_dev = DEVICE_DT_GET(DT_NODELABEL(qcspi));
+    if (device_is_ready(spi_dev))
+        pm_device_busy_set(spi_dev);
+#endif
     /* Trigger Host GPIO interrupt with a pulse */
     ret = gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 0);
     if (ret < 0) {
@@ -734,3 +740,29 @@ int init_qring(void)
 }
 
 SYS_INIT(init_qring, POST_KERNEL, 50);
+
+/**
+ * @brief Check if all TX data has been consumed by host
+ *
+ * Used by SPI driver to determine if pm_device_busy can be cleared.
+ *
+ * @return true if all ring TX data has been read by host, false otherwise
+ */
+bool ring_all_tx_consumed(void)
+{
+    struct ring_control_block *ctrl = &g_ring_ctrl_block;
+
+    if (!g_ring_service.initialized) {
+        return true;
+    }
+
+    for (int i = 0; i < g_ring_service.num_rings; i++) {
+        if (ctrl->ring_status[i] != RING_STATUS_VALID) {
+            continue;
+        }
+        if (ctrl->rx_wr_idx[i] != ctrl->rx_rd_idx[i]) {
+            return false;
+        }
+    }
+    return true;
+}
