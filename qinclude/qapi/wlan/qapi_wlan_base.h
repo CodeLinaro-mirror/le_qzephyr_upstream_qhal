@@ -91,7 +91,8 @@ typedef struct // qapi_WLAN_BSS_Scan_Info_s
     uint16_t caps;                          /**< Capability IE. */
     uint8_t wep_Support;                    /**< Supprt for WEP. */
     uint8_t band;                           /**< Wireless band. */
-    uint8_t reserved[2];                    /**< Reserved. */
+    uint8_t sae_h2e;                        /**< 1: AP supports SAE H2E (Hash-to-Element); 0: HNP only. */
+    uint8_t reserved[1];                    /**< Reserved. */
 } qapi_WLAN_BSS_Scan_Info_t;
 
 typedef struct {

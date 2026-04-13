@@ -223,6 +223,11 @@ static void _wlan_fill_scan_info(qapi_WLAN_BSS_Scan_Info_t *dst, const ap_info *
 
         if (rsn_Auth & WMI_WPA3_SHA256_AUTH)
             dst->rsn_Auth |= __QAPI_WLAN_SECURITY_AUTH_SAE;
+
+        /* Decode the SAE H2E flag encoded by discovery.c into SAE_H2E_FLAG
+         * (bit5 of the RSN cipher byte, unused by actual cipher types). */
+        if (rsn_Cipher & SAE_H2E_FLAG)
+            dst->sae_h2e = 1;
     }
 }
 

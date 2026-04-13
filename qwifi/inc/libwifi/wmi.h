@@ -346,6 +346,10 @@ typedef enum {
     TKIP_CRYPT = 0x04,
     AES_CRYPT = 0x08,
     BIP_CRYPT = 0x10,
+    /* Bit5 of the RSN cipher byte in security_mode is unused by cipher types;
+     * repurpose it to carry the SAE H2E (Hash-to-Element) capability flag
+     * derived from the AP's RSNXE IE during scan. */
+    SAE_H2E_FLAG = 0x20,
 } CRYPTO_TYPE;
 
 typedef enum {
