@@ -251,11 +251,6 @@ static int qat_flush_tx_buffer(void)
     LOG_DBG("TX: sent %zu bytes", tx_count);
     tx_count = 0;
 
-    /* Add small delay to allow host to process data and prevent ring buffer overflow
-     * This is especially important when sending multiple responses quickly (e.g., AT+CMD?)
-     * The delay gives the host time to read from the ring before we send the next packet */
-    k_usleep(50);
-
     return ret;
 }
 static bool tx_has_content = false; /* Track if buffer has actual content*/

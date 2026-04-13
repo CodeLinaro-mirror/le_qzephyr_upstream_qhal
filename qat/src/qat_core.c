@@ -91,6 +91,30 @@ int qat_get_cmd_groups(struct cat_command_group ***groups, uint8_t *count)
 /* libcat object */
 static struct cat_object qat_cat;
 
+/* Forward declaration — defined later in this file */
+extern struct k_sem qat_service_sem;
+
+/**
+ * Exit libcat hold state with OK response.
+ * Called from data-mode callbacks after the data transfer completes.
+ * Also triggers the service timer so cat_service() runs to process the exit.
+ */
+void qat_hold_exit_ok(void)
+{
+    cat_hold_exit(&qat_cat, CAT_STATUS_OK);
+    /* Wake the service thread so it calls cat_service() to process the hold exit */
+    k_sem_give(&qat_service_sem);
+}
+
+/**
+ * Exit libcat hold state with ERROR response.
+ */
+void qat_hold_exit_error(void)
+{
+    cat_hold_exit(&qat_cat, CAT_STATUS_ERROR);
+    k_sem_give(&qat_service_sem);
+}
+
 /**
  * Output data to the AT command interface
  * This function writes data directly to the ring service
@@ -128,8 +152,6 @@ int QAT_Output(uint32_t Length, const char *Buffer)
 
     LOG_DBG("Sent %u bytes via ring", Length);
 
-    if (!k_is_in_isr())
-        k_usleep(10);
 
     return 0;
 }
