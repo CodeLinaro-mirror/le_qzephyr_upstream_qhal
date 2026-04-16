@@ -98,7 +98,6 @@ void nt_dpm_add_dev_to_stack(void *dev)
         hal = &gs_qwifi_hal[1];
     }
 
-    hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_REMOVE, device->mac_address);
     hal->link_change(hal->drv_intf_data, Q_LINKCHANGE_ADD, device->mac_address);
 }
 
