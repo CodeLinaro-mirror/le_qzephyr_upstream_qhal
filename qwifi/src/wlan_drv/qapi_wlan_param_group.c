@@ -371,7 +371,7 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
             if (*length < __QAPI_WLAN_MAC_LEN) {
                 return QAPI_WLAN_ERR_EINVAL;
             }
-            wlan_get_mac_address(device_ID, data);
+            wlan_get_mac_address_by_devid(device_ID, data);
             break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_MAC_ADDRESS */
         }
         case __QAPI_WLAN_PARAM_GROUP_WIRELESS_POWER_MODE_PARAMS: {

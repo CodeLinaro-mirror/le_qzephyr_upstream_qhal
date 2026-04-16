@@ -23,7 +23,7 @@ extern qapi_Status_t wlan_get_mac_address(uint8_t __attribute__((__unused__)) de
                                           uint8_t mac_addr[__QAPI_WLAN_MAC_LEN]);
 extern qapi_Status_t wlan_get_mac_address_by_devid(uint8_t dev_id, uint8_t mac_addr[__QAPI_WLAN_MAC_LEN]);
 
-extern qapi_Status_t wlan_get_power_mode(uint8_t __attribute__((__unused__)) device_ID, uint8_t *powermode);
+extern qapi_Status_t wlan_get_power_mode(uint8_t device_ID, uint8_t *powermode);
 extern qapi_Status_t wlan_get_phy_mode(uint8_t *phymode);
 extern qapi_Status_t wlan_sta_get_rssi(uint8_t device_ID, uint8_t *rssi);
 extern qapi_Status_t wlan_sta_get_reg_info(qapi_WLAN_Reg_Evt_t *regulatory);
