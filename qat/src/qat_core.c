@@ -17,7 +17,7 @@ LOG_MODULE_REGISTER(qat_core, LOG_LEVEL_INF);
 /* Configuration macros */
 #define QAT_WORK_BUF_SIZE QAT_RESPONSE_BUF_SIZE /* libcat working buffer size */
 #define MAX_CMD_GROUPS 8                        /* Maximum number of command groups */
-#define QAT_SERVICE_STACK_SIZE 2048             /* Service thread stack size */
+#define QAT_SERVICE_STACK_SIZE 3072             /* Service thread stack size */
 #define QAT_SERVICE_PRIORITY 7                  /* Service thread priority */
 #define QAT_SERVICE_POLL_MS 1                   /* Service polling interval in milliseconds */
 
