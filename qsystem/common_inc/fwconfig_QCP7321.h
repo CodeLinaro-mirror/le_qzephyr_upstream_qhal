@@ -2,9 +2,8 @@
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 /*========================================================================
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause-Clear*
  * @file fwconfig_QCP7321.h
  * @brief feature flag definitions of NT code base required for Fermion
  * ======================================================================*/
