@@ -376,6 +376,8 @@ def main():
                     # if still running, send the response back to the tool
                     error = 'Error:'
                     tool_socket.send(GDB_Client.format_packet(response, data))
+    except KeyboardInterrupt:
+        pass
     except:
         # print the exception information as otherwise GDB absorbs it.
         print(traceback.format_exc())
