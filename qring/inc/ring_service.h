@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -131,16 +131,6 @@ struct ring_stats {
  * @return 0 on success, negative errno on failure
  */
 int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t timeout);
-
-/**
- * @brief Pulse the host interrupt GPIO without writing a descriptor.
- *
- * Call this when the ring is full and the DUT needs to wake the host to drain
- * pending descriptors, freeing space for the next ring_send() attempt.
- *
- * @param ring_id Ring ID (unused; reserved for future per-ring GPIO support)
- */
-void ring_notify_host(uint8_t ring_id);
 
 /**
  * @brief Receive data from ring buffer
