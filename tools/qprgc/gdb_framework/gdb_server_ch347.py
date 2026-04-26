@@ -71,7 +71,8 @@ class GDB_Server(object):
 
         self.options = [
             '-c','gdb_port {}'.format(str(kwargs['server_port'])),
-            '-f',self.server_script
+            '-f',self.server_script,
+            '-c','proc after_gdb_detach {} { shutdown }'
         ]
 
     def start(self):
@@ -85,8 +86,6 @@ class GDB_Server(object):
         if self.start_server:
             command = [os.path.join(self.server_path, self.executable)] + self.options
 
-            print('Using OpenOCD GDB server')
-            print(' '.join(command))
             self.server_proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             # Wait for the server to be ready
@@ -101,7 +100,7 @@ class GDB_Server(object):
             try:
                 # Wait for the server to close itself (should happen fairly quickly if
                 # the GDB client disconnected)
-                self.server_proc.communicate()
+                self.server_proc.communicate(timeout=5)
             except:
                 # Server didn't close so force it.
                 try:
