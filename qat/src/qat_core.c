@@ -17,7 +17,7 @@ LOG_MODULE_REGISTER(qat_core, LOG_LEVEL_INF);
 /* Configuration macros */
 #define QAT_WORK_BUF_SIZE QAT_RESPONSE_BUF_SIZE /* libcat working buffer size */
 #define MAX_CMD_GROUPS 8                        /* Maximum number of command groups */
-#define QAT_SERVICE_STACK_SIZE 3072             /* Service thread stack size */
+#define QAT_SERVICE_STACK_SIZE CONFIG_QAT_SERVICE_STACK_SIZE
 #define QAT_SERVICE_PRIORITY 7                  /* Service thread priority */
 #define QAT_SERVICE_POLL_MS 1                   /* Service polling interval in milliseconds */
 
@@ -236,6 +236,7 @@ static void qat_service_thread(void *p1, void *p2, void *p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
+    k_thread_name_set(k_current_get(), "qat_service");
     LOG_INF("QAT service thread started");
 
     while (1) {
