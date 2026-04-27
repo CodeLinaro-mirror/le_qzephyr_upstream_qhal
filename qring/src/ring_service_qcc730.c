@@ -8,6 +8,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/sys/barrier.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ring_service.h"
@@ -545,6 +546,15 @@ int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t time
     /* Update descriptor */
     rx_desc->length = len;
     rx_desc->flags = RING_DESC_FLAG_VALID;
+
+    /* Ensure descriptor fields (payload, length, flags) are committed to SRAM
+     * before wr_idx is updated. The host uses wr_idx as the trigger to read
+     * the descriptor — it must never see wr_idx advanced before flags=VALID.
+     * Cortex-M4 is in-order but the compiler can reorder stores; DMB prevents
+     * that. DSB is not needed here — the existing DSB before GPIO is sufficient
+     * to flush wr_idx before the interrupt fires.
+     */
+    barrier_dmem_fence_full(); /* ARM DMB */
 
     /* Update write index */
     next_wr_idx = (wr_idx + 1) % ctrl->rx_desc_count[ring_id];
