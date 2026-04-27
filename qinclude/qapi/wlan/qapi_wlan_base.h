@@ -483,7 +483,11 @@ typedef enum {
     /**< WPA2 and SAE mixed mode of authentication. */
     QAPI_WLAN_AUTH_WPA_WPA2_SAE_MIXED_E = 11,
     /**< WPA, WPA2 and SAE mixed mode of authentication. */
-    QAPI_WLAN_AUTH_INVALID_E = 12 /**< Invalid authentication method. */
+    QAPI_WLAN_AUTH_WPA2_E_SHA256_E = 12,
+    /**< WPA2-Enterprise (802.1X) with SHA-256 AKM (WPA-EAP-SHA256, 0x000FAC05).
+     *   Used for WPA3-Enterprise transition/only mode with PEAP/MSCHAPv2.
+     *   Sets WMI_WPA2_AUTH | WMI_WPA3_SHA256_AUTH so firmware matches AKM 5 APs. */
+    QAPI_WLAN_AUTH_INVALID_E = 13 /**< Invalid authentication method. */
 } qapi_WLAN_Auth_Mode_e;
 
 /**

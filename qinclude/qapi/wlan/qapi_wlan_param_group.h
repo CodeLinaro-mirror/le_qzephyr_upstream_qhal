@@ -434,4 +434,22 @@ qapi_WLAN_WPS_Credentials_t
 */
 #define __QAPI_WLAN_PARAM_GROUP_SECURITY_WPS_CREDENTIALS 6
 
+/**
+Command ID to set the Pairwise Master Key (PMK) for a WPA2-Enterprise connection.
+
+After the host wpa_supplicant completes EAP authentication it delivers the
+derived PMK to the driver via set_key(KEY_FLAG_PMK).  The driver passes it
+here so that the firmware 4-way handshake state machine can be initialised
+(suppl_auth_init_auth()) without a passphrase PBKDF2 derivation step.
+
+@note1hang This parameter can only be used with qapi_WLAN_Set_Param().
+
+@param[in] uint8_t[]       Raw PMK bytes (typically 32 bytes for CCMP).
+
+@dependencies
+Must be called after EAP authentication completes and before the AP sends
+EAPOL-Key M1.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_SECURITY_PMK 7
+
 #endif /* __QAPI_WLAN_PARAM_GROUP_H__ */
