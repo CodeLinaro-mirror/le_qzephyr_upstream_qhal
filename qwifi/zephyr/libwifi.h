@@ -114,6 +114,7 @@ void nt_tpe_txop_init(void);
 #endif
 
 /* Actions that can be performed when vTaskNotify() is called. */
+#ifndef INC_FREERTOS_H
 typedef enum {
     eNoAction = 0,          /* Notify the task without updating its notify value. */
     eSetBits,               /* Set bits in the task's notification value. */
@@ -122,6 +123,7 @@ typedef enum {
                                yet been read by the task. */
     eSetValueWithoutOverwrite /* Set the task's notification value if the previous value has been read by the task. */
 } eNotifyAction;
+#endif
 
 #define PROF_IRQ_ENTER()
 #define PROF_IRQ_EXIT()

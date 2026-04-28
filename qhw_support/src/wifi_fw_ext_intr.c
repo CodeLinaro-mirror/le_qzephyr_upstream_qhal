@@ -12,6 +12,7 @@
  * ----------------------------------------------------------------------*/
 #include "fwconfig_cmn.h"
 #include "nt_flags.h"
+#include "qlib_early_printk.h"
 
 #include <stdint.h>
 #include <stdbool.h>

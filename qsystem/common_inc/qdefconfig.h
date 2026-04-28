@@ -5,6 +5,9 @@
 
 #pragma once
 
+// Built-in QCC730 defaults. Integrators that supply their own feature
+// flags via -D can define QCOM_QDEFCONFIG_NO_DEFAULTS to skip this block.
+#ifndef QCOM_QDEFCONFIG_NO_DEFAULTS
 #define FERMION_CHIP_VERSION 2
 
 // only FTM app set 1
@@ -71,6 +74,7 @@
 // #define WMI_WLAN_TARGET_RESET_CMDID_ENABLE
 
 #include "fwconfig_wlan.h"
+#endif // !QCOM_QDEFCONFIG_NO_DEFAULTS
 
 #include "wifi_cmn.h"
 

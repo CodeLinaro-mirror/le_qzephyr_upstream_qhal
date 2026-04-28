@@ -412,5 +412,7 @@ int32_t nt_otp_region_locked(nt_otp_regions region_num, nt_otp_region_per_status
 int32_t nt_otp_region_lock(nt_otp_regions region_num, nt_otp_region_per_status rd_wr_lock);
 #endif
 
+void delay(uint32_t delay_count);
+
 // #endif //NT_FN_RRAM
 #endif //_NT_MEM_LOG_API_H

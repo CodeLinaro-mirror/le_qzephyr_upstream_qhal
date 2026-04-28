@@ -22,8 +22,8 @@ typedef enum {
 #ifdef SUPPORT_5GHZ
     MODE_11A_ONLY = 3,    /* 11A only mode (no HT)*/
     MODE_11A_HT20 = 4,    /* 5GHZ mode with HT20*/
-    MODE_11ABGN_HT20 = 5, /* 5GHZ mode with CCK rates*/
 #endif
+    MODE_11ABGN_HT20 = 5, /* 5GHZ mode with CCK rates (used unconditionally by wlan_qapi_helper.c) */
     MODE_UNKNOWN,
     MODE_MAX = MODE_UNKNOWN,
 } WLAN_PHY_MODE;
