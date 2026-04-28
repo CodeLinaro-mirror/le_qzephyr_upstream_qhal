@@ -69,6 +69,7 @@
 #ifdef CONFIG_WATCHDOG
 extern int qwdt_feed_now_direct(void);
 #endif
+extern void rram_udpart_init();
 
 #define ARRAY_SIZE_IN_TYPE(type, member) sizeof(((type *)(0))->member)
 
@@ -138,6 +139,8 @@ qapi_Status_t qapi_pmu_init(void)
     nt_devcfg_parse(); // devcfg parser function call to fill the common devcfg structure
     // nt_devcfg_byte_seq_parse(); // byte_sequence :: devcfg parser function call to fill the common devcfg structure
     PRINT_LOG_FUNC_LINE;
+
+    rram_udpart_init();
 
 #ifdef FEATURE_FDI
     fdi_init();

@@ -1,25 +1,17 @@
 /*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
- * SPDX-License-Identifier: BSD-3-Clause-Clear*/
-/** @file qapi_rram.h
-   @brief Rram Services Interface definition.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
 
-      This module provides rram operation APIs.
-
-*/
-
-/*-------------------------------------------------------------------------
- * Include Files
- *-----------------------------------------------------------------------*/
+#ifndef __QAPI_RRAM_H__
+#define __QAPI_RRAM_H__
 
 #include "qapi_types.h"
 #include "qapi_status.h"
 #include "ferm_qspi.h"
 
-#define RRAM_DEVICE_DONE 0    /**< Operation passed */
-#define RRAM_DEVICE_FAIL (-1) /**< Operation failed */
+#define RRAM_MAX_PART_NUMBER     10    /**< part map size */
 
-// define struct with id and addr
 typedef struct {
     uint32_t id;
     uint32_t addr;
@@ -31,9 +23,8 @@ typedef enum {
     RRAM_OK = 1,
 } rram_status_t;
 
-/*-------------------------------------------------------------------------
- * Function Declarations
- *-----------------------------------------------------------------------*/
+extern IDAddr fdt_part[RRAM_MAX_PART_NUMBER];
+
 /**
    @brief Read data from the rram.
 
@@ -61,3 +52,5 @@ qapi_Status_t qapi_rram_read(uint32_t partid, uint32_t offset, uint8_t *buffer, 
    Error code -- If there is an error.
 */
 qapi_Status_t qapi_rram_write(uint32_t partid, uint32_t offset, uint8_t *buffer, uint32_t len);
+
+#endif /* __QAPI_RRAM_H__ */
