@@ -145,9 +145,10 @@ void qurt_pimutex_unlock(qurt_mutex_t *lock);
 
 int qurt_mutex_create(qurt_mutex_t **lock);
 
+int qurt_mutex_try_lock(qurt_mutex_t *lock);
+
 #if 0
 void qurt_mutex_delete(qurt_mutex_t *lock);
-int qurt_mutex_try_lock(qurt_mutex_t *lock);
 #else
 #define qurt_mutex_delete qurt_mutex_destroy
 #endif

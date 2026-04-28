@@ -30,8 +30,6 @@
 #define QURT_TIME_NO_WAIT 0x00000000      /**< Return immediately without any waiting. */
 #define QURT_TIME_WAIT_FOREVER 0xFFFFFFFF /**< Block until the operation is successful. */
 
-#define portMAX_DELAY (TickType_t)0xffffffffUL
-
 /*=============================================================================
                         TYPEDEFS
 =============================================================================*/
@@ -39,10 +37,14 @@
 /** QuRT time types. */
 typedef uint32_t qurt_time_t;
 
+#ifdef INC_FREERTOS_H
+#include "portmacro.h"
+#else
 typedef uint32_t TickType_t;
-
 typedef long BaseType_t;
 typedef unsigned long UBaseType_t;
+#define portMAX_DELAY (TickType_t)0xffffffffUL
+#endif // !INC_FREERTOS_H
 
 /** QuRT time unit types. */
 
@@ -95,6 +97,18 @@ typedef long long int64;
 #ifndef _UINT64_DEFINED
 typedef unsigned long long uint64;
 #define _UINT64_DEFINED
+#endif
+
+/*
+ * Place a function or variable into .ramfunc with a unique per-use
+ * suffix, so --gc-sections can drop individually unreferenced entries.
+ * The linker script's `*(.ramfunc .ramfunc.*)` glob gathers whatever
+ * remains.
+ */
+#ifndef RAMFUNC
+#define _RAMFUNC_STR_(x) #x
+#define _RAMFUNC_STR(x) _RAMFUNC_STR_(x)
+#define RAMFUNC __attribute__((section(".ramfunc." _RAMFUNC_STR(__COUNTER__))))
 #endif
 
 #endif /* ARM_ASM */

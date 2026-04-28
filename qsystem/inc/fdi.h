@@ -32,7 +32,10 @@ void fdi_reg_all_nodes(void);
 
 #endif /* FEATURE_FDI */
 
-#define FDI_PS_TXT __attribute__((section(".__sect_ps_txt")))
-#define FDI_PS_DATA __attribute__((section(".__sect_ps_data")))
+/* Unique per-use suffix lets --gc-sections drop unreferenced entries. */
+#define _FDI_STR_(x) #x
+#define _FDI_STR(x) _FDI_STR_(x)
+#define FDI_PS_TXT  __attribute__((section(".__sect_ps_txt."  _FDI_STR(__COUNTER__))))
+#define FDI_PS_DATA __attribute__((section(".__sect_ps_data." _FDI_STR(__COUNTER__))))
 
 #endif /* _FDI_H_ */

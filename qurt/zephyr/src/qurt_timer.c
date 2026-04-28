@@ -374,7 +374,7 @@ void *nt_get_timeout_arg(TimerHandle_t timer_handle)
 }
 
 
-uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
+uint64_t RAMFUNC hres_timer_curr_time_us(void)
 {
 #if 0
 #ifdef SUPPORT_HIGH_RES_TIMER
@@ -402,7 +402,7 @@ uint64_t __attribute__ ((section(".ramfunc"))) hres_timer_curr_time_us(void)
 #endif
 }
 
-void __attribute__ ((section(".ramfunc"))) hres_timer_us_delay(uint32_t time_us)
+void RAMFUNC hres_timer_us_delay(uint32_t time_us)
 {
     uint64_t curr_time = hres_timer_curr_time_us();
     uint64_t target_time = (curr_time + time_us);
