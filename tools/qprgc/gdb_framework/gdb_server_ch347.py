@@ -18,6 +18,8 @@ def add_arguments(parser):
     Parameters:
        parser: argparse object used for parsing the command line arguments.
     '''
+    parser.add_argument('--ch347-index', type=int, default=0,
+                        help='CH347 adapter index for multi-board setups (default=0).')
 
 class GDB_Server(object):
     '''
@@ -72,6 +74,7 @@ class GDB_Server(object):
         self.options = [
             '-c','gdb_port {}'.format(str(kwargs['server_port'])),
             '-f',self.server_script,
+            '-c','ch347 ch347_index {}'.format(str(kwargs.get('ch347_index', 0))),
             '-c','proc after_gdb_detach {} { shutdown }'
         ]
 
