@@ -74,9 +74,11 @@ class GDB_Server(object):
         self.options = [
             '-c','gdb_port {}'.format(str(kwargs['server_port'])),
             '-f',self.server_script,
-            '-c','ch347 ch347_index {}'.format(str(kwargs.get('ch347_index', 0))),
-            '-c','proc after_gdb_detach {} { shutdown }'
         ]
+        ch347_index = kwargs.get('ch347_index', 0)
+        if ch347_index:
+            self.options += ['-c','ch347 ch347_index {}'.format(str(ch347_index))]
+        self.options += ['-c','proc after_gdb_detach {} { shutdown }']
 
     def start(self):
         '''
