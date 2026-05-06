@@ -111,7 +111,7 @@ typedef enum IRQn {
 
 #define __NVIC_PRIO_BITS 2       /*!< Number of Bits used for Priority Levels          */
 #define __Vendor_SysTickConfig 0 /*!< Set to 1 if different SysTick Config is used     */
-#define __MPU_PRESENT 0          /*!< MPU present or not                               */
+#define __MPU_PRESENT CONFIG_CPU_HAS_ARM_MPU          /*!< MPU present or not                               */
 /* ToDo: define __FPU_PRESENT if your devise is a CORTEX-M4                                       */
 #define __FPU_PRESENT 1 /*!< FPU present or not                                */
 
