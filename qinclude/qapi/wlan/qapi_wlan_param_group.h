@@ -383,6 +383,34 @@ Set actice device id to 0/1(SAP/STA).
 */
 #define __QAPI_WLAN_PARAM_GROUP_WIRELESS_DEVICE_ID 92
 
+/**
+Command ID to adjust BA window size when operating in Station mode.
+
+@note1hang This parameter can only be used with qapi_WLAN_Set_Param().
+
+@param[in] qapi_WLAN_BA_Window_Size_t  BA window size.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_BA_WINDOW_SIZE 93
+
+/**
+Command ID to set protection mode when operating in Station mode.
+
+@note1hang This parameter can be used with qapi_WLAN_Set_Param().
+
+@param[in] uint32_t        Set 1 to enable CTS_TO_SELF protection, 0 to be disabled.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_PROTECTION_MODE 94
+
+/**
+Command ID to set rsp rate in Station mode. The set
+operation for this should be done after establishing a connection.
+
+@note1hang This parameter can only be used with qapi_WLAN_Set_Param().
+
+@param[in] uint8_t  RspRate idx, only support 8:11g 6Mbps or 16:11n 6.5Mbps.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_RSP_RATE 95
+
 
 #define __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE 0
 

@@ -779,6 +779,17 @@ typedef struct {
     uint16_t real_power;                            /** The power that is set to driver.*/
 } qapi_WLAN_Get_Power_Evt_t;
 
+/**
+@ingroup qapi_wlan
+Enum declaration for WLAN RA Operation.
+*/
+typedef enum {
+    QAPI_WLAN_RA_OFF = 0, 			/**< automatic rate adaptation disable. */
+    QAPI_WLAN_RA_ON,            	/**< automatic rate adaptation enable. */
+    QAPI_WLAN_RA_HT_ONLY_ENABLE,	/**< rate use HT only enable. */
+    QAPI_WLAN_RA_HT_ONLY_DISABLE,	/**< rate use HT only disable. */
+} qapi_WLAN_RA_OP_e;
+
 // set_rate
 typedef struct {
     uint8_t ra_ON;              /** Flag indicating whether automatic rate adaptation is enabled.
@@ -838,6 +849,15 @@ typedef struct {
     uint32_t rssi;
     uint32_t link_mode;
 } qapi_WLAN_Status_t;
+
+/**
+@ingroup qapi_wlan
+Set STA BA window size.
+*/
+typedef struct {
+    uint16_t tx_size;					/** TX BA window size */
+    uint16_t rx_size;					/** RX BA window size */
+} qapi_WLAN_BA_Window_Size_t;
 
 /**
 @ingroup qapi_wlan
