@@ -11,10 +11,12 @@
 
 /*
 ****Supported Flash Type****
-1. Macronix, MX25R6435F
-2. Gigadevice, GD25WQ32E
-3. Giantec , GT25Q32AU_DS
-4. Zetta,    zd25wq32ce
+1. Macronix,   MX25R6435F
+2. Gigadevice, GD25WQ32E, GD25Q32EEIGR, GD25LQ32EEIGR
+3. Giantec,    GT25Q32AU_DS
+4. Zetta,      ZD25WQ32CE
+5. Puya,       PY25Q32HB, PY25Q64HA, PY25Q32LC
+6. Winbond,    W25Q32RVXHJQ, W25Q33PWXHIQ, W25Q64PWZKIQ
 
 */
 
@@ -117,7 +119,54 @@ flash_config_data_t flash_device_config[] = {
 		.write_protect_bmask = 0x0441FC,
 		.clk_freq = FLASH_CLOCK_30MHZ,
 	},
-	/* Gigadevice, GD25LQ32EE */
+	/* Gigadevice, GD25Q32EEIGR */
+	{
+		.addr_bytes = 3,
+		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_opcode = 0xeb,
+		.read_wait_state = 0x6,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.write_opcode = 0x32,
+#else
+		.read_addr_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_data_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_opcode = 0xbb,
+		.read_wait_state = 4,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_opcode = 2,
+#endif
+		.erase_4kb_opcode = 0x20,
+		.bulk_erase_size_4kb = 16,
+		.bulk_erase_opcode = 0xD8,
+		.chip_erase_opcode = 0x60,
+		.quad_enable_mode = 1,
+		.suspend_erase_opcode = 0x75,
+		.suspend_program_opcode = 0x75,
+		.resume_erase_opcode = 0x7a,
+		.resume_program_opcode = 0x7a,
+		.erase_err_bmsk = 0x0,
+		.erase_err_status_reg = 0x0,
+		.write_err_bmsk = 0x0,
+		.write_err_status_reg = 0x0,
+		.high_performance_mode_bmask = 0x0,
+		.power_on_delay_in_us = 30,
+		.suspend_erase_delay_in_us = 40,
+		.suspend_program_delay_in_us = 40,
+		.resume_erase_delay_in_us = 0,
+		.resume_program_delay_in_us = 0,
+		.density_in_blocks = 1024,
+		.device_id = 0x001640c8,
+		.write_protect_bmask = 0x0,
+		.clk_freq = FLASH_CLOCK_30MHZ,
+	},
+	/* Gigadevice, GD25LQ32EEIGR */
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
@@ -304,8 +353,8 @@ flash_config_data_t flash_device_config[] = {
 		.device_id = 0x00162085,
 		.write_protect_bmask = 0x0441FC,
 		.clk_freq = FLASH_CLOCK_30MHZ,
-	},	
-	/* Puya, PY25Q32HA */
+	},
+	/* Puya, PY25Q64HA */
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
@@ -351,7 +400,7 @@ flash_config_data_t flash_device_config[] = {
 		.device_id = 0x00172085,
 		.write_protect_bmask = 0x0441FC,
 		.clk_freq = FLASH_CLOCK_30MHZ,
-	},	
+	},
 	/* Puya, PY25Q32LC */
 	{
 		.addr_bytes = 3,
@@ -398,7 +447,148 @@ flash_config_data_t flash_device_config[] = {
 		.device_id = 0x00166585,
 		.write_protect_bmask = 0x0441FC,
 		.clk_freq = FLASH_CLOCK_30MHZ,
-	},	
+	},
+	/* Winbond, W25Q32RVXHJQ */
+	{
+		.addr_bytes = 3,
+		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_opcode = 0xeb,
+		.read_wait_state = 0x6,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.write_opcode = 0x32,
+#else
+		.read_addr_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_data_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_opcode = 0xbb,
+		.read_wait_state = 4,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_opcode = 2,
+#endif
+		.erase_4kb_opcode = 0x20,
+		.bulk_erase_size_4kb = 16,
+		.bulk_erase_opcode = 0xD8,
+		.chip_erase_opcode = 0x60,
+		.quad_enable_mode = 1,
+		.suspend_erase_opcode = 0x75,
+		.suspend_program_opcode = 0x75,
+		.resume_erase_opcode = 0x7a,
+		.resume_program_opcode = 0x7a,
+		.erase_err_bmsk = 0x0,
+		.erase_err_status_reg = 0x0,
+		.write_err_bmsk = 0x0,
+		.write_err_status_reg = 0x0,
+		.high_performance_mode_bmask = 0x0,
+		.power_on_delay_in_us = 30,
+		.suspend_erase_delay_in_us = 40,
+		.suspend_program_delay_in_us = 40,
+		.resume_erase_delay_in_us = 0,
+		.resume_program_delay_in_us = 0,
+		.density_in_blocks = 1024,
+		.device_id = 0x001640ef,
+		.write_protect_bmask = 0x0,
+		.clk_freq = FLASH_CLOCK_30MHZ,
+	},
+	/* Winbond, W25Q33PWXHIQ */
+	{
+		.addr_bytes = 3,
+		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_opcode = 0xeb,
+		.read_wait_state = 0x6,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.write_opcode = 0x32,
+#else
+		.read_addr_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_data_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_opcode = 0xbb,
+		.read_wait_state = 4,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_opcode = 2,
+#endif
+		.erase_4kb_opcode = 0x20,
+		.bulk_erase_size_4kb = 16,
+		.bulk_erase_opcode = 0xD8,
+		.chip_erase_opcode = 0x60,
+		.quad_enable_mode = 1,
+		.suspend_erase_opcode = 0x75,
+		.suspend_program_opcode = 0x75,
+		.resume_erase_opcode = 0x7a,
+		.resume_program_opcode = 0x7a,
+		.erase_err_bmsk = 0x0,
+		.erase_err_status_reg = 0x0,
+		.write_err_bmsk = 0x0,
+		.write_err_status_reg = 0x0,
+		.high_performance_mode_bmask = 0x0,
+		.power_on_delay_in_us = 30,
+		.suspend_erase_delay_in_us = 40,
+		.suspend_program_delay_in_us = 40,
+		.resume_erase_delay_in_us = 0,
+		.resume_program_delay_in_us = 0,
+		.density_in_blocks = 1024,
+		.device_id = 0x001660ef,
+		.write_protect_bmask = 0x0,
+		.clk_freq = FLASH_CLOCK_30MHZ,
+	},
+	/* Winbond, W25Q64PWZKIQ */
+	{
+		.addr_bytes = 3,
+		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.read_opcode = 0xeb,
+		.read_wait_state = 0x6,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_QUAD,
+		.write_opcode = 0x32,
+#else
+		.read_addr_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_data_mode = FLASH_RW_MODE_SDR_DUAL,
+		.read_opcode = 0xbb,
+		.read_wait_state = 4,
+		.write_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_addr_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_data_mode = FLASH_RW_MODE_SDR_SINGLE,
+		.write_opcode = 2,
+#endif
+		.erase_4kb_opcode = 0x20,
+		.bulk_erase_size_4kb = 16,
+		.bulk_erase_opcode = 0xD8,
+		.chip_erase_opcode = 0x60,
+		.quad_enable_mode = 1,
+		.suspend_erase_opcode = 0x75,
+		.suspend_program_opcode = 0x75,
+		.resume_erase_opcode = 0x7a,
+		.resume_program_opcode = 0x7a,
+		.erase_err_bmsk = 0x0,
+		.erase_err_status_reg = 0x0,
+		.write_err_bmsk = 0x0,
+		.write_err_status_reg = 0x0,
+		.high_performance_mode_bmask = 0x0,
+		.power_on_delay_in_us = 30,
+		.suspend_erase_delay_in_us = 40,
+		.suspend_program_delay_in_us = 40,
+		.resume_erase_delay_in_us = 0,
+		.resume_program_delay_in_us = 0,
+		.density_in_blocks = 2048,
+		.device_id = 0x001760ef,
+		.write_protect_bmask = 0x0,
+		.clk_freq = FLASH_CLOCK_30MHZ,
+	},
 };
 
 /*-------------------------------------------------------------------------
