@@ -488,9 +488,12 @@ void wifi_fw_pmic_init(cpr_mode_e cpr_mode)
         HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_0, SMPS2_SS_EN, 1);
         HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_2, SMPS2_CL_SEL_PFM,
                    0xf); // Default is 0xb (increase the value, increase the loading capability)
+        /* smps2_set_low_vbat_regs() will decide the values depends on Vbat
         HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_4, SMPS2_CL_ILIM_MIN,
                    0x7); // Default is 0xb (lower the value, increase current limit)
-        HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_5, SMPS2_LPM_OVR, 3); // PFM
+        */
+        /*Stay in PWM after cold boot, switch to PFM if allowed in smps2_low_vbat_init()*/
+        HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_5, SMPS2_LPM_OVR, 0);
         HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_3, SMPS2_VSET_TRIM_SEL, 1);
         HWIO_OUTXF(SEQ_WCSS_RPMU_OFFSET, RPMU_RPMU_R_PMU_SMPS2_3, SMPS2_VSET_SEL,
                    cpr_mode); // 0: open loop, 1: close loop
