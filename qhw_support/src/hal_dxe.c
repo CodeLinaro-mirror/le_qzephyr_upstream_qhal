@@ -4,6 +4,9 @@
  */
 
 #include "stddef.h"
+#ifdef CONFIG_QWIFI
+#include "libwifi.h"
+#endif
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -721,7 +724,7 @@ static void nt_dxe_update_descctrl_in_lst(volatile DxeCCB_t *pDxeCCB)
 #endif /* DXE_WAR_FOR_DATA_STALL */
 
 /* Write frame for transfer from the Host. Used for H2B and H2H transfer */
-eRet_t __attribute__ ((section(".ramfunc"))) nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void *frame, uint32_t length, void *h2hdst)
+eRet_t RAMFUNC nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void *frame, uint32_t length, void *h2hdst)
 {
     DescCB_t *pDCB;
     DescCB_t *pCurrDCB;
@@ -960,7 +963,7 @@ eRet_t nt_ndxe_write_frame_to_transfer_single(e_dxe_channel channel, void *frame
 #endif
 
 /* Obtain the frame from the DXE Ring Descriptor after transfer to Staging Buffer */
-eRet_t __attribute__ ((section(".ramfunc"))) nt_ndxe_get_single_received_frame(e_dxe_channel channel, void **frame)
+eRet_t RAMFUNC nt_ndxe_get_single_received_frame(e_dxe_channel channel, void **frame)
 {
     DescCB_t *pDCB;
     volatile DxeCCB_t *pDxeCCB;

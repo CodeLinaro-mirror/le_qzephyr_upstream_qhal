@@ -431,9 +431,13 @@ int qurt_thread_get_priority(qurt_thread_t threadid);
  */
 int qurt_thread_set_priority(qurt_thread_t threadid, unsigned short newprio);
 
+#ifdef INC_FREERTOS_H
+#include "task.h"
+#else
 #define configSTACK_DEPTH_TYPE uint16_t
 typedef qurt_thread_t TaskHandle_t;
 typedef void (*TaskFunction_t)(void *);
+#endif
 
 BaseType_t nt_qurt_thread_create(
     TaskFunction_t pxTaskCode,

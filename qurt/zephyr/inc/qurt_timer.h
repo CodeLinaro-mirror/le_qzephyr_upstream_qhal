@@ -78,8 +78,12 @@ typedef struct qurt_timer_attr /* 8 byte aligned */
 
 } qurt_timer_attr_t;
 
+#ifdef INC_FREERTOS_H
+#include "timers.h"
+#else
 typedef struct k_timer *TimerHandle_t;
 typedef void (*TimerCallbackFunction_t)(TimerHandle_t timer);
+#endif
 
 TickType_t qurt_timer_ms_to_ticks(uint32_t ms);
 

@@ -10,6 +10,13 @@
 #include <zephyr/drivers/timer/system_timer.h>
 #include <zephyr/sys/time_units.h>
 
+// Blob-provided functions — no header declarations exist.
+#include <stdbool.h>
+bool wifi_activity_is_busy(void);
+void pmStartTimeoutExt(void);
+void pmStopTimeoutExt(void);
+void register_wifi_activity_cb(void *cb);
+
 extern volatile uint64_t bmps_enter_sleep;
 extern volatile uint64_t bmps_wkup_cpu;
 

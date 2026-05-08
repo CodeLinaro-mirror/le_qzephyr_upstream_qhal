@@ -33,5 +33,9 @@ int qurt_pipe_try_receive(qurt_pipe_t pipe, void *const data, BaseType_t *timeou
 int qurt_pipe_flush(qurt_pipe_t pipe);
 int qurt_pipe_num_free_get(qurt_pipe_t pipe);
 
+#ifdef INC_FREERTOS_H
+#include "queue.h"
+#else
 typedef qurt_pipe_t QueueHandle_t;
+#endif
 QueueHandle_t nt_qurt_pipe_create(const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize);

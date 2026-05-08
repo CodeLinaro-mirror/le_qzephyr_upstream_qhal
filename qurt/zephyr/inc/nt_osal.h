@@ -9,6 +9,10 @@
 #include <assert.h>
 #include "qurt_ext.h"
 #include "qurt_signal.h"
+#ifdef INC_FREERTOS_H
+#include "semphr.h"
+#include "event_groups.h"
+#endif
 
 /*Semaphore ID identifies the semaphore*/
 typedef qurt_sem_t *nt_osal_semaphore_handle_t;
@@ -27,10 +31,12 @@ typedef TickType_t nt_osal_tick_type_t;
 /******************************MACRO DEFINITION***************************/
 #define NT_OSAL_NAME "Zephyr"   /* Internally which OS we are using right now 	*/
 #define NT_OSAL_VERSION 0x00001 /* OSAL version definition 					*/
+#ifndef INC_FREERTOS_H
 #define pdFALSE ((BaseType_t)0)
 #define pdTRUE ((BaseType_t)1)
 #define pdPASS (pdTRUE)
 #define pdFAIL (pdFALSE)
+#endif
 #define nt_pass (QURT_EOK)
 #define nt_fail (pdFAIL)
 #define NT_QUEUE_SUCCESS (QURT_EOK)
@@ -84,10 +90,14 @@ const char *nt_osal_get_current_task_name();
 /*Release a Semaphore token from isr*/
 #define nt_osal_semaphore_give_from_isr(sem, target_task) qurt_sem_up(sem, target_task)
 
+#ifndef INC_FREERTOS_H
 void taskENTER_CRITICAL();
 void taskEXIT_CRITICAL();
+#endif
 
+#ifndef configASSERT
 #define configASSERT(expr) assert(expr)
+#endif
 
 /**
  * <!-- nt_normal_delay -->
@@ -99,6 +109,7 @@ void taskEXIT_CRITICAL();
 void nt_normal_delay(uint32_t time);
 int tickless_idle_enabled(void);
 
+#ifndef INC_FREERTOS_H
 #define xTaskNotify2evt(xTaskToNotify) evt##xTaskToNotify
 
 #define xTaskNotify(xTaskToNotify, ulValue, eAction) qurt_signal_set((xTaskNotify2evt(xTaskToNotify)), (ulValue))
@@ -110,5 +121,6 @@ int tickless_idle_enabled(void);
 #define portYIELD_FROM_ISR(x) ((void)(x))
 
 #define xTaskNotifyWait(ulBitsToClearOnEntry, ulBitsToClearOnExit, pulNotificationValue, xTicksToWait) 0
+#endif
 
 #endif /* OS_INC_NT_OSAL_H_ */
