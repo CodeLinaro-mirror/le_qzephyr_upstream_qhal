@@ -21,7 +21,7 @@
 #endif
 
 static qurt_mutex_t *rram_udpart_mutex;
-static uint32_t bdf_addr = BDF_START_ADDR;
+static uint32_t rram_max_address = _LN_REGDB_START_ADDR;
 static bool rram_udpart_init_done;
 static uint32_t part_map[RRAM_MAX_PART_NUMBER];
 
@@ -116,7 +116,7 @@ qapi_Status_t qapi_rram_read(uint32_t partid, uint32_t offset, uint8_t *buffer, 
     uint32_t base_addr = part_map[partid];
     uint32_t dst_addr = base_addr + offset;
 
-    if (!rram_valid_address(dst_addr, len, base_addr, bdf_addr)) {
+    if (!rram_valid_address(dst_addr, len, base_addr, rram_max_address)) {
         rram_err("fail to verify address: 0x%x %u\n", dst_addr, len);
         return QAPI_ERR_BOUNDS;
     }
@@ -164,7 +164,7 @@ qapi_Status_t qapi_rram_write(uint32_t partid, uint32_t offset, uint8_t *buffer,
     uint32_t base_addr = part_map[partid];
     uint32_t dst_addr = base_addr + offset;
 
-    if (!rram_valid_address(dst_addr, len, base_addr, bdf_addr)) {
+    if (!rram_valid_address(dst_addr, len, base_addr, rram_max_address)) {
         rram_err("fail to verify address: 0x%x %u\n", dst_addr, len);
         return QAPI_ERR_BOUNDS;
     }
