@@ -67,7 +67,7 @@ static void roam_handler(struct k_work *item)
     cnt_for_current_time_period += 1;
 
     if (vdev_cxt->roaming_time_out <= WLAN_ROAMING_TIMER_PERIOD_MAX) {
-        uint8_t authMode = vdev_cxt->connect_cmd.authMode;
+        uint16_t authMode = vdev_cxt->connect_cmd.authMode;
         if ((authMode == WMI_WPA_PSK_AUTH)
             || (authMode == WMI_WPA2_PSK_AUTH)
             || (authMode == WMI_WPA3_SHA256_AUTH)

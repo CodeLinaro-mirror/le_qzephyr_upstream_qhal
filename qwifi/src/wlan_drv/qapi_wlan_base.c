@@ -173,7 +173,7 @@ qapi_Status_t qapi_WLAN_Commit(uint8_t device_ID)
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
-    uint8_t authMode = vdev->connect_cmd.authMode;
+    uint16_t authMode = vdev->connect_cmd.authMode;
 
     WLAN_QAPI_LOCK();
     if ((authMode == WMI_WPA_PSK_AUTH)
