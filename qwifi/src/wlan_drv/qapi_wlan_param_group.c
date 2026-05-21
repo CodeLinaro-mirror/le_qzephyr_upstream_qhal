@@ -273,11 +273,14 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
                     p_cmd->authMode = WMI_WPA2_AUTH;
                     break;
                 case QAPI_WLAN_AUTH_WPA2_E_SHA256_E:
-                    /* WPA3-Enterprise Only: AKM5 (0x000FAC05) — 802.1X with SHA256 KDF.
-                     * Use WMI_WPA2_SHA256_AUTH so firmware selects SHA256 PRF for PTK
-                     * derivation and AES-128-CMAC for EAPOL-Key MIC (ver=3). */
+                    /* WPA3-Enterprise Transition: AKM5 + MFPC=1, MFPR=0. */
                     p_cmd->dot11AuthMode = OPEN_AUTH;
                     p_cmd->authMode = WMI_WPA2_SHA256_AUTH;
+                    break;
+                case QAPI_WLAN_AUTH_WPA3_ENT_ONLY_E:
+                    /* WPA3-Enterprise Only: AKM5 + MFPC=1 + MFPR=1 (PMF Required). */
+                    p_cmd->dot11AuthMode = OPEN_AUTH;
+                    p_cmd->authMode = WMI_WPA3_ENTERPRISE_ONLY_AUTH;
                     break;
                 case QAPI_WLAN_AUTH_WPA3_SAE_E:
                     p_cmd->dot11AuthMode = SAE_AUTH;

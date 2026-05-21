@@ -473,9 +473,7 @@ typedef enum {
     WMI_WPA2_AUTH_CCKM = 0x40,
     WMI_WPA3_SHA256_AUTH = 0x80,
     WMI_WPA2_SHA256_AUTH = 0x100,        /* AKM5: 802.1X with SHA-256 KDF (WPA3-Enterprise Transition) */
-#ifdef CONFIG_WIFI_QCOM_ENTERPRISE
     WMI_WPA3_ENTERPRISE_ONLY_AUTH = 0x200, /* AKM5+MFPR: WPA3-Enterprise Only mode */
-#endif
 } AUTH_MODE;
 
 typedef PREPACK struct {
