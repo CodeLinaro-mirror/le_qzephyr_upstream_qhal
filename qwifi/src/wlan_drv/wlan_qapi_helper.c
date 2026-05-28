@@ -687,15 +687,29 @@ qapi_Status_t wlan_set_appie(qapi_WLAN_App_Ie_Params_t *ie_params)
         return QAPI_ERROR;
     }
 
-    if (ie_params->ie_Info[0] != 0xdd) {
-        log_printf("%s:%d: Application specified information element must start with 'dd'.\n", __func__, __LINE__);
-        return QAPI_ERROR;
-    }
-
-    /* The length in application information element should be the length of OUI and Vendor-specific content*/
-    if ((ie_params->ie_Len > 1) && (ie_params->ie_Info[1] != (ie_params->ie_Len - 2))) {
-        log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
-        return QAPI_ERROR;
+    /* The buffer may hold more than one concatenated vendor-specific IE
+     * (e.g. WSC IE + P2P IE in a P2P GC's Assoc Request) — each is its
+     * own "0xdd len OUI... data" element. Walk the whole blob and verify
+     * every sub-IE's length byte accounts for exactly its own content,
+     * rather than assuming the buffer is a single IE. */
+    if (ie_params->ie_Len > 1) {
+        uint16_t offset = 0;
+        while (offset < ie_params->ie_Len) {
+            if (ie_params->ie_Info[offset] != 0xdd) {
+                log_printf("%s:%d: Application specified information element must start with 'dd'.\n", __func__, __LINE__);
+                return QAPI_ERROR;
+            }
+            if (offset + 1 >= ie_params->ie_Len) {
+                log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
+                return QAPI_ERROR;
+            }
+            uint8_t sub_ie_len = ie_params->ie_Info[offset + 1];
+            if ((offset + 2 + sub_ie_len) > ie_params->ie_Len) {
+                log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
+                return QAPI_ERROR;
+            }
+            offset += 2 + sub_ie_len;
+        }
     }
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     cmd->mgmtFrmType = ie_params->mgmt_Frame_Type;

@@ -259,6 +259,15 @@ typedef enum {
 #if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
     WMI_WPS_SCAN_CMDID,
 #endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+    /* P2P find/discovery support. Appended at end so existing IDs stay
+     * stable for firmware ABI compatibility. See WMI_P2P_FW_SET_CONFIG_CMD
+     * / WMI_P2P_FW_FIND_CMD below.
+     */
+    WMI_P2P_SET_CONFIG_CMDID,
+    WMI_P2P_FIND_CMDID,
+    WMI_P2P_STOP_FIND_CMDID,
+    WMI_P2P_LISTEN_CMDID,
+    WMI_P2P_CANCEL_LISTEN_CMDID,
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
 
@@ -303,8 +312,66 @@ typedef enum {
     WMI_WPS_SCAN_COMP_EVTID,
     WMI_WPS_SCAN_RESULT_EVTID,
 #endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+    WMI_P2P_LISTEN_DONE_EVTID,
+    WMI_P2P_SCAN_DONE_EVTID,
+    WMI_P2P_BSS_FOUND_EVTID,
+    WMI_P2P_RX_ACTION_EVTID,
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
+
+/* Event payload for WMI_P2P_LISTEN_DONE_EVTID. Sent by the firmware
+ * once the listen-state timer expires (or a CANCEL_LISTEN command
+ * aborts it early). The host hostap layer treats expiry the same way
+ * either way.
+ */
+typedef PREPACK struct {
+    uint16_t freq;          /* MHz the radio was parked on */
+    uint16_t reserved;
+} POSTPACK WMI_P2P_LISTEN_DONE_EVT;
+
+/* Event payload for WMI_P2P_BSS_FOUND_EVTID. Sent by the firmware for
+ * each beacon/probe-resp received during a P2P find scan, so the host
+ * P2P glue can feed the IE blob into hostap (qcom_p2p_feed_bss →
+ * p2p_scan_res_handler) and populate g_p2p_handle->devices in real time.
+ *
+ * We use a per-BSS event instead of piggy-backing on WMI_SCAN_RESULT_EVTID
+ * (only fires when the local SCAN_RESULT buffer overflows past
+ * MAX_SCAN_SSID = 15) or WMI_SCAN_COMP_EVTID (multi-KB payload, exceeds
+ * wmi_event_relay size cap). Truncated to fit the LARGE payload slot
+ * (QAPI_EVENT_LARGE_PAYLOAD_LENGTH_MAX = 1000) — header + 256B IE blob.
+ */
+#define WMI_P2P_BSS_FOUND_IE_MAX 256
+typedef PREPACK struct {
+    uint8_t  bssid[6];
+    int8_t   rssi;          /* dBm, sign-extended from ap_info->rssi */
+    uint8_t  reserved;
+    uint16_t freq;          /* MHz */
+    uint16_t ie_len;        /* bytes of trailing IE blob */
+    uint8_t  ie[WMI_P2P_BSS_FOUND_IE_MAX];
+} POSTPACK WMI_P2P_BSS_FOUND_EVT;
+
+/* Event payload for WMI_P2P_RX_ACTION_EVTID — forwards an incoming
+ * 802.11 mgmt action frame (subtype 0xd0) from fw to the host hostap
+ * p2p layer. The frame[] contains the complete frame including the
+ * 24B 802.11 header (DA/SA/BSSID), so the host glue can extract those
+ * before calling p2p_rx_action. P2P GO neg / PD / invitation / SD all
+ * arrive via this event.
+ *
+ * Action frames are typically < 200B (GO neg req/resp ~80–150B); we
+ * cap to 512B to leave headroom for invitation w/ full WPS+P2P IE
+ * chain and stay within wmi_event_relay's LARGE payload (1000B).
+ */
+#define WMI_P2P_RX_ACTION_FRAME_MAX 512
+typedef PREPACK struct {
+    uint16_t freq;          /* MHz, channel the frame was received on */
+    int8_t   rssi;          /* dBm */
+    uint8_t  reserved;
+    uint16_t frame_len;     /* bytes of trailing 802.11 frame */
+    uint16_t reserved2;
+    uint8_t  frame[WMI_P2P_RX_ACTION_FRAME_MAX];
+} POSTPACK WMI_P2P_RX_ACTION_EVT;
+
+
 
 #define WMI_LOCAL_EVT_FLAG_HEAP 0x00000001
 
@@ -1421,6 +1488,86 @@ typedef PREPACK struct {
 /* WPS Commands AND Events DEFINITION END */
 #endif // NT_FN_WPS
 
+/* ------------------------------------------------------------------ */
+/* P2P find / discovery commands. Mirrors fermion_p2p WMI definitions  */
+/* so firmware-side handlers can be ported with minimal changes. Kept  */
+/* outside the NT_FN_WPS / ATH_KF blocks so they are always visible.   */
+/* ------------------------------------------------------------------ */
+typedef PREPACK struct {
+    uint8_t  go_intent;
+    uint8_t  reserved[3];
+    uint8_t  reg_class;
+    uint8_t  listen_channel;
+    uint8_t  op_reg_class;
+    uint8_t  op_channel;
+    uint32_t node_age_to;
+    uint8_t  max_node_count;
+} POSTPACK WMI_P2P_FW_SET_CONFIG_CMD;
+
+/* WMI_P2P_FW_FIND_CMD: variable-length command. The fixed header below is
+ * followed by a tail of:
+ *   - num_freqs * uint16_t  : per-channel frequencies in MHz (host order)
+ *                             (num_freqs == 0 means firmware does its own
+ *                              full 2.4 GHz sweep)
+ *   - extra_ies_len bytes   : opaque IE blob (WPS Probe Req IE + P2P IE)
+ *                             constructed by the host hostap layer; firmware
+ *                             may append it to outgoing Probe Req frames.
+ *   - ssid_len bytes        : SSID for the active probe (P2P wildcard
+ *                             "DIRECT-" in normal use). 0 keeps the legacy
+ *                             behaviour of letting fw inject the wildcard.
+ *
+ * Total payload size = sizeof(WMI_P2P_FW_FIND_CMD) +
+ *                      num_freqs*2 + extra_ies_len + ssid_len.
+ * The receiver must clamp these sums against the WMI buffer length
+ * supplied by the dispatcher.
+ */
+typedef PREPACK struct {
+    uint32_t timeout;
+    uint8_t  type;          /* WMI_P2P_FIND_* (legacy social/full/progressive)*/
+    uint8_t  p2p_probe;     /* 1 = mark outgoing probe req as P2P */
+    uint8_t  include_6ghz;  /* hostap include_6ghz flag (0/1) */
+    uint8_t  num_freqs;     /* entries in freqs[] tail */
+    uint16_t extra_ies_len; /* bytes of WPS+P2P IE blob in tail */
+    uint8_t  ssid_len;      /* bytes of explicit SSID (0 = use wildcard) */
+    uint8_t  reserved;
+    /* tail follows: uint16_t freqs[num_freqs];
+     *               uint8_t  extra_ies[extra_ies_len];
+     *               uint8_t  ssid[ssid_len];
+     */
+} POSTPACK WMI_P2P_FW_FIND_CMD;
+
+/* P2P discovery type values used inside WMI_P2P_FW_FIND_CMD::type.
+ * Kept as legacy hints for firmware so it can fall back to a sane sweep
+ * when num_freqs == 0; the host always sets type = WMI_P2P_FIND_START_WITH_FULL
+ * for the new freq-list-driven path.
+ */
+#define WMI_P2P_FIND_START_WITH_FULL  0
+#define WMI_P2P_FIND_ONLY_SOCIAL      1
+#define WMI_P2P_FIND_PROGRESSIVE      2
+
+/* Maximum bytes of extra_ies the fw is willing to buffer per find. Host
+ * truncates beyond this. Picked to comfortably cover WPS Probe Req IE
+ * (~60 B) + P2P IE (~120 B with 1 dev id filter) plus headroom.
+ */
+#define WMI_P2P_FIND_EXTRA_IE_MAX    256
+
+/* WMI_P2P_FW_LISTEN_CMD: parks the radio on `freq` for `duration_ms`
+ * milliseconds, listening for incoming Probe Requests. Variable-length
+ * tail carries the Probe Response template IE blob the firmware should
+ * reply with (extra_ies_len bytes immediately after the header).
+ *
+ * The firmware fires WMI_P2P_LISTEN_DONE_EVTID back to the host once
+ * the timer expires (or when WMI_P2P_CANCEL_LISTEN_CMDID arrives).
+ */
+typedef PREPACK struct {
+    uint16_t freq;          /* MHz, host order */
+    uint16_t duration_ms;   /* listen window length */
+    uint16_t extra_ies_len; /* bytes of probe-resp IE template in tail */
+    uint16_t reserved;
+} POSTPACK WMI_P2P_FW_LISTEN_CMD;
+
+#define WMI_P2P_LISTEN_EXTRA_IE_MAX  256
+
 #ifdef ATH_KF
 typedef enum { WMI_AP_APSD_DISABLED = 0, WMI_AP_APSD_ENABLED } WMI_AP_APSD_STATUS;
 
@@ -1636,6 +1783,14 @@ typedef PREPACK struct {
     uint8_t addr4[IEEE80211_ADDR_LEN];
     uint32_t data_Length;
     uint8_t *data;
+    /* P2P off-channel action-frame extension. When both p2p_freq and
+     * p2p_wait_ms are non-zero, the fw switches to p2p_freq, transmits
+     * the frame, dwells for p2p_wait_ms so the peer's response can be
+     * received on that channel, then restores the previous channel and
+     * fires WMI_SEND_RAW_FRAME_EVTID. Zero on either field keeps the
+     * legacy STA/AP path (immediate EVTID, no channel switch). */
+    uint32_t p2p_freq;
+    uint32_t p2p_wait_ms;
 } POSTPACK SEND_RAW_FRAME;
 
 #ifdef NT_FN_FTM_11V
@@ -1742,6 +1897,7 @@ typedef PREPACK struct {
 #endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
 
 #define MAX_SCAN_SSID 15
+
 
 typedef struct {
     uint16_t chan_freq; // Channel frequency in MHz

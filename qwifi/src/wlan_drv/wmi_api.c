@@ -12,6 +12,29 @@
 #include "libwifi.h"
 #include <zephyr/autoconf.h>
 
+/* Optional P2P scan-result feed. The qcom P2P glue (in qcc730/drivers/wifi)
+ * provides the strong definitions when CONFIG_WIFI_QCOM_P2P=y; otherwise
+ * the weak fallbacks below turn the calls into no-ops.
+ */
+__attribute__((weak))
+int qcom_p2p_feed_bss(const uint8_t bssid[6], int freq, int rssi_dbm,
+                      const uint8_t *ies, size_t ies_len)
+{
+    (void)bssid; (void)freq; (void)rssi_dbm; (void)ies; (void)ies_len;
+    return -1;
+}
+__attribute__((weak))
+void qcom_p2p_scan_done(void) { }
+__attribute__((weak))
+void qcom_p2p_listen_end(unsigned int freq) { (void)freq; }
+__attribute__((weak))
+int qcom_p2p_rx_action(const uint8_t *frame, size_t frame_len,
+                       unsigned int freq)
+{
+    (void)frame; (void)frame_len; (void)freq;
+    return -1;
+}
+
 typedef void (*wlan_evt_fn_table)(void *);
 
 extern qurt_pipe_t msg_wfm_wmi_id;
@@ -268,8 +291,8 @@ static void wmi_scan_comp_event(void *msg)
                 }
             }
             if (!duplicate) {
-                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx],
-                     (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i));
+                ap_info *src_ap = (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i);
+                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx], src_ap);
                 cur_idx++;
             }
         }
@@ -312,7 +335,6 @@ static void wmi_scan_result_event(void *msg)
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     if (!p_cxt->scan_in_progress) {
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
-        warn_printf("no pending scan, ignore\n");
         return;
     }
 
@@ -331,8 +353,8 @@ static void wmi_scan_result_event(void *msg)
                 }
             }
             if (!duplicate) {
-                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx],
-                     (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i));
+                ap_info *src_ap = (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i);
+                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx], src_ap);
                 cur_idx++;
             }
         }
@@ -844,6 +866,21 @@ static void wmi_send_raw_event(void *msg)
     }
 
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+
+#ifdef CONFIG_WIFI_QCOM_P2P
+    /* If the last raw send was a P2P off-channel action frame, this
+     * EVTID fires when the fw-side dwell timer expires — that is the
+     * signal for the hostap p2p state machine to run p2p_send_action_cb
+     * (arming the retransmit timer / advancing GO neg). No-op if the
+     * last raw send was a STA probe / AP beacon.
+     *
+     * Declared as a weak forward here because the definition lives in
+     * the qcc730 P2P driver glue (qcom_wifi_p2p_glue.c) which is not
+     * on this module's include path; the linker resolves it when
+     * CONFIG_WIFI_QCOM_P2P=y pulls that translation unit in. */
+    extern void qcom_p2p_on_action_tx_done(int success);
+    qcom_p2p_on_action_tx_done((ret == 1) ? 1 : 0);
+#endif
 }
 
 static void wmi_report_wifi_status(void *msg)
@@ -977,6 +1014,54 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
     case WMI_BMPS_DISABLE_FAIL_EVTID:
         wmi_bmps_disable_failed_event(data);
         break;
+    case WMI_P2P_LISTEN_DONE_EVTID: {
+        /* Forward to the P2P glue. The weak fallback above turns this
+         * into a no-op when CONFIG_WIFI_QCOM_P2P=n.
+         */
+        WMI_P2P_LISTEN_DONE_EVT *evt = (WMI_P2P_LISTEN_DONE_EVT *)data;
+        qcom_p2p_listen_end(evt ? (unsigned int)evt->freq : 0);
+        break;
+    }
+    case WMI_P2P_SCAN_DONE_EVTID:
+        /* Empty payload by design — see p2p_fw_search_finished. We use
+         * a dedicated event ID instead of piggybacking on
+         * WMI_SCAN_COMP_EVTID because the latter carries a multi-KB
+         * SCAN_RESULT struct that wmi_event_relay rejects on size. */
+        qcom_p2p_scan_done();
+        break;
+    case WMI_P2P_RX_ACTION_EVTID: {
+        /* Forward to the P2P glue. The frame[] is a complete 802.11
+         * action mgmt frame including the 24B header — the glue parses
+         * DA/SA/BSSID/category before calling hostap p2p_rx_action. */
+        WMI_P2P_RX_ACTION_EVT *evt = (WMI_P2P_RX_ACTION_EVT *)data;
+        if (evt != NULL) {
+            uint16_t flen = evt->frame_len;
+            if (flen > WMI_P2P_RX_ACTION_FRAME_MAX) {
+                flen = WMI_P2P_RX_ACTION_FRAME_MAX;
+            }
+            (void)qcom_p2p_rx_action(evt->frame, (size_t)flen,
+                                     (unsigned int)evt->freq);
+        }
+        break;
+    }
+    case WMI_P2P_BSS_FOUND_EVTID: {
+        /* One per-BSS notification fired by dc_beacon_receive on each
+         * probe-resp / beacon during a P2P find. Forward the IE blob
+         * straight to the hostap p2p layer via the qcom glue (weak no-op
+         * fallback above when CONFIG_WIFI_QCOM_P2P=n). */
+        WMI_P2P_BSS_FOUND_EVT *evt = (WMI_P2P_BSS_FOUND_EVT *)data;
+        if (evt != NULL) {
+            uint16_t ie_len = evt->ie_len;
+            if (ie_len > WMI_P2P_BSS_FOUND_IE_MAX) {
+                ie_len = WMI_P2P_BSS_FOUND_IE_MAX;
+            }
+            (void)qcom_p2p_feed_bss(evt->bssid, (int)evt->freq,
+                                    (int)evt->rssi,
+                                    (ie_len > 0) ? evt->ie : NULL,
+                                    (size_t)ie_len);
+        }
+        break;
+    }
     default:
         break;
     }
@@ -1053,8 +1138,18 @@ static void wmi_cmd_result(void *msg)
 
 static void wmi_event_notify(WIFIReturnCode_t return_type, uint32_t event_id, void *data)
 {
-    log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n", return_type, event_id, (unsigned int)data,
-               *(int *)data);
+    /* P2P find produces high-frequency events (each SEARCH/LISTEN tick
+     * once per 100-3200 ms): silence the noisy ones from the always-on
+     * log so the console stays readable. Their handlers still log via
+     * log_printf when something interesting happens.
+     * P2P-DEVICE-FOUND is the user-visible per-peer line. */
+    if (event_id != WMI_P2P_LISTEN_DONE_EVTID &&
+        event_id != WMI_P2P_SCAN_DONE_EVTID &&
+        event_id != WMI_P2P_BSS_FOUND_EVTID &&
+        event_id != WMI_P2P_RX_ACTION_EVTID) {
+        log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n", return_type, event_id, (unsigned int)data,
+                   *(int *)data);
+    }
 
     wmi_msg_struct_t wlan_result = {0};
     if (event_id >= invalid_app_event_id || event_id < aws_app_event_id) {

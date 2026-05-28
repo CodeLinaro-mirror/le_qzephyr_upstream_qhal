@@ -89,6 +89,8 @@ qapi_Status_t wlan_drv_roaming_start(void)
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     if (!p_cxt)
         return QAPI_ERROR;
+    if (p_cxt->wlan_roaming_disabled)
+        return QAPI_OK;
     wlan_vdev_cxt_t *vdev_cxt = WLAN_STA_CXT;
 
     if ((p_cxt) && (p_cxt->wlan_roaming_started == 0) &&
@@ -111,6 +113,25 @@ qapi_Status_t wlan_drv_roaming_stop(void)
         p_cxt->wlan_roaming_started = 0;
         k_work_cancel_delayable(&vdev_cxt->roaming_work);
     }
+    return QAPI_OK;
+}
+
+qapi_Status_t wlan_drv_roaming_disable(void)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    if (!p_cxt)
+        return QAPI_ERROR;
+    p_cxt->wlan_roaming_disabled = 1;
+    wlan_drv_roaming_stop();
+    return QAPI_OK;
+}
+
+qapi_Status_t wlan_drv_roaming_enable(void)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    if (!p_cxt)
+        return QAPI_ERROR;
+    p_cxt->wlan_roaming_disabled = 0;
     return QAPI_OK;
 }
 

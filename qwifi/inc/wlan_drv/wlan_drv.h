@@ -74,6 +74,7 @@ typedef struct wlan_qapi_cxt_s {
     uint32_t wlan_start_wps_block_mode : 1;
 #endif
     uint32_t wlan_roaming_started : 1;
+    uint32_t wlan_roaming_disabled : 1;
     uint32_t wlan_set_rate_block_mode : 1;
     uint32_t wlan_get_rate_block_mode : 1;
     uint32_t wlan_send_raw_block_mode : 1;
@@ -153,5 +154,7 @@ int wlan_qapi_init(void);
 qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_Context);
 qapi_Status_t wlan_drv_roaming_start(void);
 qapi_Status_t wlan_drv_roaming_stop(void);
+qapi_Status_t wlan_drv_roaming_disable(void);
+qapi_Status_t wlan_drv_roaming_enable(void);
 
 #endif //__WLAN_DRV_H__
