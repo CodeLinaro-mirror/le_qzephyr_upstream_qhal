@@ -31,11 +31,13 @@ zephyr_compile_definitions(
     MBEDTLS_ECP_ALT
     MBEDTLS_ECDSA_ALT
     MBEDTLS_DHM_ALT
-    # MBEDTLS_AES_ALT    # Build 38: disabled — hardware AES leaves semaphore dirty after 4WHS, TLS derive_keys deadlocks at state=9
-    # MBEDTLS_CCM_ALT    # Build 38: disabled — CCM uses hardware AES internally, same deadlock risk
+    # Hardware AES/CCM/SHA256 ALT re-enabled: blob rebuilt with clearReg() flush
+    # and 500k-iteration CE polling timeout (fixes Build 33/38 deadlock root cause).
+    MBEDTLS_AES_ALT
+    MBEDTLS_CCM_ALT
     MBEDTLS_SHA_ALT
     MBEDTLS_SHA1_ALT
-    # MBEDTLS_SHA256_ALT # Build 33: disabled to use software SHA256 (hardware hangs at TLS state=9)
+    MBEDTLS_SHA256_ALT
     MBEDTLS_CCM_C
     MBEDTLS_ENTROPY_HARDWARE_ALT
 )
