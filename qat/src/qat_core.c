@@ -174,9 +174,6 @@ int QAT_Output(uint32_t Length, const char *Buffer)
  */
 cat_return_state QAT_Response_Str(QAT_Result_Enum_Type ret_code, const char *buffer)
 {
-    /* Response buffer sized to fit within QAT_TX_BUFFER_SIZE */
-    char resp[QAT_RESPONSE_BUF_SIZE];
-    int pos = 0;
     int buf_len = 0;
 
     if (ret_code >= QAT_RC_MAX) {
@@ -191,23 +188,14 @@ cat_return_state QAT_Response_Str(QAT_Result_Enum_Type ret_code, const char *buf
         if (ret_code == QAT_RC_QUIET_NO_CR) {
             /* Raw mode: send buffer with no \r\n framing. */
             if (buf_len < QAT_RESPONSE_BUF_SIZE) {
-                memcpy(resp, buffer, buf_len);
-                pos = buf_len;
+                QAT_Output(buf_len, buffer);
             }
         } else {
             /* Standard framing: \r\n<buffer>\r\n */
             if ((2 + buf_len) < QAT_RESPONSE_BUF_SIZE) {
-                resp[pos++] = '\r';
-                resp[pos++] = '\n';
-                memcpy(resp + pos, buffer, buf_len);
-                pos += buf_len;
-                // resp[pos++] = '\r';
-                // resp[pos++] = '\n';
+                QAT_Output(2, "\r\n");
+                QAT_Output(buf_len, buffer);
             }
-        }
-
-        if (pos > 0) {
-            QAT_Output(pos, resp);
         }
     }
 
