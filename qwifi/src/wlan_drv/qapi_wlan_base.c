@@ -73,7 +73,6 @@ qapi_Status_t qapi_WLAN_Suspend(void)
 
     WLAN_QAPI_LOCK();
     ret = wmi_suspend();
-exit:
     WLAN_QAPI_UNLOCK();
     return ret;
 }
@@ -83,7 +82,6 @@ qapi_Status_t qapi_WLAN_Resume(void)
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     WLAN_QAPI_LOCK();
     wmi_resume();
-exit:
     WLAN_QAPI_UNLOCK();
     return ret;
 }
@@ -171,7 +169,6 @@ qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t device_ID, const uint8_t *
 qapi_Status_t qapi_WLAN_Commit(uint8_t device_ID)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
     uint16_t authMode = vdev->connect_cmd.authMode;
 

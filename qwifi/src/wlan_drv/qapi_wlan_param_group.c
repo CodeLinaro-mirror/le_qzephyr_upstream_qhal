@@ -18,7 +18,6 @@ extern void wmi_set_enterprise_pmk(uint8_t vdev_id, const uint8_t *pmk, uint32_t
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
 static void _wlan_set_wep(uint8_t device_ID)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
     WMI_CONNECT_CMD *p_cmd = &vdev->connect_cmd;
 

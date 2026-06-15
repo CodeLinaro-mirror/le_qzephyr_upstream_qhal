@@ -8,6 +8,7 @@
 #include "nt_osal.h"
 #include <zephyr/autoconf.h>
 #include <zephyr/kernel.h>
+#include "uart_hal.h"
 
 /**
  * <!-- nt_delay -->

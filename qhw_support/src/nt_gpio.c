@@ -10,7 +10,7 @@
 #include "nt_common.h"
 #include "nt_hw.h"
 #include "nt_hw_support.h"
-// #include "ferm_prof.h"
+#include "libwifi.h"
 
 GPIO_Config_t gpio_config;
 

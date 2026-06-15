@@ -92,7 +92,7 @@ bool _socpm_mcu_sleep_wake = false;
 qpower_param_t gs_qpower_param;
 struct libpower_kconfig_t g_libpower_kconfig;
 extern void z_arm_reset(void);
-static void aon_set_alarm(uint64_t us)
+static void __attribute__((unused)) aon_set_alarm(uint64_t us)
 {
     /* !!! Caution: remove it if automatic suspend is implemented. */
     sys_clock_set_timeout(k_us_to_ticks_ceil64(us), true);
@@ -120,7 +120,7 @@ qapi_Status_t qapi_pmu_init(void)
     libpower_ifc.qtmr_init = qtmr_init; 
     libpower_ifc.nt_hal_complete_rri_restore_op = nt_hal_complete_rri_restore_op; 
 #ifdef CONFIG_WATCHDOG
-    libpower_ifc.watchdog_feed = qwdt_feed_now_direct;
+    libpower_ifc.watchdog_feed = (watchdog_feed_cb)qwdt_feed_now_direct;
 #else
     libpower_ifc.watchdog_feed = NULL;
 #endif
@@ -340,7 +340,7 @@ static void nvic_suspend(_nvic_context_t *backup)
     memcpy(backup->ISER, (uint32_t *)NVIC->ISER, sizeof(NVIC->ISER));
     memcpy(backup->ISPR, (uint32_t *)NVIC->ISPR, sizeof(NVIC->ISPR));
     memcpy(backup->IP, (uint32_t *)NVIC->IPR, sizeof(NVIC->IPR));
-    memcpy(backup->SHP, SCB->SHPR, sizeof(SCB->SHPR));
+    memcpy(backup->SHP, (const void *)SCB->SHPR, sizeof(SCB->SHPR));
 }
 
 static void nvic_resume(_nvic_context_t *backup)
@@ -348,7 +348,7 @@ static void nvic_resume(_nvic_context_t *backup)
     memcpy((uint32_t *)NVIC->ISER, backup->ISER, sizeof(NVIC->ISER));
     memcpy((uint32_t *)NVIC->ISPR, backup->ISPR, sizeof(NVIC->ISPR));
     memcpy((uint32_t *)NVIC->IPR, backup->IP, sizeof(NVIC->IPR));
-    memcpy(SCB->SHPR, backup->SHP, sizeof(SCB->SHPR));
+    memcpy((void *)SCB->SHPR, backup->SHP, sizeof(SCB->SHPR));
 }
 
 static void mcusleep_init_vector_table(void)
@@ -356,8 +356,11 @@ static void mcusleep_init_vector_table(void)
 #define VECTOR_ADDRESS 0
 
     size_t vector_size = (size_t)_vector_end - (size_t)_vector_start;
-    (void)memcpy(VECTOR_ADDRESS, _vector_start, vector_size);
-    *(uint32_t *)(VECTOR_ADDRESS + 0x4) = (void *)ram_minimum_code;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
+    (void)memcpy((void *)(uintptr_t)VECTOR_ADDRESS, _vector_start, vector_size);
+#pragma GCC diagnostic pop
+    *(uint32_t *)(VECTOR_ADDRESS + 0x4) = (uint32_t)ram_minimum_code;
     SCB->VTOR = VECTOR_ADDRESS & SCB_VTOR_TBLOFF_Msk;
 }
 
@@ -383,6 +386,7 @@ static int mcu_sleep_enter(void)
     q_sleep_wifi_enter(NT_PMU_CFG_WIFI_SLEEP_OFFSET);
 
     extern aon_sleep_info_t last_sleep_info;
+    (void)last_sleep_info;
 
     /* This function performs sleep recipe as per the sleep mode specified */
 #ifdef SLEEP_CLK_CAL_IN_SLEEP_MODE
@@ -446,7 +450,7 @@ void qapi_enter_suspend2ram(void)
 
     if(_socpm_mcu_sleep_wake == FALSE){
         nt_socpm_handle_sleep_entry_failure(mcu_sleep);
-        *(uint32_t *)(0x4) = (void *)z_arm_reset;
+        *(uint32_t *)(0x4) = (uint32_t)z_arm_reset;
     }
     /*
     * Wrapping mcu_sleep_wakeup() with __disable_fault_irq() prevents the AON IRQ
