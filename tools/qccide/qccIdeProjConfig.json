@@ -95,10 +95,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
@@ -214,10 +214,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
@@ -333,10 +333,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
@@ -452,10 +452,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
@@ -571,10 +571,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
@@ -690,10 +690,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
@@ -809,10 +809,10 @@
     },
     "CLEAN_IMAGE_PATTERN": {
       "win": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ],
       "linux": [
-        "west build -b ${board} -d ${buildDir} -p always"
+        "west build -d ${buildDir} -t pristine"
       ]
     },
     "FLASH_PATTERN": {
