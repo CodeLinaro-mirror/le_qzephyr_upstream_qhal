@@ -2,130 +2,11 @@
   {
     "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
     "1": "Used and updated by extension, you should not change it manually if you don't know why",
-    "prjName": "qcc730M_bmpsApp",
-    "IDEVer": "^0.5.6",
-    "sdkName": "qccsdk_qcc730",
-    "sdkVer": "1.0.0",
-    "activated": false,
-    "chipID": "QCC730",
-    "chipVersion": "v2",
-    "chipTarget": "QCC730",
-    "toolchainName": "arm-zephyr-eabi-gcc",
-    "sdkPath": "c:\\Users\\lonchen\\Zephyr\\zepphyr84",
-    "demoPath": "./qapp",
-    "demoRTOS": "",
-    "demoChipBoard": "mqm730i",
-    "demoBuildScriptWin": "qccsdk.py",
-    "demoBuildScriptLinux": "qccsdk.py",
-    "demoFlashScriptWin": "qccsdk.py",
-    "demoFlashScriptLinux": "qccsdk.py",
-    "cfgSetScriptWin": "qccsdk.py",
-    "cfgSetScriptLinux": "qccsdk.py",
-    "defaultDemo": "",
-    "defaultDemoPathName": "",
-    "board": "mqm730i",
-    "buildDir": "build/${board}",
-    "appPath": "./qapp/bmps_app",
-    "venvActivate": ".venv/Scripts/activate.ps1",
-    "buildRunPath": "./qapp/bmps_app",
-    "flashRunPath": "./qapp/bmps_app",
-    "entryFun": "main",
-    "elfName": "zephyr.elf",
-    "elfPath": "./qapp/bmps_app/build/${board}/zephyr/zephyr.elf",
-    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
-    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
-    "boardList": [
-      "mqm730i",
-      "mqm730x",
-      "cqm730i",
-      "cqm730x"
-    ],
-    "incPaths": [
-      "./qapp/bmps_app"
-    ],
-    "elfSearchPaths": [
-      "build/${board}/zephyr/${elfName}",
-      "build/zephyr/${elfName}",
-      "${appRootDir}/${appName}/build/${board}/zephyr/${elfName}"
-    ],
-    "appMarkers": {
-      "requiredFiles": [
-        "CMakeLists.txt"
-      ],
-      "anyOfFiles": [
-        "prj.conf"
-      ],
-      "anyOfDirs": [
-        "src"
-      ]
-    },
-    "requiresVenv": true,
-    "requiresWorkspaceInit": true,
-    "venvSearchPaths": [
-      ".venv",
-      "zephyr/.venv",
-      "../.venv",
-      "../zephyrproject/.venv"
-    ],
-    "venvPaths": [
-      ".venv/Scripts",
-      ".venv/bin"
-    ],
-    "debugCfg": {
-      "gdbExecutables": [
-        "arm-zephyr-eabi-gdb",
-        "arm-none-eabi-gdb"
-      ]
-    },
-    "SET_CFG_PATTERN": {
-      "win": [
-        ""
-      ],
-      "linux": [
-        ""
-      ]
-    },
-    "BUILD_IMAGE_PATTERN": {
-      "win": [
-        "west build -b ${board} -d ${buildDir}"
-      ],
-      "linux": [
-        "west build -b ${board} -d ${buildDir}"
-      ]
-    },
-    "CLEAN_IMAGE_PATTERN": {
-      "win": [
-        "west build -d ${buildDir} -t pristine"
-      ],
-      "linux": [
-        "west build -d ${buildDir} -t pristine"
-      ]
-    },
-    "FLASH_PATTERN": {
-      "win": [
-        "west flash -d ${buildDir}",
-        "west flash -d ${buildDir} --all",
-        "west flash -d ${buildDir} --bdf",
-        "west flash -d ${buildDir} --all --bdf",
-        "west flash -d ${buildDir} --caldb"
-      ],
-      "linux": [
-        "west flash -d ${buildDir}",
-        "west flash -d ${buildDir} --all",
-        "west flash -d ${buildDir} --bdf",
-        "west flash -d ${buildDir} --all --bdf",
-        "west flash -d ${buildDir} --caldb"
-      ]
-    }
-  },
-  {
-    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
-    "2": "Used and updated by extension, you should not change it manually if you don't know why",
     "prjName": "qcc730M_ftmApp",
     "IDEVer": "^0.5.6",
     "sdkName": "qccsdk_qcc730",
     "sdkVer": "1.0.0",
-    "activated": true,
+    "activated": false,
     "chipID": "QCC730",
     "chipVersion": "v2",
     "chipTarget": "QCC730",
@@ -239,7 +120,7 @@
   },
   {
     "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
-    "3": "Used and updated by extension, you should not change it manually if you don't know why",
+    "2": "Used and updated by extension, you should not change it manually if you don't know why",
     "prjName": "qcc730M_powerApp",
     "IDEVer": "^0.5.6",
     "sdkName": "qccsdk_qcc730",
@@ -358,12 +239,12 @@
   },
   {
     "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
-    "4": "Used and updated by extension, you should not change it manually if you don't know why",
+    "3": "Used and updated by extension, you should not change it manually if you don't know why",
     "prjName": "qcc730M_qcliApp",
     "IDEVer": "^0.5.6",
     "sdkName": "qccsdk_qcc730",
     "sdkVer": "1.0.0",
-    "activated": false,
+    "activated": true,
     "chipID": "QCC730",
     "chipVersion": "v2",
     "chipTarget": "QCC730",
@@ -477,7 +358,7 @@
   },
   {
     "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
-    "5": "Used and updated by extension, you should not change it manually if you don't know why",
+    "4": "Used and updated by extension, you should not change it manually if you don't know why",
     "prjName": "qcc730M_qcspiSlaveApp",
     "IDEVer": "^0.5.6",
     "sdkName": "qccsdk_qcc730",
@@ -596,7 +477,7 @@
   },
   {
     "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
-    "6": "Used and updated by extension, you should not change it manually if you don't know why",
+    "5": "Used and updated by extension, you should not change it manually if you don't know why",
     "prjName": "qcc730M_qcspiHostApp",
     "IDEVer": "^0.5.6",
     "sdkName": "qccsdk_qcc730",
@@ -715,7 +596,7 @@
   },
   {
     "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
-    "7": "Used and updated by extension, you should not change it manually if you don't know why",
+    "6": "Used and updated by extension, you should not change it manually if you don't know why",
     "prjName": "qcc730M_wifiStaApp",
     "IDEVer": "^0.5.6",
     "sdkName": "qccsdk_qcc730",
