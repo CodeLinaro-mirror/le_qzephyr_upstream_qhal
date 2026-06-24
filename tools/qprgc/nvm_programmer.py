@@ -175,6 +175,8 @@ class NVM_Programmer(GDB_Framework):
         self.argparser.add_argument('--export-bdf', help='Export BDF bin from board to PC, specify output file path')
 
     def load_fields(self, file_name):
+        if not os.path.isabs(file_name) and not os.path.exists(file_name):
+            file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_name)
         with open(file_name, 'r') as f:
             data = yaml.safe_load(f)
 
