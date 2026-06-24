@@ -83,5 +83,10 @@ extern void wmi_wps_scan_ap_result_event(void *msg);
 extern void wmi_wps_scan_comp_event(void *msg);
 #endif /* CONFIG_WIFI_QCOM_WPS */
 
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+extern qapi_Status_t wmi_wnm_sleep(uint8_t action, uint32_t interval_ms);
+extern qapi_Status_t wmi_wnm_set_enable(uint8_t enable);
+extern qapi_Status_t wmi_wnm_set_bss_max_idle(uint32_t seconds);
+#endif
 
 #endif //__WMI_API_H__

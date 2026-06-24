@@ -35,6 +35,7 @@ typedef enum {
     AON_CLIENT_OS = 0,
     AON_CLIENT_BMPS_IN_SLEEP_MODE,
     AON_CLIENT_BMPS_IN_ACTIVE_MODE,
+    AON_CLIENT_WNM_IN_SLEEP_MODE,
     /*Add other clients like AON_CLIENT_BT here...*/
     AON_CLIENT_MAX,
     AON_CLIENT_NONE = 0xFF  // Special value to indicate no client

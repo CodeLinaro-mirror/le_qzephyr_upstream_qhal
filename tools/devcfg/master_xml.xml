@@ -108,7 +108,7 @@
 
       <props id="10" id_name="NT_DEVCFG_MIN_WAKE_TIME " min="5" max="5" helptext="default MIN WAKE TIME before enter to power save" type="0x00000002 "> 5 </props>
 
-      <props id="11" id_name="NT_DEVCFG_BSS_MAX_IDLE_TIMER " min="180" max="180" helptext="default bss max idle time " type="0x00000002 "> 180 </props>
+      <props id="11" id_name="NT_DEVCFG_BSS_MAX_IDLE_TIMER " min="180" max="65534" helptext="default bss max idle time " type="0x00000002 "> 64000 </props>
 
       <props id="12" id_name="NT_DEVCFG_WNM_SLEEP_TIMER " min="10000" max="10000" helptext="default wnm sleep time " type=" 0x00000002"> 10000 </props>
 
@@ -142,7 +142,7 @@
 
       <props id="27" id_name="NT_DEVCFG_NO_OF_ACCEPTABLE_BEACON_MISS" min="15" max="15" helptext="number of acceptable beacon miss" type="0x00000002"> 15 </props>
 
-      <props id="28" id_name="NT_DEVCFG_WNM_DTIM_CONFIG" min="2" max="2" helptext="WNM dtim sleep enable/disable/auto(enable/disable depending on proxy arp support on ap) " type="0x00000002"> 2 </props>
+      <props id="28" id_name="NT_DEVCFG_WNM_DTIM_CONFIG" min="0" max="2" helptext="WNM dtim sleep enable/disable/auto(enable/disable depending on proxy arp support on ap) " type="0x00000002"> 0 </props>
 
       <props id="29" id_name="NT_DEVCFG_MINIMUM_SLEEP_TIME_FOR_AON" min="20" max="20" helptext="Configure minimum sleep time for AON" type="0x00000002"> 20 </props>
 

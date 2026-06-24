@@ -442,3 +442,58 @@ qapi_Status_t qapi_WLAN_ignore_bcmc_in_bmps(uint8_t device_ID, uint8_t enable)
 
     return ret;
 }
+
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+/* Forward declarations — propwifi functions readable from any task context. */
+extern void nt_wnm_fill_status(uint8_t *sleeping, uint8_t *ap_capable,
+                                uint32_t *interval_ms,
+                                uint16_t *enter_req_sent, uint16_t *enter_rsp_rcvd,
+                                uint16_t *exit_req_sent,  uint16_t *exit_rsp_rcvd,
+                                uint16_t *wkup_sta, uint16_t *wkup_tim,
+                                uint16_t *wkup_idle);
+extern uint32_t nt_wnm_get_enable(void);
+
+qapi_Status_t qapi_WLAN_Wnm_Sleep(uint8_t action, uint32_t interval_ms)
+{
+    qapi_Status_t ret;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wnm_sleep(action, interval_ms);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Wnm_Set_Enable(uint8_t enable)
+{
+    qapi_Status_t ret;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wnm_set_enable(enable);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Wnm_Set_Bss_Max_Idle(uint32_t m_seconds)
+{
+    qapi_Status_t ret;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wnm_set_bss_max_idle(m_seconds);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+void qapi_WLAN_Wnm_Fill_Status(uint8_t *sleeping, uint8_t *ap_capable,
+                                uint32_t *interval_ms,
+                                uint16_t *enter_req_sent, uint16_t *enter_rsp_rcvd,
+                                uint16_t *exit_req_sent,  uint16_t *exit_rsp_rcvd,
+                                uint16_t *wkup_sta, uint16_t *wkup_tim,
+                                uint16_t *wkup_idle, uint32_t *enabled)
+{
+    nt_wnm_fill_status(sleeping, ap_capable, interval_ms,
+                       enter_req_sent, enter_rsp_rcvd,
+                       exit_req_sent,  exit_rsp_rcvd,
+                       wkup_sta, wkup_tim, wkup_idle);
+    *enabled = nt_wnm_get_enable();
+}
+#endif /* NT_FN_WNM_POWERSAVE_MODE */

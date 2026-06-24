@@ -1727,3 +1727,36 @@ qapi_Status_t wmi_wlan_sap_csa(uint8_t device_ID, uint8_t switch_mode, uint16_t 
 
     return ret;
 }
+
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+qapi_Status_t wmi_wnm_sleep(uint8_t action, uint32_t interval_ms)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    p_cxt->wnm_sleep_param.action      = action;
+    p_cxt->wnm_sleep_param.interval_ms = interval_ms;
+    return wmi_cmd_send(WMI_WNM_SLEEP_CMDID,
+                        &p_cxt->wnm_sleep_param,
+                        sizeof(WMI_WNM_SLEEP_PARAMS));
+}
+
+qapi_Status_t wmi_wnm_set_enable(uint8_t enable)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    p_cxt->wnm_config_param.wnm_enable = (int8_t)enable;
+    return wmi_cmd_send(WMI_SET_WNM_ENABLE_CMDID,
+                        &p_cxt->wnm_config_param,
+                        sizeof(WMI_WNM_CONFIG_CMD));
+}
+
+qapi_Status_t wmi_wnm_set_bss_max_idle(uint32_t m_seconds)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    p_cxt->wnm_config_param.bss_max_idle_time = m_seconds;
+    return wmi_cmd_send(WMI_SET_BSS_IDLE_TIME_CMDID,
+                        &p_cxt->wnm_config_param,
+                        sizeof(WMI_WNM_CONFIG_CMD));
+}
+#endif /* NT_FN_WNM_POWERSAVE_MODE */

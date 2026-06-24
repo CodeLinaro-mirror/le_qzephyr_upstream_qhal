@@ -123,6 +123,10 @@ typedef struct wlan_qapi_cxt_s {
     uint8_t  wps_scan_comp[sizeof(WMI_WPS_SCAN_COMP_RESULT)];
     uint8_t  wps_scan_ap[sizeof(WMI_WPS_SCAN_AP_RESULT)];
 #endif /* CONFIG_WIFI_QCOM_WPS */
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+    WMI_WNM_SLEEP_PARAMS wnm_sleep_param;
+    WMI_WNM_CONFIG_CMD   wnm_config_param;
+#endif
 } wlan_qapi_cxt_t;
 
 extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;

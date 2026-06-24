@@ -523,10 +523,18 @@ typedef PREPACK struct {
  */
 typedef PREPACK struct {
     int8_t wnm_enable;          ///< wnm enable flag
-    uint16_t bss_max_idle_time; ///< bss idle time
+    uint32_t bss_max_idle_time; ///< bss idle time
     uint16_t sleep_interval;    ///< sleep time
     uint8_t wnm_dtim_enable_disable_auto;
 } POSTPACK WMI_WNM_CONFIG_CMD;
+
+/**
+ * WMI_WNM_SLEEP_PARAMS — payload for WMI_WNM_SLEEP_CMDID
+ */
+typedef struct {
+    uint8_t  action;      ///< 0 = enter, 1 = exit
+    uint32_t interval_ms; ///< sleep interval in ms (enter only)
+} WMI_WNM_SLEEP_PARAMS;
 
 /**
  * WMI_TWT_CONFIG_CMD
@@ -875,6 +883,7 @@ typedef struct {
     uint16_t wnm_power_save_exit_count_due_to_TIM_from_ap; ///< count for exit from wnm mode due to tim update from ap
     uint16_t wnm_power_save_exit_count_due_to_sta_data_avail; ///< count for exit from wnm mode due to data availability
                                                               ///< from sta
+    uint16_t wnm_power_save_exit_count_due_to_bss_idle;    ///< count for exit from wnm mode due to BSS Max Idle expiry
 #endif                                                        // NT_FN_PRODUCTION_STATS
 #ifdef NT_FN_DEBUG_STATS
     uint16_t wnm_power_save_total_enter_sleep_mode_req_frame_sent;      ///< total enter sleep mode req sent
