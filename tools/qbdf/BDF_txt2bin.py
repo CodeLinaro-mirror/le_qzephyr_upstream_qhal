@@ -2,12 +2,13 @@
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
 '''
-import bdf_multi_txt_bin as bdf_mul
 #import elfGen
 import sys
 import os
 from sys import argv
 import shutil
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import bdf_multi_txt_bin as bdf_mul
 
 print("********* BDF Multiple txt to bin generator tool version 1.0 ***********")
 print("\nThis tool generates bin files for multiple text files.\n")
