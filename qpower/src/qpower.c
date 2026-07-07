@@ -107,11 +107,11 @@ static void libpower_kconfig_install(void)
 qapi_Status_t qapi_pmu_init(void)
 {
     PRINT_LOG_FUNC_LINE_ENTRY;
-    libpower_ifc_t libpower_ifc;
 
     libpower_kconfig_install();
 
 #ifdef CONFIG_QWIFI
+    libpower_ifc_t libpower_ifc;
     libpower_ifc.ulpsmps2 = presleep_update_ulpsmps2_oneshot;
     libpower_ifc.ts_init = pmu_ts_init;
     libpower_ifc.ts_configure = pmu_ts_configure;

@@ -151,7 +151,7 @@ void uart_polling_receive(void)
                         continue;
                     }
                     pkt->len = cInputLength;
-                    memcpy(pkt->buf, cInputString, cInputLength);
+                    memcpy(pkt->buf, (const uint8_t *)cInputString, cInputLength);
                     k_fifo_put(&diag_fifo, pkt);
                 }else{
                     printk("pkt malloc fail!\n");
