@@ -279,6 +279,8 @@ class Fermion_Command:
         return dutOutput
 
     def connectAp(self, ssid):
+        enable_amsdu_command = "qwifi set_amsdu rx enable"
+        self.ser.writeSerial(enable_amsdu_command)
         ssid = ssid.strip()
         if self.security != 0:
             connect_command = "wifi connect -s {} -p {} -k {}".format(ssid, self.psk, self.security)
@@ -428,15 +430,13 @@ class Fermion_Command:
 
         tx_pkts_pattern = "Num packets:\s*(\d+)"
         result = re.search(tx_pkts_pattern, dutOutput)
-        if result is None:
-            return ValueList
-        tx_pkts = int(result.group(1))
+        if result:
+            tx_pkts = int(result.group(1))
 
         tx_bytes_pattern = "Num Bytes:\s*(\d+)"
         result = re.search(tx_bytes_pattern, dutOutput)
-        if result is None:
-            return ValueList
-        tx_bytes = int(result.group(1))
+        if result:
+            tx_bytes = int(result.group(1))
 
         return [str(runID), str(tx_pkts), str(rx_pkts), str(tx_bytes), str(rx_bytes), "0"]
 
@@ -448,15 +448,13 @@ class Fermion_Command:
 
         rx_pkts_pattern = "Num packets:\s*(\d+)"
         result = re.search(rx_pkts_pattern, dutOutput)
-        if result is None:
-            return ValueList
-        rx_pkts = int(result.group(1))
+        if result:
+            rx_pkts = int(result.group(1))
 
         rx_bytes_pattern = "Num Bytes:\s*(\d+)"
         result = re.search(rx_bytes_pattern, dutOutput)
-        if result is None:
-            return ValueList
-        rx_bytes = int(result.group(1))
+        if result:
+            rx_bytes = int(result.group(1))
 
         return [str(runID), str(tx_pkts), str(rx_pkts), str(tx_bytes), str(rx_bytes), "0"]
 
