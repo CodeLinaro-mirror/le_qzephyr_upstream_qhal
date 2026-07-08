@@ -28,6 +28,12 @@ extern struct cat_io_interface *qat_get_io_interface(void);
 /* Working buffer for libcat */
 static uint8_t qat_work_buf[QAT_WORK_BUF_SIZE];
 
+/* Framing buffer for QAT_Response_Str — assembles "\r\n<payload>" into a
+ * single ring_send. File-scope (not on the caller stack) and serialised by
+ * resp_mutex because callers span multiple threads. */
+static char s_resp_buf[QAT_RESPONSE_BUF_SIZE];
+static K_MUTEX_DEFINE(resp_mutex);
+
 /* libcat descriptor - support up to MAX_CMD_GROUPS command groups */
 static struct cat_command_group *cmd_group_ptrs[MAX_CMD_GROUPS];
 static uint8_t cmd_group_count = 0;
@@ -191,10 +197,21 @@ cat_return_state QAT_Response_Str(QAT_Result_Enum_Type ret_code, const char *buf
                 QAT_Output(buf_len, buffer);
             }
         } else {
-            /* Standard framing: \r\n<buffer>\r\n */
+            /* Standard framing: \r\n<buffer>. The prefix and payload must
+             * be assembled into a single QAT_Output call: each QAT_Output
+             * maps to one ring_send, i.e. one discrete message on the host
+             * ring. Splitting into two sends made the host read only the
+             * "\r\n" message and drop the payload (e.g. +IPD data lost).
+             * A file-scope static buffer keeps the response off the caller
+             * stack (small work-queue stacks would overflow with ~1400 B),
+             * serialised by resp_mutex since callers span multiple threads. */
             if ((2 + buf_len) < QAT_RESPONSE_BUF_SIZE) {
-                QAT_Output(2, "\r\n");
-                QAT_Output(buf_len, buffer);
+                k_mutex_lock(&resp_mutex, K_FOREVER);
+                s_resp_buf[0] = '\r';
+                s_resp_buf[1] = '\n';
+                memcpy(s_resp_buf + 2, buffer, buf_len);
+                QAT_Output(2 + buf_len, s_resp_buf);
+                k_mutex_unlock(&resp_mutex);
             }
         }
     }
