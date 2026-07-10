@@ -432,7 +432,7 @@ loader_start( void* arg){
 
 		sbl_printf("APP entry 0x%08x, startAdd=0x%x\r\n", (unsigned int)app_entry, (unsigned int)msp);
 
-		__asm volatile ("MSR msp, %0" : : "r" (*msp) :);
+		__asm volatile ("MSR msp, %0" : : "r" (*msp) : "sp");
 
 		set_sbl_share(OTA_IMG_FORMAT_ELF, get_bdf_addr(fdt), fdt);
 
@@ -451,7 +451,7 @@ loader_start( void* arg){
 
 		sbl_printf("APP entry 0x%08x\r\n", (unsigned int)app_entry);
 
-		__asm volatile ("MSR msp, %0" : : "r" (*msp) :);
+		__asm volatile ("MSR msp, %0" : : "r" (*msp) : "sp");
 
 		set_sbl_share(OTA_IMG_FORMAT_BIN, get_bdf_addr(fdt), fdt);
 
