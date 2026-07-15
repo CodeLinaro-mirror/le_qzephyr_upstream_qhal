@@ -10,6 +10,14 @@
 extern void wlan_clear_privacy(uint8_t vdev_id);
 extern void wlan_set_connect_ssid(uint8_t vdev_id, const unsigned char *ssid, uint8_t ssidLength);
 extern void wlan_set_connect_bssid(uint8_t vdev_id, const uint8_t *bssid, uint8_t bssid_length);
+extern void wlan_set_ctrl_flags(uint8_t vdev_id, uint32_t flags);
+extern void wlan_clear_ctrl_flags(uint8_t vdev_id, uint32_t flags);
+extern void wlan_set_wps_open_connect(uint8_t vdev_id, uint16_t channel);
+extern void wlan_clear_wps_open_connect(void);
+extern void wlan_set_psk_params(uint8_t vdev_id,
+                                 const uint8_t *ssid, uint8_t ssid_len,
+                                 uint16_t auth_mode, uint8_t cipher_type,
+                                 const uint8_t *passphrase, uint8_t passphrase_len);
 extern void wlan_set_passphrase(uint8_t vdev_id, const uint8_t *passphrase, uint8_t passphrase_len);
 extern void wlan_set_scan_param(WMI_START_SCAN_CMD *p_cmd, const qapi_WLAN_Start_Scan_Params_t *scan_Params);
 extern void wlan_preset_specific_param(uint8_t vdev_id);
@@ -55,7 +63,7 @@ extern qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
 extern qapi_Status_t wlan_unit_test_cmd(void *p_data, uint32_t data_len);
 extern qapi_Status_t wlan_set_active_device(uint8_t device_ID, uint8_t active_device_id);
 extern qapi_Status_t wmi_unit_test_cmd_send(void *p_data, uint32_t data_len);
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 extern qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof);
 #endif
 extern qapi_Status_t wlan_set_ba_window_size(uint8_t device_ID, uint16_t tx_size, uint16_t rx_size);

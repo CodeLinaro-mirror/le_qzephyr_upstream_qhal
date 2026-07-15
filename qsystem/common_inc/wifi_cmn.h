@@ -197,11 +197,15 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 #endif
 
 /* flag for enabling WPS */
-#ifndef CONFIG_WPS
-// #define CONFIG_WPS
+#ifndef CONFIG_WIFI_QCOM_WPS_NATIVE
+// #define CONFIG_WIFI_QCOM_WPS_NATIVE
 #endif
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
+#ifdef CONFIG_WIFI_QCOM_WPS
+#error "CONFIG_WIFI_QCOM_WPS_NATIVE and CONFIG_WIFI_QCOM_WPS are mutually exclusive. " \
+       "Enable only one WPS path at a time."
+#endif
 #ifndef NT_FN_WPS
 #define NT_FN_WPS
 #ifdef NT_FN_WPS
@@ -210,6 +214,21 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 #endif
 #endif // NT_FN_WPS
 #endif
+
+/* flag for enabling host-driven WPS scan path.
+ * Mutually exclusive with NT_FN_WPS (firmware-native WPS stack).
+ * When CONFIG_WIFI_QCOM_WPS is enabled on the host, this must also be
+ * enabled in the firmware blob so WMI_WPS_SCAN_CMDID is handled. */
+#ifndef CONFIG_WIFI_QCOM_WPS_FW
+#define CONFIG_WIFI_QCOM_WPS_FW
+#endif // CONFIG_WIFI_QCOM_WPS_FW
+
+#ifdef CONFIG_WIFI_QCOM_WPS_FW
+#ifdef NT_FN_WPS
+#error "NT_FN_WPS and CONFIG_WIFI_QCOM_WPS_FW are mutually exclusive. " \
+       "Enable only one WPS path at a time."
+#endif
+#endif // CONFIG_WIFI_QCOM_WPS_FW
 
 /*********************************wifi + non-QCLI DEMO*******************************************/
 

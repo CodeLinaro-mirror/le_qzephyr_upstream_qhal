@@ -35,7 +35,7 @@
 #define WMI_PMK_LEN 32
 #define WMI_GMK_LEN 32
 #define WMI_CHANNEL_NUM_MAX TOT_MAX_CHANNEL_INDEX + 1
-#define WMI_MAX_APP_IE_LEN 64
+#define WMI_MAX_APP_IE_LEN 140
 
 typedef PREPACK struct {
     uint8_t *wur_buffer;
@@ -256,6 +256,9 @@ typedef enum {
     WMI_DBG_TSF_CMDID,
     WIFI_SET_SAP_CSA,
     WMI_GET_WIFI_STATUS,
+#if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
+    WMI_WPS_SCAN_CMDID,
+#endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
 
@@ -296,6 +299,10 @@ typedef enum {
     WMI_WLAN_SAP_CSA_EVTID,
     WMI_REPORT_WIFI_STATUS,
     WMI_BMPS_DISABLE_FAIL_EVTID,
+#if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
+    WMI_WPS_SCAN_COMP_EVTID,
+    WMI_WPS_SCAN_RESULT_EVTID,
+#endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
 
@@ -1660,6 +1667,70 @@ typedef PREPACK struct {
 typedef PREPACK struct {
     uint8_t scan_id;
 } POSTPACK WMI_SCAN_STOP_CMD;
+
+/* CONFIG_WIFI_QCOM_WPS_FW is defined in the firmware build when host-driven WPS
+ * is enabled (replaces NT_FN_WPS_HOST). CONFIG_WIFI_QCOM_WPS is defined on the
+ * host side. Both sides must include this struct definition, so the guard accepts
+ * either. The two macros are independent — the firmware is compiled once and fixed;
+ * the host Kconfig may vary per application build. */
+#if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
+/* WMI_WPS_SCAN_CMDID: host → firmware, start or stop WPS scan */
+#define WMI_WPS_SCAN_MAX_CHANNELS 39  /* 14 (2.4 GHz) + 25 (5 GHz) */
+typedef PREPACK struct {
+    uint8_t  op;                                  /* WPS_SCAN_OP_START or WPS_SCAN_OP_STOP */
+    uint8_t  wps_mode;                            /* WPS_PBC_MODE or WPS_PIN_MODE (ignored when op=STOP) */
+    uint8_t  channel_count;                       /* number of entries in channels[]; 0 = full scan */
+    uint8_t  reserved;                            /* alignment padding */
+    uint16_t channels[WMI_WPS_SCAN_MAX_CHANNELS]; /* 802.11 channel numbers (ignored when op=STOP) */
+    uint8_t  filter_bssid[6];                     /* target BSSID filter; all-zero = no filter */
+} POSTPACK WMI_WPS_SCAN_CMD;
+
+#define WPS_SCAN_OP_START  0x01
+#define WPS_SCAN_OP_STOP   0x02
+
+/*
+ * Maximum WSC IE payload length stored per AP in WMI_WPS_SCAN_AP_RESULT.
+ * Full WSC IE payloads can reach WMI_MAX_IE_LEN (255) bytes, but typical
+ * Beacon/ProbeResp WSC IEs are 50-150 bytes.  This value is sized so that
+ * sizeof(WMI_WPS_SCAN_AP_RESULT) == QAPI_EVENT_SMALL_PAYLOAD_LENGTH_MAX (256),
+ * keeping the struct in the Small WMI event pool (5 slots) rather than the
+ * Large pool (3 slots), which avoids pool exhaustion during busy scans.
+ *   256 - 46 (fixed fields) = 210
+ */
+#define WMI_WPS_SCAN_IE_MAX_LEN  210
+
+/*
+ * WMI_WPS_SCAN_RESULT_EVTID payload.
+ * Firmware sends one instance per WPS-capable AP found during a scan pass.
+ * The host accumulates these to perform PBC overlap detection or present
+ * a PIN target list.  Mirrors the WMI_SCAN_RESULT_EVTID pattern.
+ */
+typedef PREPACK struct {
+    uint8_t  bssid[IEEE80211_ADDR_LEN];
+    uint16_t channel;
+    uint8_t  ssid[WMI_MAX_SSID_LEN + 1];
+    uint8_t  ssid_len;
+    int8_t   rssi;
+    uint8_t  auth_type;                     /* WPS_AUTH_* flags from Beacon/ProbeResp */
+    uint8_t  encr_type;                     /* WPS_ENCR_* flags from Beacon/ProbeResp */
+    uint8_t  wsc_ie_len;
+    uint8_t  wsc_ie[WMI_WPS_SCAN_IE_MAX_LEN]; /* raw WSC IE payload (after OUI) */
+} POSTPACK WMI_WPS_SCAN_AP_RESULT;
+
+/*
+ * WMI_WPS_SCAN_COMP_EVTID payload.
+ * Firmware sends one instance when a full WPS scan round completes.
+ * The firmware does NOT perform overlap detection or AP selection;
+ * those decisions are made on the host side using the per-AP results
+ * delivered via WMI_WPS_SCAN_RESULT_EVTID.
+ * num_ap_found reflects the total number of WMI_WPS_SCAN_AP_RESULT
+ * events sent in this scan round.
+ */
+typedef PREPACK struct {
+    uint8_t  num_ap_found;   /* number of WMI_WPS_SCAN_AP_RESULT events sent */
+    uint8_t  reserved[3];
+} POSTPACK WMI_WPS_SCAN_COMP_RESULT;
+#endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
 
 #define MAX_SCAN_SSID 15
 

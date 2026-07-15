@@ -344,7 +344,7 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
             qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_ENCRYPTION_TYPE */
         }
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
         case __QAPI_WLAN_PARAM_GROUP_SECURITY_WPS_CREDENTIALS: {
             ret = (qapi_Status_t)wlan_wps_set_credentials(device_ID, (qapi_WLAN_WPS_Credentials_t *)data);
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_WPS_CREDENTIALS */

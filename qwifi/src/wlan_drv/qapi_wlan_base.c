@@ -364,7 +364,7 @@ qapi_Status_t qapi_WLAN_Recv_Mgmt_Frames(uint8_t *buffer, uint32_t buffer_len, u
     return wlan_recv_mgmt_frame(buffer, buffer_len, frame_len, timeout);
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 qapi_Status_t qapi_WLAN_Start_Wps(uint8_t device_ID, qapi_WLAN_WPS_Connect_Action_e connect_Action,
                                   qapi_WLAN_WPS_Mode_e mode, const char *pin, uint8_t auth_floor)
 {

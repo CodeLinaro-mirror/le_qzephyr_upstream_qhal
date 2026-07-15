@@ -8,7 +8,7 @@
 #include "safeAPI.h"
 #include <stdlib.h>
 #include <zephyr/net/wifi.h>
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 #include "qapi_wlan_base.h"
 #endif
 #include "libwifi.h"
@@ -40,6 +40,62 @@ void wlan_clear_privacy(uint8_t vdev_id)
 
     memset(p_passphrase_cmd->passphrase, 0, WMI_PASSPHRASE_LEN + 1);
     p_passphrase_cmd->passphrase_len = 0;
+}
+
+void wlan_set_ctrl_flags(uint8_t vdev_id, uint32_t flags)
+{
+    WLAN_VDEV_CXT(vdev_id)->connect_cmd.ctrl_flags |= flags;
+}
+
+void wlan_clear_ctrl_flags(uint8_t vdev_id, uint32_t flags)
+{
+    WLAN_VDEV_CXT(vdev_id)->connect_cmd.ctrl_flags &= ~flags;
+}
+
+void wlan_set_wps_open_connect(uint8_t vdev_id, uint16_t channel)
+{
+    ARG_UNUSED(vdev_id);
+    ARG_UNUSED(channel);
+    extern void wlan_wps_set_connect_pending(void);
+    wlan_wps_set_connect_pending();
+}
+
+void wlan_set_psk_params(uint8_t vdev_id,
+                          const uint8_t *ssid, uint8_t ssid_len,
+                          uint16_t auth_mode,    /* WMI_WPA2_PSK_AUTH etc. */
+                          uint8_t  cipher_type,  /* AES_CRYPT etc. */
+                          const uint8_t *passphrase, uint8_t passphrase_len)
+{
+    WMI_CONNECT_CMD       *p_cmd  = &WLAN_VDEV_CXT(vdev_id)->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *p_psk = &WLAN_VDEV_CXT(vdev_id)->passphrase_cmd;
+
+    /* SSID */
+    if (ssid && ssid_len > 0 && ssid_len <= WMI_MAX_SSID_LEN) {
+        p_cmd->ssidLength = ssid_len;
+        memscpy(p_cmd->ssid, ssid_len, ssid, ssid_len);
+        p_psk->ssid_len = ssid_len;
+        memscpy(p_psk->ssid, ssid_len, ssid, ssid_len);
+    }
+
+    /* Auth / cipher */
+    p_cmd->dot11AuthMode      = OPEN_AUTH;
+    p_cmd->authMode           = auth_mode;
+    p_cmd->pairwiseCryptoType = cipher_type;
+    p_cmd->groupCryptoType    = cipher_type;
+    p_cmd->pairwiseCryptoLen  = passphrase_len;
+    p_cmd->groupCryptoLen     = passphrase_len;
+
+    /* Passphrase */
+    if (passphrase && passphrase_len > 0) {
+        p_psk->passphrase_len = passphrase_len;
+        memscpy(p_psk->passphrase, passphrase_len, passphrase, passphrase_len);
+    }
+}
+
+void wlan_clear_wps_open_connect(void)
+{
+    extern void wlan_wps_clear_connect_pending(void);
+    wlan_wps_clear_connect_pending();
 }
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
@@ -620,7 +676,7 @@ qapi_Status_t wlan_set_appie(qapi_WLAN_App_Ie_Params_t *ie_params)
     /* Application IE is a hex number starting with 0xdd.
      * Hex number 0xdd of length 1 will remove the already added IE. */
     if ((ie_params->ie_Len < 1) || (ie_params->ie_Len > WMI_MAX_APP_IE_LEN) || !ie_params->ie_Info) {
-        log_printf("%s:%d: IE length %d is out of the range of 1 and 64.\n", __func__, __LINE__, ie_params->ie_Len);
+        log_printf("%s:%d: IE length %d is out of the range of 1 and %d.\n", __func__, __LINE__, ie_params->ie_Len, WMI_MAX_APP_IE_LEN);
         return QAPI_ERROR;
     }
     /* The length must be not less than 5 as a valid application information element
@@ -1086,7 +1142,7 @@ qapi_Status_t wlan_set_rsp_rate(uint8_t device_id, uint8_t rate_idx)
     return error;
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 qapi_WLAN_WPS_Credentials_t gWpsCredentials;
 qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof)
 {

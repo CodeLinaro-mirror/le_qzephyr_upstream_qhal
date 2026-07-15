@@ -15,6 +15,7 @@ zephyr_library_sources(src/wlan_drv/qapi_wlan_param_group.c)
 zephyr_library_sources(src/wlan_drv/wlan_qapi_helper.c)
 zephyr_library_sources(src/wlan_drv/wmi_api.c)
 zephyr_library_sources(src/wlan_drv/wlan_drv.c)
+zephyr_library_sources_ifdef(CONFIG_WIFI_QCOM_WPS src/wlan_drv/qapi_wlan_wps.c)
 zephyr_library_sources(zephyr/libwifi.c)
 zephyr_library_sources(platform/qapi_system.c)
 

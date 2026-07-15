@@ -712,7 +712,7 @@ static void wmi_set_mgmt_filter_event(void *msg)
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 static void wmi_stop_scan_event(void *msg)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -949,7 +949,7 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
     case WMI_REPORT_WIFI_STATUS:
         wmi_report_wifi_status(data);
         break;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     case WMI_SCAN_STOP_EVTID:
         wmi_stop_scan_event(data);
         break;
@@ -957,6 +957,14 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
         wmi_wps_fail_event(data);
         break;
 #endif
+#ifdef CONFIG_WIFI_QCOM_WPS
+    case WMI_WPS_SCAN_RESULT_EVTID:
+        wmi_wps_scan_ap_result_event(data);
+        break;
+    case WMI_WPS_SCAN_COMP_EVTID:
+        wmi_wps_scan_comp_event(data);
+        break;
+#endif /* CONFIG_WIFI_QCOM_WPS */
     case WMI_WLAN_SUSPEND_EVTID:
         wmi_wlan_suspend_event(data);
         break;
@@ -1584,7 +1592,7 @@ qapi_Status_t wmi_get_tx_power(void)
     return ret;
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 extern qapi_WLAN_WPS_Credentials_t gWpsCredentials;
 
 qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_ID,
