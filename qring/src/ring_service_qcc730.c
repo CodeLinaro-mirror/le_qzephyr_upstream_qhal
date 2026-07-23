@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -8,6 +8,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/sys/barrier.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ring_service.h"
@@ -24,7 +25,7 @@ __attribute__((section(".ring_ctrl"))) struct ring_control_block g_ring_ctrl_blo
 
 /* Work queue for deferred processing */
 static struct k_work_q ring_work_q;
-static K_THREAD_STACK_DEFINE(ring_work_stack, 2048);
+static K_THREAD_STACK_DEFINE(ring_work_stack, CONFIG_RING_SERVICE_WORKQ_STACK_SIZE);
 
 /* Work item context for each ring */
 struct ring_work_context {
@@ -292,6 +293,7 @@ int ring_service_slave_init(const struct ring_config *configs, uint32_t num_ring
     /* Initialize work queue for deferred processing */
     k_work_queue_init(&ring_work_q);
     k_work_queue_start(&ring_work_q, ring_work_stack, K_THREAD_STACK_SIZEOF(ring_work_stack), K_PRIO_COOP(7), NULL);
+    k_thread_name_set(&ring_work_q.thread, "ring_work_q");
 
     /* Initialize work items for each ring */
     for (uint32_t i = 0; i < num_rings; i++) {
@@ -545,6 +547,15 @@ int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t time
     rx_desc->length = len;
     rx_desc->flags = RING_DESC_FLAG_VALID;
 
+    /* Ensure descriptor fields (payload, length, flags) are committed to SRAM
+     * before wr_idx is updated. The host uses wr_idx as the trigger to read
+     * the descriptor — it must never see wr_idx advanced before flags=VALID.
+     * Cortex-M4 is in-order but the compiler can reorder stores; DMB prevents
+     * that. DSB is not needed here — the existing DSB before GPIO is sufficient
+     * to flush wr_idx before the interrupt fires.
+     */
+    barrier_dmem_fence_full(); /* ARM DMB */
+
     /* Update write index */
     next_wr_idx = (wr_idx + 1) % ctrl->rx_desc_count[ring_id];
     ctrl->rx_wr_idx[ring_id] = next_wr_idx;
@@ -559,7 +570,7 @@ int ring_send(uint8_t ring_id, const uint8_t *data, size_t len, k_timeout_t time
     if (device_is_ready(spi_dev))
         pm_device_busy_set(spi_dev);
 #endif
-    /* Trigger Host GPIO interrupt with a pulse */
+
     ret = gpio_pin_set(gpio_dev, PIN_INT_TO_HOST, 0);
     if (ret < 0) {
         LOG_ERR("Failed to set GPIO low: %d", ret);

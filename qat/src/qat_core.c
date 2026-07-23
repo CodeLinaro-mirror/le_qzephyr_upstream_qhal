@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -17,9 +17,9 @@ LOG_MODULE_REGISTER(qat_core, LOG_LEVEL_INF);
 /* Configuration macros */
 #define QAT_WORK_BUF_SIZE QAT_RESPONSE_BUF_SIZE /* libcat working buffer size */
 #define MAX_CMD_GROUPS 8                        /* Maximum number of command groups */
-#define QAT_SERVICE_STACK_SIZE 2048             /* Service thread stack size */
-#define QAT_SERVICE_PRIORITY 7                  /* Service thread priority */
-#define QAT_SERVICE_POLL_MS 1                   /* Service polling interval in milliseconds */
+#define QAT_SERVICE_STACK_SIZE CONFIG_QAT_SERVICE_STACK_SIZE
+#define QAT_SERVICE_PRIORITY 7 /* Service thread priority */
+#define QAT_SERVICE_POLL_MS 1  /* Service polling interval in milliseconds */
 
 /* External functions */
 extern int qat_io_init(void);
@@ -27,6 +27,12 @@ extern struct cat_io_interface *qat_get_io_interface(void);
 
 /* Working buffer for libcat */
 static uint8_t qat_work_buf[QAT_WORK_BUF_SIZE];
+
+/* Framing buffer for QAT_Response_Str — assembles "\r\n<payload>" into a
+ * single ring_send. File-scope (not on the caller stack) and serialised by
+ * resp_mutex because callers span multiple threads. */
+static char s_resp_buf[QAT_RESPONSE_BUF_SIZE];
+static K_MUTEX_DEFINE(resp_mutex);
 
 /* libcat descriptor - support up to MAX_CMD_GROUPS command groups */
 static struct cat_command_group *cmd_group_ptrs[MAX_CMD_GROUPS];
@@ -91,6 +97,30 @@ int qat_get_cmd_groups(struct cat_command_group ***groups, uint8_t *count)
 /* libcat object */
 static struct cat_object qat_cat;
 
+/* Forward declaration — defined later in this file */
+extern struct k_sem qat_service_sem;
+
+/**
+ * Exit libcat hold state with OK response.
+ * Called from data-mode callbacks after the data transfer completes.
+ * Also triggers the service timer so cat_service() runs to process the exit.
+ */
+void qat_hold_exit_ok(void)
+{
+    cat_hold_exit(&qat_cat, CAT_STATUS_OK);
+    /* Wake the service thread so it calls cat_service() to process the hold exit */
+    k_sem_give(&qat_service_sem);
+}
+
+/**
+ * Exit libcat hold state with ERROR response.
+ */
+void qat_hold_exit_error(void)
+{
+    cat_hold_exit(&qat_cat, CAT_STATUS_ERROR);
+    k_sem_give(&qat_service_sem);
+}
+
 /**
  * Output data to the AT command interface
  * This function writes data directly to the ring service
@@ -102,21 +132,32 @@ static struct cat_object qat_cat;
 int QAT_Output(uint32_t Length, const char *Buffer)
 {
     int ret;
+    int retries = 1500; /* up to 1500 × 20 ms = 30 s total wait */
 
     if (Buffer == NULL || Length == 0) {
         return -EINVAL;
     }
 
-    ret = ring_send(QAT_RING_ID, (const uint8_t *)Buffer, Length, K_MSEC(100));
+    do {
+        ret = ring_send(QAT_RING_ID, (const uint8_t *)Buffer, Length, K_MSEC(100));
+        if (ret == 0) {
+            break;
+        }
+        if (ret != -EAGAIN) {
+            LOG_ERR("Failed to send %u bytes via ring: %d", Length, ret);
+            return -EIO;
+        }
+        /* Ring full — wait for a descriptor to free */
+        k_sleep(K_MSEC(20));
+    } while (--retries > 0);
+
     if (ret < 0) {
-        LOG_ERR("Failed to send %u bytes via ring: %d", Length, ret);
+        LOG_ERR("Failed to send %u bytes via ring after retries: %d", Length, ret);
         return -EIO;
     }
 
     LOG_DBG("Sent %u bytes via ring", Length);
 
-    if (!k_is_in_isr())
-        k_usleep(10);
 
     return 0;
 }
@@ -139,9 +180,6 @@ int QAT_Output(uint32_t Length, const char *Buffer)
  */
 cat_return_state QAT_Response_Str(QAT_Result_Enum_Type ret_code, const char *buffer)
 {
-    /* Response buffer sized to fit within QAT_TX_BUFFER_SIZE */
-    char resp[QAT_RESPONSE_BUF_SIZE];
-    int pos = 0;
     int buf_len = 0;
 
     if (ret_code >= QAT_RC_MAX) {
@@ -156,23 +194,25 @@ cat_return_state QAT_Response_Str(QAT_Result_Enum_Type ret_code, const char *buf
         if (ret_code == QAT_RC_QUIET_NO_CR) {
             /* Raw mode: send buffer with no \r\n framing. */
             if (buf_len < QAT_RESPONSE_BUF_SIZE) {
-                memcpy(resp, buffer, buf_len);
-                pos = buf_len;
+                QAT_Output(buf_len, buffer);
             }
         } else {
-            /* Standard framing: \r\n<buffer>\r\n */
+            /* Standard framing: \r\n<buffer>. The prefix and payload must
+             * be assembled into a single QAT_Output call: each QAT_Output
+             * maps to one ring_send, i.e. one discrete message on the host
+             * ring. Splitting into two sends made the host read only the
+             * "\r\n" message and drop the payload (e.g. +IPD data lost).
+             * A file-scope static buffer keeps the response off the caller
+             * stack (small work-queue stacks would overflow with ~1400 B),
+             * serialised by resp_mutex since callers span multiple threads. */
             if ((2 + buf_len) < QAT_RESPONSE_BUF_SIZE) {
-                resp[pos++] = '\r';
-                resp[pos++] = '\n';
-                memcpy(resp + pos, buffer, buf_len);
-                pos += buf_len;
-                // resp[pos++] = '\r';
-                // resp[pos++] = '\n';
+                k_mutex_lock(&resp_mutex, K_FOREVER);
+                s_resp_buf[0] = '\r';
+                s_resp_buf[1] = '\n';
+                memcpy(s_resp_buf + 2, buffer, buf_len);
+                QAT_Output(2 + buf_len, s_resp_buf);
+                k_mutex_unlock(&resp_mutex);
             }
-        }
-
-        if (pos > 0) {
-            QAT_Output(pos, resp);
         }
     }
 
@@ -236,6 +276,7 @@ static void qat_service_thread(void *p1, void *p2, void *p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
+    k_thread_name_set(k_current_get(), "qat_service");
     LOG_INF("QAT service thread started");
 
     while (1) {

@@ -27,6 +27,7 @@ TimerHandle_t wdt_timer_handle = NULL;
 
 #define WDOG_TIMER_NAME  "wdt_feed"
 
+#ifdef CONFIG_QWDT
 static uint32_t bark_time;
 static uint32_t bite_time;
 
@@ -46,6 +47,7 @@ static void qwdt_timer_call_back(struct k_timer *timer)
 		}
 	}
 }
+#endif
 
 /**
  * @brief Initialize and start watchdog timer with auto-feed

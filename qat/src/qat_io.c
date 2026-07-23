@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -23,6 +23,11 @@ static uint8_t rx_buffer[QAT_RX_BUFFER_SIZE];
 static size_t rx_head = 0;
 static size_t rx_tail = 0;
 static size_t rx_count = 0;
+
+/* Ring callbacks run on the shared ring work queue, so keep the largest
+ * temporary receive buffer out of that thread's stack.
+ */
+static uint8_t rx_temp_buf[QAT_RX_TEMP_BUF_SIZE];
 
 /* TX buffer for accumulating response */
 static uint8_t tx_buffer[QAT_TX_BUFFER_SIZE];
@@ -129,7 +134,6 @@ static void handle_online_data(const uint8_t *data, size_t len)
  */
 static void qat_rx_callback(uint8_t ring_id, void *user_data)
 {
-    uint8_t temp_buf[QAT_RX_TEMP_BUF_SIZE];
     int ret;
     QAT_Transfer_Mode_t current_mode;
 
@@ -142,7 +146,7 @@ static void qat_rx_callback(uint8_t ring_id, void *user_data)
 
     /* Read data from Ring Service */
     while (true) {
-        ret = ring_recv(ring_id, temp_buf, sizeof(temp_buf), K_NO_WAIT);
+        ret = ring_recv(ring_id, rx_temp_buf, sizeof(rx_temp_buf), K_NO_WAIT);
         if (ret <= 0) {
             break;
         }
@@ -152,13 +156,13 @@ static void qat_rx_callback(uint8_t ring_id, void *user_data)
         /* Handle based on current mode */
         if (current_mode == QAT_Transfer_Mode_ONLINE_DATA_E) {
             /* Online data mode - pass to callback */
-            handle_online_data(temp_buf, ret);
+            handle_online_data(rx_temp_buf, ret);
         } else {
             /* AT command mode - buffer for libcat */
             k_mutex_lock(&rx_mutex, K_FOREVER);
 
             for (int i = 0; i < ret && rx_count < QAT_RX_BUFFER_SIZE; i++) {
-                rx_buffer[rx_tail] = temp_buf[i];
+                rx_buffer[rx_tail] = rx_temp_buf[i];
                 rx_tail = (rx_tail + 1) % QAT_RX_BUFFER_SIZE;
                 rx_count++;
             }
@@ -219,25 +223,33 @@ static int qat_read_char(char *ch)
 static int qat_flush_tx_buffer(void)
 {
     int ret;
+    int retries = 1500; /* up to 1500 × 20 ms = 30 s total wait */
 
     if (tx_count == 0) {
         return 0;
     }
 
-    ret = ring_send(QAT_RING_ID, tx_buffer, tx_count, K_MSEC(QAT_RING_SEND_TIMEOUT));
+    do {
+        ret = ring_send(QAT_RING_ID, tx_buffer, tx_count, K_MSEC(QAT_RING_SEND_TIMEOUT));
+        if (ret == 0) {
+            break;
+        }
+        if (ret != -EAGAIN) {
+            LOG_ERR("Failed to send %zu bytes: %d", tx_count, ret);
+            tx_count = 0;
+            return ret;
+        }
+        k_sleep(K_MSEC(20));
+    } while (--retries > 0);
+
     if (ret < 0) {
-        LOG_ERR("Failed to send %zu bytes: %d", tx_count, ret);
-        tx_count = 0; /* Reset buffer even on error */
+        LOG_ERR("Failed to send %zu bytes after retries: %d", tx_count, ret);
+        tx_count = 0;
         return ret;
     }
 
     LOG_DBG("TX: sent %zu bytes", tx_count);
     tx_count = 0;
-
-    /* Add small delay to allow host to process data and prevent ring buffer overflow
-     * This is especially important when sending multiple responses quickly (e.g., AT+CMD?)
-     * The delay gives the host time to read from the ring before we send the next packet */
-    k_usleep(50);
 
     return ret;
 }

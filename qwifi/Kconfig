@@ -11,7 +11,7 @@ config QWIFI
 	select MBEDTLS_CIPHER_DES_ENABLED
 	select MBEDTLS_PKCS5_C
 	select MBEDTLS_NIST_KW_C
-	select MBEDTLS_MD
+	select MBEDTLS_MD_C
 	select MBEDTLS_SHA1
 	select MBEDTLS_CIPHER
 

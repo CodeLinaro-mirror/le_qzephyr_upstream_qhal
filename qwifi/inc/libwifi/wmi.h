@@ -472,12 +472,14 @@ typedef enum {
     WMI_WPA_AUTH_CCKM = 0x20,
     WMI_WPA2_AUTH_CCKM = 0x40,
     WMI_WPA3_SHA256_AUTH = 0x80,
+    WMI_WPA2_SHA256_AUTH = 0x100,        /* AKM5: 802.1X with SHA-256 KDF (WPA3-Enterprise Transition) */
+    WMI_WPA3_ENTERPRISE_ONLY_AUTH = 0x200, /* AKM5+MFPR: WPA3-Enterprise Only mode */
 } AUTH_MODE;
 
 typedef PREPACK struct {
     uint8_t networkType;
     uint8_t dot11AuthMode;
-    uint8_t authMode;
+    uint16_t authMode;
     uint8_t pairwiseCryptoType;
     uint8_t pairwiseCryptoLen;
     uint8_t groupCryptoType;
@@ -1792,6 +1794,9 @@ typedef enum {
     WIFI_PARAM_SET_TX_POWER = 21,
     WIFI_PARAM_SET_BMISS_THRESHOLD = 22,
     WIFI_PARAM_SET_ACTIVE_DEVICE = 23,
+    WIFI_PARAM_SET_BA_WINDOW_SIZE = 24,
+    WIFI_PARAM_SET_CTS_TO_SELF = 25, 
+    WIFI_PARAM_SET_RSP_RATE = 26,
 } param_id;
 enum {
     WIFI_STATUS_SUCCESS,

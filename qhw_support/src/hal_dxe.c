@@ -4,9 +4,7 @@
  */
 
 #include "stddef.h"
-#ifdef CONFIG_QWIFI
 #include "libwifi.h"
-#endif
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"

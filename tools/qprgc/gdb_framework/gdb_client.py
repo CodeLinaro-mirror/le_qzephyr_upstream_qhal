@@ -142,9 +142,9 @@ class GDB_Client(object):
                 self.client_log = open(os.devnull, 'wb')
 				
             if PACK_ENABLE:
-                self.client_proc = subprocess.Popen([os.path.join(sys._MEIPASS, 'bin', self.client_exe), '-command', __file__.rstrip('c'), '-batch', '-return-child-result'], stdout=self.client_log)
+                self.client_proc = subprocess.Popen([os.path.join(sys._MEIPASS, 'bin', self.client_exe), '-command', __file__.rstrip('c'), '-batch', '-return-child-result'], stdout=self.client_log, stderr=subprocess.DEVNULL)
             else:
-                self.client_proc = subprocess.Popen([os.path.join(self.client_path, self.client_exe), '-command', __file__.rstrip('c'), '-batch', '-return-child-result'], stdout=self.client_log)
+                self.client_proc = subprocess.Popen([os.path.join(self.client_path, self.client_exe), '-command', __file__.rstrip('c'), '-batch', '-return-child-result'], stdout=self.client_log, stderr=subprocess.DEVNULL)
             # wait for the GDB client to connect to the socket
             response, address = self.udp_socket.recvfrom(GDB_Client.MAX_PACKET_SIZE)
             if address[0] != GDB_Client.SOCKET_ADDR:
@@ -375,7 +375,12 @@ def main():
                 if response:
                     # if still running, send the response back to the tool
                     error = 'Error:'
-                    tool_socket.send(GDB_Client.format_packet(response, data))
+                    try:
+                        tool_socket.send(GDB_Client.format_packet(response, data))
+                    except KeyboardInterrupt:
+                        break
+    except KeyboardInterrupt:
+        pass
     except:
         # print the exception information as otherwise GDB absorbs it.
         print(traceback.format_exc())

@@ -53,7 +53,7 @@ uint32_t pbl_running_check()
 {
 	uint32_t stack;
 
-	__asm volatile ("MRS %0, msp" :"=r" (stack) : :"sp");
+	__asm volatile ("MRS %0, msp" :"=r" (stack) : : "sp");
 
 	//SYSTEM_PRINTF("Current stack 0x%08x\r\n", (unsigned int)stack);
 

@@ -22,6 +22,18 @@ config RING_SERVICE_LOG_LEVEL
 	  Set log level for ring service.
 	  0 = OFF, 1 = ERROR, 2 = WARNING, 3 = INFO, 4 = DEBUG
 
+config RING_SERVICE_WORKQ_STACK_SIZE
+	int "Ring service work queue stack size"
+	range 1024 16384
+	default 4096 if QAT
+	default 2048
+	help
+	  Stack size, in bytes, for the deferred RX processing work queue.
+
+	  When QAT is enabled, ring callbacks can process full-size Ring 0
+	  buffers and call into additional protocol code, so a larger default
+	  stack is required.
+
 menu "Ring 0 Configuration (AT Commands)"
 
 config RING0_DESC_COUNT

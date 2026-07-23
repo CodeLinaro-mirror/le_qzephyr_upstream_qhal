@@ -7,10 +7,17 @@
 #include "wmi_api.h"
 #include "libwifi.h"
 
+#ifdef CONFIG_WIFI_QCOM_ENTERPRISE
+/* Forward declaration — implemented in prop/libwifiqcc730/wmi/src/wlan_wmi.c */
+extern void wmi_set_enterprise_pmk(uint8_t vdev_id, const uint8_t *pmk, uint32_t pmk_len);
+#endif
+#include "wlan_qapi_helper.h"
+#include "wmi_api.h"
+#include "libwifi.h"
+
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
 static void _wlan_set_wep(uint8_t device_ID)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     wlan_vdev_cxt_t *vdev = WLAN_VDEV_CXT(device_ID);
     WMI_CONNECT_CMD *p_cmd = &vdev->connect_cmd;
 
@@ -190,6 +197,20 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
             ret = wlan_set_active_device(device_ID, active_device_id);
             break;
         }
+        case __QAPI_WLAN_PARAM_GROUP_WIRELESS_BA_WINDOW_SIZE: {
+            qapi_WLAN_BA_Window_Size_t ba_size = *((qapi_WLAN_BA_Window_Size_t *) data);
+            ret = wlan_set_ba_window_size(device_ID, ba_size.tx_size, ba_size.rx_size);
+            break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_BA_WINDOW_SIZE */
+        }
+        case  __QAPI_WLAN_PARAM_GROUP_WIRELESS_PROTECTION_MODE: {
+            uint32_t enable = *((uint32_t *)data);
+            ret = wlan_set_cts_to_self(device_ID, enable);
+            break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_PROTECTION_MODE */
+        }
+        case __QAPI_WLAN_PARAM_GROUP_WIRELESS_RSP_RATE: {
+            ret = (qapi_Status_t)wlan_set_rsp_rate(device_ID, (*(uint8_t *)data));
+            break; /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_RSP_RATE */
+        }
         default: /* __QAPI_WLAN_PARAM_GROUP_WIRELESS + param_ID */
             PRINT_ERR_INVALID_PARAM1("param_ID", param_ID);
             ret = QAPI_WLAN_ERR_EINVAL;
@@ -238,6 +259,27 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
                 case QAPI_WLAN_AUTH_WPA2_PSK_E:
                     p_cmd->dot11AuthMode = OPEN_AUTH;
                     p_cmd->authMode = WMI_WPA2_PSK_AUTH;
+                    break;
+                case QAPI_WLAN_AUTH_WPA_E:
+                    /* 802.1X / WPA-Enterprise */
+                    p_cmd->dot11AuthMode = OPEN_AUTH;
+                    p_cmd->authMode = WMI_WPA_AUTH;
+                    break;
+                case QAPI_WLAN_AUTH_WPA2_E:
+                    /* WPA2-Enterprise (802.1X): host supplicant runs EAP,
+                     * firmware handles 802.11 auth/assoc and 4-way handshake. */
+                    p_cmd->dot11AuthMode = OPEN_AUTH;
+                    p_cmd->authMode = WMI_WPA2_AUTH;
+                    break;
+                case QAPI_WLAN_AUTH_WPA2_E_SHA256_E:
+                    /* WPA3-Enterprise Transition: AKM5 + MFPC=1, MFPR=0. */
+                    p_cmd->dot11AuthMode = OPEN_AUTH;
+                    p_cmd->authMode = WMI_WPA2_SHA256_AUTH;
+                    break;
+                case QAPI_WLAN_AUTH_WPA3_ENT_ONLY_E:
+                    /* WPA3-Enterprise Only: AKM5 + MFPC=1 + MFPR=1 (PMF Required). */
+                    p_cmd->dot11AuthMode = OPEN_AUTH;
+                    p_cmd->authMode = WMI_WPA3_ENTERPRISE_ONLY_AUTH;
                     break;
                 case QAPI_WLAN_AUTH_WPA3_SAE_E:
                     p_cmd->dot11AuthMode = SAE_AUTH;
@@ -308,6 +350,31 @@ qapi_Status_t qapi_WLAN_Set_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
             break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_WPS_CREDENTIALS */
         }
 #endif
+
+#ifdef CONFIG_WIFI_QCOM_ENTERPRISE
+        case __QAPI_WLAN_PARAM_GROUP_SECURITY_PMK: {
+            /*
+             * WPA2-Enterprise: host wpa_supplicant delivers the EAP-derived PMK
+             * here after a successful EAP auth exchange.  Pass it to firmware
+             * so suppl_auth_init_auth() can be called and the 4-way HS starts.
+             * Called synchronously — no WMI command queue involved.
+             */
+            if (!data || !length) {
+                PRINT_ERR_INVALID_PARAM;
+                ret = QAPI_WLAN_ERR_EINVAL;
+                break;
+            }
+            if (length > WMI_PMK_LEN) {
+                PRINT_ERR_INVALID_PARAM1("pmk_len", length);
+                ret = QAPI_WLAN_ERR_EINVAL;
+                break;
+            }
+            qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
+            wmi_set_enterprise_pmk(device_ID, (const uint8_t *)data, length);
+            qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+            break; /* __QAPI_WLAN_PARAM_GROUP_SECURITY_PMK */
+        }
+#endif /* CONFIG_WIFI_QCOM_ENTERPRISE */
 
         default: /* __QAPI_WLAN_PARAM_GROUP_WIRELESS_SECURITY + param_ID */
             PRINT_ERR_INVALID_PARAM1("param_ID", param_ID);
@@ -497,7 +564,7 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
     case __QAPI_WLAN_PARAM_GROUP_WIRELESS_SECURITY: {
         switch (param_ID) {
         case __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE: {
-            uint8_t authMode = p_connect_cmd->authMode;
+            uint16_t authMode = p_connect_cmd->authMode;
             uint8_t pairwiseCryptoType = p_connect_cmd->pairwiseCryptoType;
             qapi_WLAN_Auth_Mode_e *p_e_wpa_ver = (qapi_WLAN_Auth_Mode_e *)data;
             if (*length < sizeof(qapi_WLAN_Auth_Mode_e)) {
@@ -518,6 +585,10 @@ qapi_Status_t qapi_WLAN_Get_Param(uint8_t device_ID, uint16_t group_ID, uint16_t
                 break;
             case WMI_WPA2_PSK_AUTH:
                 *p_e_wpa_ver = QAPI_WLAN_AUTH_WPA2_PSK_E;
+                *length = sizeof(qapi_WLAN_Auth_Mode_e);
+                break;
+            case WMI_WPA2_SHA256_AUTH:
+                *p_e_wpa_ver = QAPI_WLAN_AUTH_WPA2_E_SHA256_E;
                 *length = sizeof(qapi_WLAN_Auth_Mode_e);
                 break;
             default:

@@ -11,6 +11,7 @@ zephyr_link_libraries(
 
 zephyr_include_directories(inc)
 zephyr_include_directories(${ZEPHYR_BASE}/../modules/hal/qcom/qwifi/inc/libwifi)
+zephyr_include_directories(${ZEPHYR_BASE}/../modules/hal/qcom/qwifi/zephyr)
 zephyr_library_sources(src/wifi_fw_pmic_driver.c)
 zephyr_library_sources(src/nt_wifi_driver.c)
 zephyr_library_sources(src/nt_sys_monitoring.c)
@@ -24,6 +25,8 @@ zephyr_library_sources(src/nt_gpio.c)
 zephyr_library_sources(src/wifi_fw_ext_intr.c)
 zephyr_library_sources(src/wifi_fw_init.c)
 zephyr_library_sources(src/hal_aon.c)
+zephyr_library_sources(src/qapi_rram.c)
+zephyr_library_sources(src/smps2_low_vbat.c)
 
 zephyr_linker_sources(SECTIONS src/hwmem.ld)
 

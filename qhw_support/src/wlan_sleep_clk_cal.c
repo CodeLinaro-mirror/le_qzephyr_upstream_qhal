@@ -34,6 +34,8 @@
 #include "fermion_hw_reg.h"
 #include "wmi.h"
 #include <zephyr/irq.h>
+#include <zephyr/kernel.h>
+#include "libpower.h"
 
 
 char sleep_clk_timer_name[] = "clk_cal";

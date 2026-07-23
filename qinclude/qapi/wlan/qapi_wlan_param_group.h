@@ -383,6 +383,34 @@ Set actice device id to 0/1(SAP/STA).
 */
 #define __QAPI_WLAN_PARAM_GROUP_WIRELESS_DEVICE_ID 92
 
+/**
+Command ID to adjust BA window size when operating in Station mode.
+
+@note1hang This parameter can only be used with qapi_WLAN_Set_Param().
+
+@param[in] qapi_WLAN_BA_Window_Size_t  BA window size.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_BA_WINDOW_SIZE 93
+
+/**
+Command ID to set protection mode when operating in Station mode.
+
+@note1hang This parameter can be used with qapi_WLAN_Set_Param().
+
+@param[in] uint32_t        Set 1 to enable CTS_TO_SELF protection, 0 to be disabled.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_PROTECTION_MODE 94
+
+/**
+Command ID to set rsp rate in Station mode. The set
+operation for this should be done after establishing a connection.
+
+@note1hang This parameter can only be used with qapi_WLAN_Set_Param().
+
+@param[in] uint8_t  RspRate idx, only support 8:11g 6Mbps or 16:11n 6.5Mbps.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_WIRELESS_RSP_RATE 95
+
 
 #define __QAPI_WLAN_PARAM_GROUP_SECURITY_AUTH_MODE 0
 
@@ -433,5 +461,23 @@ secure association.
 qapi_WLAN_WPS_Credentials_t
 */
 #define __QAPI_WLAN_PARAM_GROUP_SECURITY_WPS_CREDENTIALS 6
+
+/**
+Command ID to set the Pairwise Master Key (PMK) for a WPA2-Enterprise connection.
+
+After the host wpa_supplicant completes EAP authentication it delivers the
+derived PMK to the driver via set_key(KEY_FLAG_PMK).  The driver passes it
+here so that the firmware 4-way handshake state machine can be initialised
+(suppl_auth_init_auth()) without a passphrase PBKDF2 derivation step.
+
+@note1hang This parameter can only be used with qapi_WLAN_Set_Param().
+
+@param[in] uint8_t[]       Raw PMK bytes (typically 32 bytes for CCMP).
+
+@dependencies
+Must be called after EAP authentication completes and before the AP sends
+EAPOL-Key M1.
+*/
+#define __QAPI_WLAN_PARAM_GROUP_SECURITY_PMK 7
 
 #endif /* __QAPI_WLAN_PARAM_GROUP_H__ */

@@ -1,0 +1,29 @@
+{
+  "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+  "configurations": [
+    {
+      "cStandard": "c11",
+      "compilerPath": "${myCompilerPath}",
+      "cppStandard": "c++17",
+      "includePath": [
+        "${config:qualIoe.staticCfg.sdkPath}/zephyr/include/**",
+        "${config:qualIoe.staticCfg.sdkPath}/zephyr/lib/libc/minimal/include/**",
+        "${config:qualIoe.staticCfg.sdkPath}/zephyr/lib/libc/newlib/include/**",
+        "${config:qualIoe.staticCfg.sdkPath}/qapp/**",
+        "${config:qualIoe.staticCfg.sdkPath}/qcc730/**",
+        "${workspaceFolder}/build/${config:qualIoe.staticCfg.demoChipBoard}/zephyr/include/generated/**",
+        "${config:qualIoe.staticCfg.sdkPath}/**"
+      ],
+      "defines": [
+        "SCALE_INCLUDES"
+      ],
+      "intelliSenseMode": "windows-gcc-arm",
+      "name": "QCC-IDE"
+    }
+  ],
+  "env": {
+    "myCompilerPath": "",
+    "mySdkPath": ""
+  },
+  "version": 4
+}

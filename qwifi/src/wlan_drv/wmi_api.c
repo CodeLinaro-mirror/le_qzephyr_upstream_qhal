@@ -242,7 +242,7 @@ static void wmi_scan_comp_event(void *msg)
 
     SCAN_RESULT *p_scan_result = (SCAN_RESULT *)msg;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    uint8_t num_entries, last_idx;
+    uint8_t last_idx;
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     if (!p_cxt->scan_in_progress) {
@@ -307,7 +307,7 @@ static void wmi_scan_result_event(void *msg)
 
     SCAN_RESULT *p_scan_result = (SCAN_RESULT *)msg;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    uint8_t num_entries, last_idx;
+    uint8_t last_idx;
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     if (!p_cxt->scan_in_progress) {
@@ -789,7 +789,7 @@ static void wmi_wlan_sap_csa_event(void *msg)
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
 
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-    uint8_t ret = (uint8_t)msg;
+    uint8_t ret = (uint8_t)(uintptr_t)msg;
     if (ret) {
         set_wlan_qapi_error(QAPI_ERROR);
     } else {

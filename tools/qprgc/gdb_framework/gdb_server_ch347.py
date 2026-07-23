@@ -18,6 +18,8 @@ def add_arguments(parser):
     Parameters:
        parser: argparse object used for parsing the command line arguments.
     '''
+    parser.add_argument('--ch347-index', type=int, default=0,
+                        help='CH347 adapter index for multi-board setups (default=0).')
 
 class GDB_Server(object):
     '''
@@ -71,8 +73,12 @@ class GDB_Server(object):
 
         self.options = [
             '-c','gdb_port {}'.format(str(kwargs['server_port'])),
-            '-f',self.server_script
+            '-f',self.server_script,
         ]
+        ch347_index = kwargs.get('ch347_index', 0)
+        if ch347_index:
+            self.options += ['-c','ch347 ch347_index {}'.format(str(ch347_index))]
+        self.options += ['-c','proc after_gdb_detach {} { shutdown }']
 
     def start(self):
         '''
@@ -85,9 +91,7 @@ class GDB_Server(object):
         if self.start_server:
             command = [os.path.join(self.server_path, self.executable)] + self.options
 
-            print('Using OpenOCD GDB server')
-            print(' '.join(command))
-            self.server_proc = subprocess.Popen(command)
+            self.server_proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             # Wait for the server to be ready
             time.sleep(1)
@@ -101,7 +105,7 @@ class GDB_Server(object):
             try:
                 # Wait for the server to close itself (should happen fairly quickly if
                 # the GDB client disconnected)
-                self.server_proc.communicate()
+                self.server_proc.communicate(timeout=5)
             except:
                 # Server didn't close so force it.
                 try:

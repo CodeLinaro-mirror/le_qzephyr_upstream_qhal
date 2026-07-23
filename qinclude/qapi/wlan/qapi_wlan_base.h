@@ -483,7 +483,13 @@ typedef enum {
     /**< WPA2 and SAE mixed mode of authentication. */
     QAPI_WLAN_AUTH_WPA_WPA2_SAE_MIXED_E = 11,
     /**< WPA, WPA2 and SAE mixed mode of authentication. */
-    QAPI_WLAN_AUTH_INVALID_E = 12 /**< Invalid authentication method. */
+    QAPI_WLAN_AUTH_WPA2_E_SHA256_E = 12,
+    /**< WPA2/WPA3-Enterprise Transition mode (802.1X + AKM5, MFPC=1, MFPR=0).
+     *   Maps to WMI_WPA2_SHA256_AUTH (0x100). */
+    QAPI_WLAN_AUTH_WPA3_ENT_ONLY_E = 13,
+    /**< WPA3-Enterprise Only mode (802.1X + AKM5, MFPC=1, MFPR=1 — PMF Required).
+     *   Maps to WMI_WPA3_ENTERPRISE_ONLY_AUTH (0x200). */
+    QAPI_WLAN_AUTH_INVALID_E = 14 /**< Invalid authentication method. */
 } qapi_WLAN_Auth_Mode_e;
 
 /**
@@ -779,6 +785,17 @@ typedef struct {
     uint16_t real_power;                            /** The power that is set to driver.*/
 } qapi_WLAN_Get_Power_Evt_t;
 
+/**
+@ingroup qapi_wlan
+Enum declaration for WLAN RA Operation.
+*/
+typedef enum {
+    QAPI_WLAN_RA_OFF = 0, 			/**< automatic rate adaptation disable. */
+    QAPI_WLAN_RA_ON,            	/**< automatic rate adaptation enable. */
+    QAPI_WLAN_RA_HT_ONLY_ENABLE,	/**< rate use HT only enable. */
+    QAPI_WLAN_RA_HT_ONLY_DISABLE,	/**< rate use HT only disable. */
+} qapi_WLAN_RA_OP_e;
+
 // set_rate
 typedef struct {
     uint8_t ra_ON;              /** Flag indicating whether automatic rate adaptation is enabled.
@@ -838,6 +855,15 @@ typedef struct {
     uint32_t rssi;
     uint32_t link_mode;
 } qapi_WLAN_Status_t;
+
+/**
+@ingroup qapi_wlan
+Set STA BA window size.
+*/
+typedef struct {
+    uint16_t tx_size;					/** TX BA window size */
+    uint16_t rx_size;					/** RX BA window size */
+} qapi_WLAN_BA_Window_Size_t;
 
 /**
 @ingroup qapi_wlan

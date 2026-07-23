@@ -58,4 +58,8 @@ extern qapi_Status_t wmi_unit_test_cmd_send(void *p_data, uint32_t data_len);
 #ifdef CONFIG_WPS
 extern qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof);
 #endif
+extern qapi_Status_t wlan_set_ba_window_size(uint8_t device_ID, uint16_t tx_size, uint16_t rx_size);
+extern qapi_Status_t wlan_set_cts_to_self(uint8_t device_ID, uint32_t enable);
+extern qapi_Status_t wlan_set_rsp_rate(uint8_t device_id, uint8_t rate_idx);
+
 #endif // WLAN_QAPI_HELPER_H

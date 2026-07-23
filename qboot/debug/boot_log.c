@@ -79,7 +79,7 @@ void boot_log_show_exception(boot_log *log_ptr)
 
 	regs = (uint32_t *)&log_ptr->exception.scb_vals;
 
-	for (i = 0; i < NUM_SCB_REGS; i++)
+	for (i = 0; i < NUM_SCB_REGS && i < (sizeof(scb_names)/sizeof(scb_names[0])); i++)
 	{
 		LOG_PRINTF("	%s:0x%08lX\r\n", (unsigned int)scb_names[i], regs[i]);
 	}

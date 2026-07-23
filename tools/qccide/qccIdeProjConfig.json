@@ -1,0 +1,688 @@
+[
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "1": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_zephyrSDK",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": false,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/qcli_app",
+    "flashRunPath": "./qapp/qcli_app",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/qcli_app/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "."
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  },
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "2": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_ftmApp",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": false,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "c:\\workspace\\.qcc_ide\\Sdks\\qccsdk_qcc730_qcc730_qzephyr_2_0_r1_rel",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/ftm_app",
+    "flashRunPath": "./qapp/ftm_app",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/ftm_app/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "./qapp/ftm_app"
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  },
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "3": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_powerApp",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": false,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/power_app",
+    "flashRunPath": "./qapp/power_app",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/power_app/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "./qapp/power_app"
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  },
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "4": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_qcliApp",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": true,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "c:\\workspace\\.qcc_ide\\Sdks\\qccsdk_qcc730_qcc730_qzephyr_2_0_r1_rel",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/qcli_app",
+    "flashRunPath": "./qapp/qcli_app",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/qcli_app/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "./qapp/qcli_app"
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  },
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "5": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_qcspiSlaveApp",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": false,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/qcspi_app/qcc730_slave",
+    "flashRunPath": "./qapp/qcspi_app/qcc730_slave",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/qcspi_app/qcc730_slave/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "./qapp/qcspi_app/qcc730_slave"
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  },
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "6": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_qatApp",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": false,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/qat_app",
+    "flashRunPath": "./qapp/qat_app",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/qat_app/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "./qapp/qat_app"
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  },
+  {
+    "$comment": "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. SPDX-License-Identifier: BSD-3-Clause-Clear",
+    "7": "Used and updated by extension, you should not change it manually if you don't know why",
+    "prjName": "qcc730M_wifiStaApp",
+    "IDEVer": "^1.0.0",
+    "sdkName": "qccsdk_qcc730",
+    "sdkVer": "1.0.0",
+    "activated": false,
+    "chipID": "QCC730",
+    "chipVersion": "v2",
+    "chipTarget": "QCC730",
+    "toolchainName": "arm-zephyr-eabi-gcc",
+    "sdkPath": "",
+    "demoPath": "./qapp",
+    "demoRTOS": "",
+    "demoChipBoard": "mqm730i",
+    "demoBuildScriptWin": "qccsdk.py",
+    "demoBuildScriptLinux": "qccsdk.py",
+    "demoFlashScriptWin": "qccsdk.py",
+    "demoFlashScriptLinux": "qccsdk.py",
+    "cfgSetScriptWin": "qccsdk.py",
+    "cfgSetScriptLinux": "qccsdk.py",
+    "defaultDemo": "",
+    "defaultDemoPathName": "",
+    "board": "mqm730i",
+    "boardMapping": {
+      "mqm730i": "qcc730mi",
+      "mqm730x": "qcc730mx",
+      "cqm730i": "qcc730mi",
+      "cqm730x": "qcc730mx"
+    },
+    "osVariant": "zephyr",
+    "useFullBreakpointPath": true,
+    "ideToolsDir": "modules/hal/qcom/tools/qccide",
+    "buildDir": "build/${board}",
+    "buildRunPath": "./qapp/samples/net/wifi/sta",
+    "flashRunPath": "./qapp/samples/net/wifi/sta",
+    "entryFun": "main",
+    "elfName": "zephyr.elf",
+    "elfPath": "./qapp/samples/net/wifi/sta/build/${board}/zephyr/zephyr.elf",
+    "gdbInitFilePath": "./qcc730/boards/qcom/common/qcc730_gdb_for_qccide.gdbinit",
+    "openocdGdbServerFilePath": "./qcc730/boards/qcom/common/qcc730_openocd_ch347.cfg",
+    "boardList": [
+      "mqm730i",
+      "mqm730x",
+      "cqm730i",
+      "cqm730x"
+    ],
+    "incPaths": [
+      "./qapp/samples/net/wifi/sta"
+    ],
+    "debugCfg": {
+      "gdbExecutables": [
+        "arm-zephyr-eabi-gdb",
+        "arm-none-eabi-gdb"
+      ]
+    },
+    "SET_CFG_PATTERN": {
+      "win": [
+        ""
+      ],
+      "linux": [
+        ""
+      ]
+    },
+    "BUILD_IMAGE_PATTERN": {
+      "win": [
+        "west build -b ${board} -d ${buildDir}"
+      ],
+      "linux": [
+        "west build -b ${board} -d ${buildDir}"
+      ]
+    },
+    "CLEAN_IMAGE_PATTERN": {
+      "win": [
+        "west build -d ${buildDir} -t pristine"
+      ],
+      "linux": [
+        "west build -d ${buildDir} -t pristine"
+      ]
+    },
+    "FLASH_PATTERN": {
+      "win": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ],
+      "linux": [
+        "west flash -d ${buildDir}",
+        "west flash -d ${buildDir} --all",
+        "west flash -d ${buildDir} --bdf",
+        "west flash -d ${buildDir} --all --bdf",
+        "west flash -d ${buildDir} --caldb"
+      ]
+    }
+  }
+]

@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  *
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -192,5 +192,18 @@ bool qat_is_service_timer_running(void);
 #define QAT_REGISTER_CMD_GROUP(_get_func, _name)                                                                       \
     static int _CONCAT(_get_func, _register)(void) { return qat_register_cmd_group(_get_func, _name); }                \
     SYS_INIT(_CONCAT(_get_func, _register), APPLICATION, 80)
+
+/**
+ * @brief Exit libcat hold state with OK response.
+ *
+ * Call this from a data-mode callback after the data transfer completes
+ * successfully. libcat will send "\r\nOK\r\n" and return to idle.
+ */
+void qat_hold_exit_ok(void);
+
+/**
+ * @brief Exit libcat hold state with ERROR response.
+ */
+void qat_hold_exit_error(void);
 
 #endif /* QAT_API_H */
