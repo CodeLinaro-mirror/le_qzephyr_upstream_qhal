@@ -1014,6 +1014,20 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
     case WMI_BMPS_DISABLE_FAIL_EVTID:
         wmi_bmps_disable_failed_event(data);
         break;
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_NAN_USD
+    case WMI_NAN_REMAIN_ON_CHANNEL_EVTID:
+        extern void qcc730_nan_wmi_roc_evt(void *data);
+        qcc730_nan_wmi_roc_evt(data);
+        break;
+    case WMI_NAN_TX_STATUS_EVTID:
+        extern void qcc730_nan_wmi_tx_status_evt(void *data);
+        qcc730_nan_wmi_tx_status_evt(data);
+        break;
+    case WMI_NAN_RX_SDF_EVTID:
+        extern void qcc730_nan_wmi_rx_sdf_evt(void *data);
+        qcc730_nan_wmi_rx_sdf_evt(data);
+        break;
+#endif
     case WMI_P2P_LISTEN_DONE_EVTID: {
         /* Forward to the P2P glue. The weak fallback above turns this
          * into a no-op when CONFIG_WIFI_QCOM_P2P=n.
@@ -1138,17 +1152,37 @@ static void wmi_cmd_result(void *msg)
 
 static void wmi_event_notify(WIFIReturnCode_t return_type, uint32_t event_id, void *data)
 {
-    /* P2P find produces high-frequency events (each SEARCH/LISTEN tick
-     * once per 100-3200 ms): silence the noisy ones from the always-on
-     * log so the console stays readable. Their handlers still log via
-     * log_printf when something interesting happens.
-     * P2P-DEVICE-FOUND is the user-visible per-peer line. */
-    if (event_id != WMI_P2P_LISTEN_DONE_EVTID &&
-        event_id != WMI_P2P_SCAN_DONE_EVTID &&
-        event_id != WMI_P2P_BSS_FOUND_EVTID &&
-        event_id != WMI_P2P_RX_ACTION_EVTID) {
-        log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n", return_type, event_id, (unsigned int)data,
-                   *(int *)data);
+    /* Verbose WMI event trace. This is a synchronous, blocking UART
+     * printk() on every single WMI event. The risk scales with event
+     * *frequency*, not event type: low-rate sources (wifi enable/disable,
+     * connect/disconnect, AP/STA state changes) can safely print
+     * unconditionally. High-rate sources (NAN RX_SDF/TX_STATUS/ROC,
+     * P2P find/listen ticks) lengthen how long each event_payload_buf
+     * slot stays "in use" per print and can starve the shared pool
+     * (wmi_event_relay: payload pool exhausted) if traced while that
+     * source is active — see FR203517 issue log. Skip the print for
+     * those event IDs whenever the owning feature is compiled in,
+     * regardless of whether that feature happens to be active right
+     * now, so the mere presence of NAN/P2P in the image can't reproduce
+     * the starvation. Everything else still traces unconditionally. */
+    switch (event_id) {
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_NAN_USD
+    case WMI_NAN_TX_STATUS_EVTID:
+    case WMI_NAN_REMAIN_ON_CHANNEL_EVTID:
+    case WMI_NAN_RX_SDF_EVTID:
+        break;
+#endif
+#ifdef CONFIG_WIFI_QCOM_P2P
+    case WMI_P2P_LISTEN_DONE_EVTID:
+    case WMI_P2P_SCAN_DONE_EVTID:
+    case WMI_P2P_BSS_FOUND_EVTID:
+    case WMI_P2P_RX_ACTION_EVTID:
+        break;
+#endif
+    default:
+        log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n",
+                   return_type, event_id, (unsigned int)data, *(int *)data);
+        break;
     }
 
     wmi_msg_struct_t wlan_result = {0};
