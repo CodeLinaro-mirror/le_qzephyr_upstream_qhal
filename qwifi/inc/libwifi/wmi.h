@@ -259,6 +259,9 @@ typedef enum {
 #if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
     WMI_WPS_SCAN_CMDID,
 #endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+    WMI_NAN_SEND_ACTION_CMDID,               /* TX NAN SDF (Public Action Frame) */
+    WMI_NAN_REMAIN_ON_CHANNEL_CMDID,         /* Stay on specified channel to listen */
+    WMI_NAN_CANCEL_REMAIN_ON_CHANNEL_CMDID,  /* Cancel remain-on-channel */
     /* P2P find/discovery support. Appended at end so existing IDs stay
      * stable for firmware ABI compatibility. See WMI_P2P_FW_SET_CONFIG_CMD
      * / WMI_P2P_FW_FIND_CMD below.
@@ -312,6 +315,9 @@ typedef enum {
     WMI_WPS_SCAN_COMP_EVTID,
     WMI_WPS_SCAN_RESULT_EVTID,
 #endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+    WMI_NAN_TX_STATUS_EVTID,             /* Action Frame TX done (ack/no-ack) */
+    WMI_NAN_REMAIN_ON_CHANNEL_EVTID,     /* Remain-on-channel started/ended */
+    WMI_NAN_RX_SDF_EVTID,                /* NAN SDF received from peer */
     WMI_P2P_LISTEN_DONE_EVTID,
     WMI_P2P_SCAN_DONE_EVTID,
     WMI_P2P_BSS_FOUND_EVTID,
@@ -515,6 +521,7 @@ typedef enum //@Wmi generic timedout handler events
   /*Periodic traffic idle timer timeout event*/
   periodicTrafficIdleTimer_eventid,
 #endif
+  nan_remain_on_channel_timeout_evntid,    /* NAN USD remain-on-channel expiry */
   pmImpsTimeoutFunc_evntid,
   invalid_evntid = 0xff } wmi_tmdout_evnthndl_t;
 
@@ -2213,5 +2220,44 @@ typedef PREPACK struct {
 #else /* SUPPORT_5GHZ */
 #define DEV_CHANNEL_NUM_MAX 11
 #endif /* CONFIG_WIFILIB_6GHZ */
+
+/* NAN USD CMD/EVT parameter structures */
+
+typedef struct {
+    uint32_t freq;          /* TX frequency in MHz (typically 2437 for ch6) */
+    uint32_t wait_time_ms;  /* time to wait for ACK after TX, in ms */
+    uint8_t  dst_addr[6];   /* destination MAC (NAN multicast: 51:6f:9a:01:00:00) */
+    uint8_t  src_addr[6];   /* source MAC (device NMI) */
+    uint8_t  bssid[6];      /* BSSID field (wildcard ff:ff:ff:ff:ff:ff for USD) */
+    uint8_t  pad[2];        /* alignment */
+    uint32_t buf_len;       /* length of SDF frame payload */
+    uint8_t  buf[0];        /* SDF frame payload (variable length) */
+} POSTPACK WMI_NAN_SEND_ACTION_CMD;
+
+typedef struct {
+    uint32_t freq;          /* channel frequency in MHz */
+    uint32_t duration_ms;   /* duration to remain on channel, in ms */
+} POSTPACK WMI_NAN_REMAIN_ON_CHANNEL_CMD;
+
+typedef struct {
+    uint32_t freq;          /* frequency on which TX was attempted */
+    uint8_t  dst_addr[6];   /* destination MAC of the transmitted frame */
+    uint8_t  ack;           /* 1 = ACK received, 0 = no ACK */
+    uint8_t  pad;
+} POSTPACK WMI_NAN_TX_STATUS_EVT;
+
+typedef struct {
+    uint32_t freq;          /* channel frequency */
+    uint8_t  started;       /* 1 = remain-on-channel started, 0 = ended */
+    uint8_t  pad[3];
+} POSTPACK WMI_NAN_REMAIN_ON_CHANNEL_EVT;
+
+typedef struct {
+    uint32_t freq;          /* channel on which SDF was received */
+    uint8_t  src_addr[6];   /* sender MAC address */
+    uint8_t  pad[2];
+    uint32_t buf_len;       /* length of received SDF payload */
+    uint8_t  buf[0];        /* SDF frame payload (variable length) */
+} POSTPACK WMI_NAN_RX_SDF_EVT;
 
 #endif /* _WMI_H_ */
