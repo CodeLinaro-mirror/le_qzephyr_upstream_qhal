@@ -24,6 +24,18 @@
 #define SCAN_LIST_NUM_CHANNELS 11
 #endif /* CONFIG_6GHZ */
 
+/* FR203519: dc_get_chidx_from_freq() lives in libwifiqcc730 (mlm/discovery.c);
+ * its declaring header (mlm/include/discovery_api.h) is PRIVATE to that
+ * target and not on qwifi's include path. Both targets link into the same
+ * zephyr.elf (there is no separate "firmware" processor here), so a plain
+ * extern forward declaration is sufficient -- same pattern already used by
+ * qcc730_nan_de_glue.c for wmi_cmd_send(). Gated to match the declaration's
+ * own #ifdef in discovery_api.h. */
+#ifdef SUPPORT_5GHZ
+extern uint8_t dc_get_chidx_from_freq(uint16_t freq);
+#define QCC730_CHINDEX_INVALID 255 /* DC_CHANNEL_INDEX_INVALID, mlm/include/wlan_dev.h */
+#endif
+
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
 void wlan_clear_privacy(uint8_t vdev_id)
@@ -168,10 +180,41 @@ void wlan_set_scan_param(WMI_START_SCAN_CMD *p_cmd, const qapi_WLAN_Start_Scan_P
     p_cmd->auth_mode = WMI_NONE_AUTH;
     p_cmd->crypto_type = NONE_CRYPT;
     p_cmd->probe_type = active_probe;
-    p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
-    int i;
-    for (i = 0; i < p_cmd->num_channels; i++) {
-        p_cmd->channel_list[i] = i;
+
+    /* FR203519: honor caller-provided channel hint for directed single-channel
+     * scans (e.g. WiFiPAF commissioning on 2.4 GHz CH6 or 5 GHz CH149). Fall
+     * back to full-band scan when no hint is given, when the hint doesn't
+     * resolve to a valid channel, or for 6G (not yet supported here).
+     * scan_Params->channel_List[i] is a channel *number*; WMI cmd wants
+     * chindex:
+     *   - 2.4 GHz (channel 1-14): chindex = channel - 1 (CH1->0, CH6->5, CH11->10)
+     *   - 5 GHz (channel >= 36):  freq = 5000 + channel*5 (same formula as
+     *     wlan_channel_to_freq()), then chindex = dc_get_chidx_from_freq(freq)
+     *     via the regulatory channel list (already covers 5 GHz -- see
+     *     SUPPORT_5GHZ/SUPPORT_REGULATORY in fwconfig_QCP7321.h). */
+    if (scan_Params && scan_Params->num_Channels == 1 && scan_Params->channel_List[0] >= 1 &&
+        scan_Params->channel_List[0] <= 14) {
+        p_cmd->num_channels = 1;
+        p_cmd->channel_list[0] = (uint8_t)(scan_Params->channel_List[0] - 1);
+#ifdef SUPPORT_5GHZ
+    } else if (scan_Params && scan_Params->num_Channels == 1 && scan_Params->channel_List[0] >= 36) {
+        uint16_t freq = (uint16_t)(5000 + scan_Params->channel_List[0] * 5);
+        uint8_t chindex = dc_get_chidx_from_freq(freq);
+        if (chindex != QCC730_CHINDEX_INVALID) {
+            p_cmd->num_channels = 1;
+            p_cmd->channel_list[0] = chindex;
+        } else {
+            p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
+            for (int i = 0; i < p_cmd->num_channels; i++) {
+                p_cmd->channel_list[i] = i;
+            }
+        }
+#endif /* SUPPORT_5GHZ */
+    } else {
+        p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
+        for (int i = 0; i < p_cmd->num_channels; i++) {
+            p_cmd->channel_list[i] = i;
+        }
     }
     p_cmd->scan_only = true;
 }
