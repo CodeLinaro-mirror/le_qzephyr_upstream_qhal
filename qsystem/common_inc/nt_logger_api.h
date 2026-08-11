@@ -10,7 +10,7 @@
 #include <stdint.h> /*for unsigned int data types */
 #include "nt_logger.h"
 #include "nt_common.h" /*for Moduleid's fetching*/
-#if QCCSDK
+#if defined(QCCSDK)
 #include "autoconf.h"
 #endif
 #include "wifi_fw_logger.h"

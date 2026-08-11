@@ -104,7 +104,7 @@ void nt_dpm_realloc_network_buffer(void *buf, uint32_t length);
 void nt_dpm_network_init(void);
 nt_status_t get_netif_hwaddr_from_netif_id(uint8_t netif_id, uint8_t *addr);
 
-#if QCCSDK
+#if defined(QCCSDK)
 void nt_dpm_notify_network_to_set_linkup(struct netif *netif);
 void nt_dpm_notify_network_to_set_linkdown(struct netif *netif);
 #endif

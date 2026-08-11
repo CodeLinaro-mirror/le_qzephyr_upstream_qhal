@@ -29,7 +29,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -76,7 +76,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -123,7 +123,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -170,7 +170,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -217,7 +217,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -264,7 +264,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -311,7 +311,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -358,7 +358,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -405,7 +405,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -452,7 +452,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -499,7 +499,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,
@@ -546,7 +546,7 @@ flash_config_data_t flash_device_config[] = {
 	{
 		.addr_bytes = 3,
 		.read_cmd_mode = FLASH_RW_MODE_SDR_SINGLE,
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 		.read_addr_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_data_mode = FLASH_RW_MODE_SDR_QUAD,
 		.read_opcode = 0xeb,

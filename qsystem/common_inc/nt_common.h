@@ -164,4 +164,13 @@ typedef enum module_id_t {
     NT_MAX_MODULE_ID
 } module_id;
 
+/* IRQ profiling hooks. Defined as no-ops in the default build; instrumented
+ * builds may override these by including the real ferm_prof.h first. */
+#ifndef PROF_IRQ_ENTER
+#define PROF_IRQ_ENTER()
+#endif
+#ifndef PROF_IRQ_EXIT
+#define PROF_IRQ_EXIT()
+#endif
+
 #endif // _NT_COMMON_H_

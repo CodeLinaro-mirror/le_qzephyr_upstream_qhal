@@ -46,7 +46,7 @@ typedef struct qintf_device {
 // Control if ftm code is linked in, so to reduce code size
 NT_BOOL wmi_pdev_utf_cmd(wmi_msg_struct_t *msg)
 {
-#if CONFIG_FTM_MODE
+#if defined(CONFIG_FTM_MODE)
     extern uint8_t ftm_parse_tlv_cmd(uint8_t * buf, uint32_t dataLength);
     ftm_parse_tlv_cmd((uint8_t *)msg->msg_struct.vo_data, msg->msg_struct.vo_data_len);
 #else  /* CONFIG_FTM_MODE */
@@ -128,7 +128,7 @@ void nt_dpm_realloc_network_buffer(void *buf, uint32_t length)
     (void)length;
 }
 
-#if QCCSDK
+#if defined(QCCSDK)
 void nt_dpm_notify_network_to_set_linkup(struct netif *netif)
 {
     nt_dpm_netif_set_link_up(netif);
@@ -145,7 +145,7 @@ void nt_dpm_notify_network_to_set_linkdown(struct netif *netif)
 nt_status_t get_netif_hwaddr_from_netif_id(uint8_t netif_id, uint8_t *addr) { return NT_OK; }
 
 app_mode_id_t nt_get_app_mode(void) { 
-#if CONFIG_FTM_MODE
+#if defined(CONFIG_FTM_MODE)
     return APP_MODE_FTM;
 #else
     return APP_MODE_MM; 

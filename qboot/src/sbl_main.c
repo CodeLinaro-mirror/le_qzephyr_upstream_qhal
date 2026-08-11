@@ -23,7 +23,7 @@
 #include "boot_log.h"
 #include "sbl_auth.h"
 #include "sbl_flash_fwd.h"
-#if CONFIG_MPU_ENABLE
+#if defined(CONFIG_MPU_ENABLE)
 #include "sbl_mpu.h"
 #endif
 #include "safeAPI.h"
@@ -189,7 +189,7 @@ loader_start( void* arg){
 
 	secboot_auth_image_info_t image_info;
 
-#if CONFIG_MPU_ENABLE
+#if defined(CONFIG_MPU_ENABLE)
 	sbl_mpu_config();
 #endif
 
@@ -426,13 +426,21 @@ loader_start( void* arg){
 		msp = (uint32_t*)APP_IMAGE_START_ADDRESS;
 		app_entry = (elf_entry_args)(app_elf_loader.elf_hdr.e_entry);
 
-#if CONFIG_MPU_ENABLE
+#if defined(CONFIG_MPU_ENABLE)
 		sbl_mpu_disable();
 #endif
 
 		sbl_printf("APP entry 0x%08x, startAdd=0x%x\r\n", (unsigned int)app_entry, (unsigned int)msp);
-
+		
+		/* GCC 12+ deprecates "sp" in clobber lists, but dropping it (or
+		 * replacing with "memory") makes the compiler keep the old SP and
+		 * the subsequent function calls run on the new MSP with old
+		 * offsets, corrupting the app stack. Keep "sp" clobber and
+		 * suppress the deprecation warning. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
 		__asm volatile ("MSR msp, %0" : : "r" (*msp) : "sp");
+#pragma GCC diagnostic pop
 
 		set_sbl_share(OTA_IMG_FORMAT_ELF, get_bdf_addr(fdt), fdt);
 
@@ -445,13 +453,16 @@ loader_start( void* arg){
 
 		app_entry = (elf_entry_args)(*((uint32_t *)(start_addr) + 1));
 
-#if CONFIG_MPU_ENABLE
+#if defined(CONFIG_MPU_ENABLE)
 		sbl_mpu_disable();
 #endif
 
 		sbl_printf("APP entry 0x%08x\r\n", (unsigned int)app_entry);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
 		__asm volatile ("MSR msp, %0" : : "r" (*msp) : "sp");
+#pragma GCC diagnostic pop
 
 		set_sbl_share(OTA_IMG_FORMAT_BIN, get_bdf_addr(fdt), fdt);
 

@@ -70,7 +70,7 @@ void qwifi_init(void)
 
     uint32_t is_ftm = 0;
 
-#if CONFIG_FTM_MODE
+#if defined(CONFIG_FTM_MODE)
     ftm_task_init();
     is_ftm = 1;
 #endif
@@ -88,7 +88,7 @@ void qwifi_init(void)
 
 #ifdef PHY_POWER_SWITCH
     /* In FTM configure PHY in RXB_LISTEN mode */
-#if CONFIG_FTM_MODE
+#if defined(CONFIG_FTM_MODE)
     hal_phy_power_ftm_switch_to_listen();
 #endif
 #endif /* PHY_POWER_SWITCH */
