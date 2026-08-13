@@ -1290,7 +1290,7 @@ qapi_Status_t wmi_add_device(uint8_t device_ID)
     return ret;
 }
 
-qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_ID,
+qapi_Status_t wmi_start_scan(uint8_t device_ID,
                              const qapi_WLAN_Start_Scan_Params_t *scan_Params)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -1303,7 +1303,16 @@ qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_ID,
     wlan_set_scan_param(&p_cxt->scan_cmd, scan_Params);
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
-    wmi_cmd_send(WMI_START_SCAN_CMDID, &p_cxt->scan_cmd, sizeof(WMI_START_SCAN_CMD));
+    /*
+     * Must route via wmi_dev_cmd_send() with the real device_ID, not
+     * wmi_cmd_send(). wmi_cmd_send() leaves netif_id at 0, and
+     * get_dev_from_netif_id(0) resolves to the FIRST non-NULL device slot -
+     * which in AP+STA concurrency is the AP (NT_DEV_AP_ID, slot 0), not the
+     * STA that issued this scan. wmi_start_scan_cmd() then runs against the
+     * AP's devh_t, which can hit an unguarded dereference (e.g. ecsa_ctx)
+     * that is only safe for the intended STA device.
+     */
+    wmi_dev_cmd_send(WMI_START_SCAN_CMDID, device_ID, &p_cxt->scan_cmd, sizeof(WMI_START_SCAN_CMD));
     if (p_cxt->wlan_scan_start_block_mode) {
         qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_STARTED_SCAN, QURT_SIGNAL_ATTR_CLEAR_MASK);
         log_printf("block mode, WMI cmd done\n");

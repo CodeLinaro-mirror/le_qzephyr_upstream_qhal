@@ -39,7 +39,7 @@ extern void wmi_event_relay(uint32_t if_id, uint32_t event_id, void *data, uint3
 extern qapi_Status_t wmi_on(void);
 extern qapi_Status_t wmi_off(void);
 extern qapi_Status_t wmi_add_device(uint8_t __attribute__((__unused__)) device_ID);
-extern qapi_Status_t wmi_start_scan(uint8_t __attribute__((__unused__)) device_ID,
+extern qapi_Status_t wmi_start_scan(uint8_t device_ID,
                                     const qapi_WLAN_Start_Scan_Params_t *scan_Params);
 extern qapi_Status_t wlan_get_scan_results(uint8_t __attribute__((__unused__)) device_ID,
                                            qapi_WLAN_Scan_Comp_Evt_t *scan_Res, int16_t *num_Bss);
