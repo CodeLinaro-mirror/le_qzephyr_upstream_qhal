@@ -28,29 +28,30 @@
 /*----------------------------------------------------------------------------
  * PFM Usability Lookup Table
  *
- * Rows  : Vbatt bands  — index 0 = lowest (2.0V), index 3 = highest (2.6V+)
+ * Rows  : Vbatt bands  — index 0 = lowest (1.9V), index 4 = highest (2.7V+)
  * Cols  : Temperature  — index 0 = 30°C, index 1 = 50°C, index 2 = 70°C, index 3 = 90°C
  *
  * Value 1 = PFM safe, 0 = must stay in PWM.
  *
- * Raw HW data (FR202397, no guard-band):
- *   Vbatt >= 2.6V : Y Y Y Y
- *   Vbatt  = 2.4V : Y Y Y N
- *   Vbatt  = 2.2V : Y Y N N
- *   Vbatt  = 2.0V : Y N N N
+ * Updated per bench test results (supersedes FR202397 raw HW data):
+ *   Vbatt >= 2.7V : Y Y Y Y
+ *   Vbatt  = 2.5V : Y Y Y N
+ *   Vbatt  = 2.3V : Y Y N N
+ *   Vbatt  = 2.1V : Y N N N
+ *   Vbatt  = 1.9V : Y N N N
  *--------------------------------------------------------------------------*/
 
 /* Number of Vbatt / temperature breakpoints in the table */
-#define PFM_TABLE_VBAT_ROWS   4
+#define PFM_TABLE_VBAT_ROWS   5
 #define PFM_TABLE_TEMP_COLS   4
 
 /*
  * Vbatt lower-bound for each row (mV).
  * Row i covers: pfm_vbat_min[i] <= vbat < pfm_vbat_min[i+1]
- * Row 3 covers: vbat >= pfm_vbat_min[3]  (i.e. >= 2600 mV)
+ * Row 4 covers: vbat >= pfm_vbat_min[4]  (i.e. >= 2700 mV)
  */
 static const uint32_t pfm_vbat_min_mv[PFM_TABLE_VBAT_ROWS] = {
-    2000, 2200, 2400, 2600
+    1900, 2100, 2300, 2500, 2700
 };
 
 /*
@@ -73,15 +74,16 @@ static int32_t pfm_temp_max_c[PFM_TABLE_TEMP_COLS] = {
  *   1 = PFM safe
  *   0 = must stay in PWM
  *
- * vbat_row 0 = 2.0V, 1 = 2.2V, 2 = 2.4V, 3 = 2.6V+
+ * vbat_row 0 = 1.9V, 1 = 2.1V, 2 = 2.3V, 3 = 2.5V, 4 = 2.7V+
  * temp_col 0 = <=30C, 1 = <=50C, 2 = <=70C, 3 = <=90C
  */
 static const uint8_t pfm_table[PFM_TABLE_VBAT_ROWS][PFM_TABLE_TEMP_COLS] = {
     /* 30C  50C  70C  90C */
-    {  1,   0,   0,   0  },  /* Vbatt = 2.0V */
-    {  1,   1,   0,   0  },  /* Vbatt = 2.2V */
-    {  1,   1,   1,   0  },  /* Vbatt = 2.4V */
-    {  1,   1,   1,   1  },  /* Vbatt >= 2.6V */
+    {  1,   0,   0,   0  },  /* Vbatt = 1.9V */
+    {  1,   0,   0,   0  },  /* Vbatt = 2.1V */
+    {  1,   1,   0,   0  },  /* Vbatt = 2.3V */
+    {  1,   1,   1,   0  },  /* Vbatt = 2.5V */
+    {  1,   1,   1,   1  },  /* Vbatt >= 2.7V */
 };
 
 /*----------------------------------------------------------------------------
@@ -247,14 +249,14 @@ void smps2_set_low_vbat_regs(bool low_vbat)
          *   NMIN_ON = 3  (min NMOS on-time = 24 ns)
          *   CL_ILIM_MIN = 11 (register default 0x2C >> 2)
          */
-        p_rpmu->RPMU_R_PMU_SMPS2_4.bit.SMPS2_PMIN_ON    = SMPS2_DEFAULT_PMIN_ON;
-        p_rpmu->RPMU_R_PMU_SMPS2_4.bit.SMPS2_NMIN_ON    = SMPS2_DEFAULT_NMIN_ON;
+        p_rpmu->RPMU_R_PMU_SMPS2_4.bit.SMPS2_PMIN_ON    = SMPS2_PMIN_ON_VBAT_HIGH;
+        p_rpmu->RPMU_R_PMU_SMPS2_4.bit.SMPS2_NMIN_ON    = SMPS2_NMIN_ON_VBAT_HIGH;
         p_rpmu->RPMU_R_PMU_SMPS2_4.bit.SMPS2_CL_ILIM_MIN = SMPS2_DEFAULT_CL_ILIM_MIN;
 
         SMPS2_LOG("smps2_set_low_vbat_regs: DEFAULT regs restored "
                   "(pmin=%d nmin=%d cl_ilim_min=%d)",
-                  SMPS2_DEFAULT_PMIN_ON,
-                  SMPS2_DEFAULT_NMIN_ON,
+                  SMPS2_PMIN_ON_VBAT_HIGH,
+                  SMPS2_NMIN_ON_VBAT_HIGH,
                   SMPS2_DEFAULT_CL_ILIM_MIN);
 
         g_smps2_low_vbat_state.low_vbat_regs_applied = false;
@@ -305,6 +307,41 @@ uint32_t smps2_get_fsm_state(void)
 }
 
 /*----------------------------------------------------------------------------
+ * smps2_force_pwm
+ *--------------------------------------------------------------------------*/
+
+bool smps2_force_pwm(void)
+{
+    RPMU_BASE_rpmu_Type *p_rpmu = _rpmu();
+    uint32_t fsm;
+    uint32_t timeout_ms = SMPS2_FSM_TRANSITION_TIMEOUT_MS;
+
+    /* Step 1: force SMPS2 to PWM */
+    p_rpmu->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_FORCE_PWM;
+
+    /* Step 2: poll ro_smps2_fsm until PWM or timeout */
+    do {
+        fsm = smps2_get_fsm_state();
+        if (fsm == SMPS2_FSM_PWM) {
+            break;
+        }
+        /* ~1 ms busy-wait using nop delay (calibrated elsewhere in the codebase) */
+        nt_socpm_nop_delay(1000);
+        timeout_ms--;
+    } while (timeout_ms > 0);
+
+    if (fsm != SMPS2_FSM_PWM) {
+        NT_LOG_PRINT(SOCPM, WARN,
+                     "smps2_force_pwm: timeout waiting for PWM "
+                     "(fsm=%u)", fsm);
+        p_rpmu->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_FORCE_PWM;
+        return false;
+    }
+
+    SMPS2_LOG("smps2_force_pwm: switched to PWM");
+    return true;
+}
+/*----------------------------------------------------------------------------
  * smps2_force_pfm_then_auto
  *--------------------------------------------------------------------------*/
 
@@ -333,10 +370,12 @@ bool smps2_force_pfm_then_auto(void)
                      "smps2_force_pfm_then_auto: timeout waiting for PFM "
                      "(fsm=%u)", fsm);
         /*
-         * Even on timeout, re-enable auto-switch so HW can recover.
-         * Do NOT leave lpm_ovr=3 permanently.
+         * Auto-switch (lpm_ovr=2) only performs PFM->PWM by HW; it does NOT
+         * perform PWM->PFM. If we're still stuck in PWM, leaving lpm_ovr=2
+         * here would violate the "PWM must stay forced (lpm_ovr=0)" rule, so
+         * fall back to forced PWM instead of enabling auto-switch.
          */
-        p_rpmu->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_AUTO_SWITCH;
+        p_rpmu->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_FORCE_PWM;
         return false;
     }
 
@@ -391,6 +430,10 @@ static void smps2_pfm_monitor_task(void __attribute__((__unused__)) *arg)
             SMPS2_LOG("smps2_pfm_monitor_task: PWM->PFM switch "
                       "(vbat=%umV temp=%dC)", vbat_mV, temp_C);
             (void)smps2_force_pfm_then_auto();
+        }else {
+            SMPS2_LOG("smps2_pfm_monitor_task: PFM is not allowed, force to PWM "
+                      "(vbat=%umV temp=%dC)", vbat_mV, temp_C);
+            (void)smps2_force_pwm();
         }
     }
 }
@@ -434,12 +477,8 @@ void smps2_low_vbat_init(uint32_t vbat_mV, int32_t temp_C)
         (void)smps2_force_pfm_then_auto();
         NT_LOG_PRINT(SOCPM, ERR,"smps2_low_vbat_init: conditions allow PFM -> forcing PFM, auto switch enabled");
     } else {
-         NT_LOG_PRINT(SOCPM, ERR,"smps2_low_vbat_init: conditions require PWM -> staying in PWM");
-        /*
-         * Cold-boot default is already PWM.
-         * auto-switch (lpm_ovr=2) was set in smps2_init_auto_switch(),
-         * so HW will automatically switch to PWM if temperature rises.
-         */
+        (void)smps2_force_pwm();
+        NT_LOG_PRINT(SOCPM, ERR,"smps2_low_vbat_init: conditions don't allow PFM -> forcing PWM");
     }
 
     /*
