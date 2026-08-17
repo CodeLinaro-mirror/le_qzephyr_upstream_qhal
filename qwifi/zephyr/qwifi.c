@@ -62,6 +62,12 @@ static void libwifi_kconfig_install(void)
   total_beacon_wait_time = 25000;
 #endif
 
+#ifdef CONFIG_WIFI_PMK_BYPASS_KDF
+    g_libwifi_kconfig.pmk_bypass_kdf = 1;
+#else
+    g_libwifi_kconfig.pmk_bypass_kdf = 0;
+#endif
+
 }
 
 void qwifi_init(void)

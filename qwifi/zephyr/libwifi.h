@@ -24,6 +24,7 @@ struct libwifi_kconfig_t {
     uint32_t hc_11a_1_5g;
     uint32_t hc_11n_5g;
     uint8_t srrc_band_edge_enable;
+    uint8_t pmk_bypass_kdf;
 };
 
 struct libwifi_qos_null_kconfig_t {
