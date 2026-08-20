@@ -57,7 +57,8 @@ typedef struct // qapi_WLAN_Start_Scan_Params_s
     /**< Time interval (in ms) between scanning channels from the list. If set to 0, the default value of 100 ms is
      * used.  */
     uint8_t scan_Type;
-    /**< This parameter currently supports only 0 as an input value. */
+    /**< Band restriction hint for the scan, see QAPI_WLAN_SCAN_TYPE_* below.
+     * Defaults to QAPI_WLAN_SCAN_TYPE_ALL_BANDS (0) if left unset. */
     uint8_t num_Channels;
     /**< Number of channels to scan. */
     uint16_t channel_List[1];
@@ -65,6 +66,11 @@ typedef struct // qapi_WLAN_Start_Scan_Params_s
     uint8_t ssid[__QAPI_WLAN_MAX_SSID_LEN];
     uint8_t ssid_Length;
 } qapi_WLAN_Start_Scan_Params_t;
+
+/** Values for qapi_WLAN_Start_Scan_Params_t.scan_Type. */
+#define QAPI_WLAN_SCAN_TYPE_ALL_BANDS 0 /**< Default: scan all supported bands. */
+#define QAPI_WLAN_SCAN_TYPE_2G_ONLY   1 /**< Restrict scan to the 2.4 GHz band. */
+#define QAPI_WLAN_SCAN_TYPE_5G_ONLY   2 /**< Restrict scan to the 5 GHz band. */
 
 /**
 @ingroup qapi_wlan

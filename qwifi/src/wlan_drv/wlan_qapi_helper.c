@@ -100,7 +100,11 @@ void wlan_set_passphrase(uint8_t vdev_id, const uint8_t *passphrase, uint8_t pas
 void wlan_set_scan_param(WMI_START_SCAN_CMD *p_cmd, const qapi_WLAN_Start_Scan_Params_t *scan_Params)
 {
     memset(p_cmd, 0, sizeof(WMI_START_SCAN_CMD));
-    if (!scan_Params) {
+    if (!scan_Params || scan_Params->ssid_Length == 0) {
+        /* scan_Params can be non-NULL for a band-only restriction (no SSID
+         * filter) -- branch on ssid_Length, not pointer nullness, or every
+         * band-restricted scan gets forced into a specific_ssid filter for
+         * an empty SSID and finds almost nothing. */
         p_cmd->scan_type = any_profile;
         p_cmd->cnt_prof = 0;
     } else {
@@ -112,11 +116,30 @@ void wlan_set_scan_param(WMI_START_SCAN_CMD *p_cmd, const qapi_WLAN_Start_Scan_P
     p_cmd->auth_mode = WMI_NONE_AUTH;
     p_cmd->crypto_type = NONE_CRYPT;
     p_cmd->probe_type = active_probe;
-    p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
-    int i;
-    for (i = 0; i < p_cmd->num_channels; i++) {
-        p_cmd->channel_list[i] = i;
-    }
+
+    if (scan_Params && scan_Params->scan_Type == QAPI_WLAN_SCAN_TYPE_2G_ONLY) {
+         /* 2.4 GHz channels always occupy indices [0, TOT_2GHZ_CHANNELS) in the
+          * firmware's regulatory channel table (wlan_regulatory_unpack()). */
+         p_cmd->num_channels = TOT_2GHZ_CHANNELS;
+         for (int i = 0; i < p_cmd->num_channels; i++) {
+             p_cmd->channel_list[i] = i;
+         }
+ #ifdef SUPPORT_5GHZ
+     } else if (scan_Params && scan_Params->scan_Type == QAPI_WLAN_SCAN_TYPE_5G_ONLY) {
+         /* 5 GHz channels follow 2.4 GHz ones at indices
+          * [TOT_2GHZ_CHANNELS, TOT_2GHZ_CHANNELS + TOT_5GHZ_CHANNELS). */
+         p_cmd->num_channels = TOT_5GHZ_CHANNELS;
+         for (int i = 0; i < p_cmd->num_channels; i++) {
+             p_cmd->channel_list[i] = TOT_2GHZ_CHANNELS + i;
+         }
+ #endif
+     } else {
+         p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
+         for (int i = 0; i < p_cmd->num_channels; i++) {
+             p_cmd->channel_list[i] = i;
+         }
+     }
+
     p_cmd->scan_only = true;
 }
 
