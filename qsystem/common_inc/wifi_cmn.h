@@ -474,7 +474,7 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 
 /* Enable this flag TWT power save feature.*/
 #ifndef NT_FN_TWT
-// #define NT_FN_TWT
+#define NT_FN_TWT
 #endif /* NT_FN_TWT */
 
 /* Enable the File system feature for the Neutrino */

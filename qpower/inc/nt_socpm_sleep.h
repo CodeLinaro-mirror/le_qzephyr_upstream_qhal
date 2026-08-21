@@ -40,6 +40,10 @@
 #define CLK_LATENCY_GET(socpm_struct) ((socpm_struct)->clk_latency_us)
 #define CLK_LATENCY_SET(socpm_struct, clk_lat) ((socpm_struct)->clk_latency_us = clk_lat)
 
+/* Minimum sleep time (ms) supported for AON when TWT is enabled (SUPPORT_TWT_STA).
+ * Matches NT_DEVCFG_MINIMUM_SLEEP_TIME_FOR_AON default (mib.xml psid 61). */
+#define MINIMUM_SLP_TIME_FOR_AON 20
+
 /*
   While programming AON, the calculation is as per 32.768 kHz. If the clock source is RFA XO, AON internally
   adjusts the expiry value for 32kHz. The AON ticks read from SLP_TMR registers need to be scaled as per the
@@ -262,6 +266,10 @@ typedef enum reason_to_wkup {
 } reason_to_wkup_t;
 #endif /* SUPPORT_SWTMR_TO_WKUP_FROM_BMPS */
 
+/* Wake-source values used for TWT warm-boot dispatch. */
+#define NT_SOCPM_WOKEN_SRC_AON_TIMER 1u
+#define NT_SOCPM_WOKEN_SRC_EXT_PIN 2u
+
 typedef struct {
     uint32_t woken_src;
     uint32_t slept_time_ms;
@@ -420,6 +428,7 @@ void nlp_config(void);
 uint64_t nt_socpm_min_slp_time_us();
 sleep_mode nt_socpm_curr_slp_mode();
 uint32_t get_sleep_exit_hw_delay(sleep_mode slp_mode);
+void nt_socpm_sleep_deregister(int list_idx);
 
 /**
  *  @brief Enable or disable Indefinite deep sleep

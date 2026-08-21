@@ -49,6 +49,11 @@ extern qapi_Status_t wlan_get_scan_results(uint8_t __attribute__((__unused__)) d
 extern qapi_Status_t wmi_set_passphrase(uint8_t vdev_id);
 extern qapi_Status_t wmi_connect(uint8_t vdev_id);
 extern qapi_Status_t wmi_disconnect(uint8_t vdev_id);
+#ifdef SUPPORT_TWT_STA
+extern qapi_Status_t wmi_twt_setup(uint8_t vdev_id, void *cmd);
+extern qapi_Status_t wmi_twt_teardown(uint8_t vdev_id, void *cmd);
+extern qapi_Status_t wmi_twt_ext_wakeup(uint8_t enable);
+#endif
 extern qapi_Status_t wmi_ap_disconnect_station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len);
 extern qapi_Status_t wmi_set_op_mode(uint8_t device_ID);
 extern qapi_Status_t wmi_wlan_get_statistics(uint8_t device_ID);

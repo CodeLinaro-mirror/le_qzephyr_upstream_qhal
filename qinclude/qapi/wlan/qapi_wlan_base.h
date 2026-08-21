@@ -173,6 +173,20 @@ typedef struct {
     uint8_t reserved2;
 } qapi_WLAN_Chan_Switch_Evt_t;
 
+#ifdef SUPPORT_TWT_STA
+typedef enum {
+    QAPI_WLAN_TWT_EXT_WAKEUP_STATUS_OK = 0,
+    QAPI_WLAN_TWT_EXT_WAKEUP_STATUS_NOT_READY,
+} qapi_WLAN_TWT_Ext_Wakeup_Status_e;
+
+typedef struct {
+    qapi_WLAN_Evt_Hdr_t evt_hdr;
+    uint8_t enable;
+    uint8_t reason_code;
+    uint16_t reserved;
+} qapi_WLAN_TWT_Ext_Wakeup_Evt_t;
+#endif
+
 /**
 @ingroup qapi_wlan
 WLAN driver invokes an application-registered callback function to indicate various
@@ -288,6 +302,11 @@ typedef enum {
     QAPI_WLAN_WPS_SCAN_AP_CB_E   = 29, /**< Per-AP WPS scan result (one per WPS-capable AP found). */
     QAPI_WLAN_WPS_SCAN_COMP_CB_E = 30, /**< WPS scan round complete. */
 #endif /* CONFIG_WIFI_QCOM_WPS */
+#ifdef SUPPORT_TWT_STA
+    QAPI_WLAN_TWT_SETUP_CB_E = 31,   /**< ID to indicate TWT setup event (802.11ax). */
+    QAPI_WLAN_TWT_TEARDOWN_CB_E = 32, /**< ID to indicate TWT teardown event. */
+    QAPI_WLAN_TWT_EXT_WAKEUP_CB_E = 33, /**< ID to indicate TWT external wake completion. */
+#endif
 } qapi_WLAN_Callback_ID_e;
 
 /**
@@ -1189,6 +1208,21 @@ None.
 */
 qapi_Status_t qapi_WLAN_Disconnect(uint8_t device_ID);
 
+#ifdef SUPPORT_TWT_STA
+/** Forward TWT setup/teardown commands to firmware. */
+qapi_Status_t qapi_WLAN_Twt_Setup(uint8_t device_ID, void *cmd);
+qapi_Status_t qapi_WLAN_Twt_Teardown(uint8_t device_ID, void *cmd);
+
+/**
+ * Queue a TWT external wake enable or disable request.
+ * Completion is reported through QAPI_WLAN_TWT_EXT_WAKEUP_CB_E.
+ */
+qapi_Status_t qapi_TWT_Ext_Wakeup(uint8_t enable);
+
+/** Enable or disable MCU sleep during TWT. */
+qapi_Status_t qapi_TWT_Mcu_Sleep_Enable(uint8_t enable);
+#endif
+
 /**
 @ingroup qapi_wlan
 Disconnects a station in softap.
@@ -1401,6 +1435,9 @@ _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Scan_Start_Evt_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_BSS_Scan_Info_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Scan_Comp_Evt_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Join_Comp_Evt_t)
+#ifdef SUPPORT_TWT_STA
+_STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_TWT_Ext_Wakeup_Evt_t)
+#endif
 
 #ifdef NT_FN_WNM_POWERSAVE_MODE
 qapi_Status_t qapi_WLAN_Wnm_Sleep(uint8_t action, uint32_t interval_ms);
