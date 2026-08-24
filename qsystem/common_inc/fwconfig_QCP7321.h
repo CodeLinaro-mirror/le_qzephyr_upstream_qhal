@@ -32,7 +32,7 @@
 /*Feature flag to support Extended Channel Switch announcement on AP Side*/
 #define FEATURE_AP_ECSA
 /* flag to enable MCC switch to SCC in AP+STA */
-#define MCC_SWITCH_TO_SCC
+// #define MCC_SWITCH_TO_SCC
 /* flag to enable dual vdev */
 #define FEATURE_DUAL_VDEV
 
