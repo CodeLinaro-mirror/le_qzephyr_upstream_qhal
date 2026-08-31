@@ -93,6 +93,7 @@
 #define SMPS2_AUTO_SWITCH_PFM2PWM_THRES 1
 
 /** smps2_lpm_ovr values */
+#define SMPS2_LPM_OVR_FORCE_PWM        0   /* Force SMPS2 to PWM */
 #define SMPS2_LPM_OVR_AUTO_SWITCH      2   /* Enable HW auto-switch (PFM->PWM by HW) */
 #define SMPS2_LPM_OVR_FORCE_PFM        3   /* Force SMPS2 to PFM */
 
@@ -213,6 +214,15 @@ void smps2_set_low_vbat_regs(bool low_vbat);
  */
 void smps2_init_auto_switch(void);
 
+/** Force SMPS2 to PFM and leave auto-switch disabled. */
+void smps2_force_pfm_hold(void);
+
+/** Force SMPS2 to PWM and leave auto-switch disabled. */
+void smps2_force_pwm_hold(void);
+
+/** Enable HW automatic PFM-to-PWM switching without changing other settings. */
+void smps2_enable_auto_switch(void);
+
 /**
  * @brief  Force SMPS2 to PFM, then re-enable auto-switch.
  *
@@ -231,6 +241,9 @@ bool smps2_force_pfm_then_auto(void);
  * @return SMPS2_FSM_PWM (3), SMPS2_FSM_PFM (4), or 0 on read error
  */
 uint32_t smps2_get_fsm_state(void);
+
+/** Read current SMPS2 LPM override value. */
+uint32_t smps2_get_lpm_ovr(void);
 
 /**
  * @brief  Top-level init called after cold boot Vbatt/Temp measurement.
