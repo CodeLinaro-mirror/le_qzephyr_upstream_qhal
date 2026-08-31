@@ -223,6 +223,10 @@ void aon_ext_interrupt_wake_up(void)
     extern void spi_set_ext_wakeup_flag(void);
     spi_set_ext_wakeup_flag();
 #endif
+#if CONFIG_MATTER_LOCK_APP && CONFIG_LOCK_HOST_MODE
+    extern void lock_fw_on_ext_wakeup(void);
+    lock_fw_on_ext_wakeup();
+#endif
     // Clear the interrupt
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 1);
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 0);
