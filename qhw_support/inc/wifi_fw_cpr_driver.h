@@ -170,6 +170,7 @@ typedef struct {
     uint32_t ini_enabled;
     uint32_t otp_tag_high;
     uint32_t otp_tag_low;
+    uint32_t corner_chip_type;
     uint32_t cx_initial_mV_vref;
     uint32_t cx_sleep_mV_vref;
 } cpr_cfg_t;
