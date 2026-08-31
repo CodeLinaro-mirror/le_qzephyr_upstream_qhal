@@ -10,6 +10,7 @@
 #include "wmi.h"
 #include "qurt.h"
 #include "libwifi.h"
+#include "nt_common.h"
 #include <zephyr/autoconf.h>
 
 /* Optional P2P scan-result feed. The qcom P2P glue (in qcc730/drivers/wifi)
@@ -378,7 +379,7 @@ static void wmi_ip_addr_ready_event(void *msg)
     }
 
     PRINT_LOG_FUNC_LINE_ENTRY;
-#if CONFIG_SHOW_IP_READY_EVT
+#if defined(CONFIG_SHOW_IP_READY_EVT) && (CONFIG_SHOW_IP_READY_EVT)
     WMI_IP_DDR_EVT *ip_ready_evt = (WMI_IP_DDR_EVT *)msg;
 
     show_net_info_by_id(ip_ready_evt->netif_id, ip_ready_evt->ip_ver);
@@ -774,12 +775,7 @@ static void wmi_wps_fail_event(void *msg)
 
 static void wmi_wlan_suspend_event(void *msg)
 {
-    qapi_Status_t err = QAPI_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    if((uint32_t)msg == 0)
-    {
-        err = QAPI_OK;
-    }
 
     set_wlan_qapi_error((uint32_t)msg);
     gp_wlan_qapi_cxt->suspend_ret = (uint32_t)msg;

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
  
-#if CONFIG_SECURE_STORAGE_ITS_IMPLEMENTATION_ZEPHYR
+#if defined(CONFIG_SECURE_STORAGE_ITS_IMPLEMENTATION_ZEPHYR)
 #include <zephyr/secure_storage/its/transform/aead_get.h>
 #include <zephyr/drivers/hwinfo.h>
 #include <zephyr/init.h>

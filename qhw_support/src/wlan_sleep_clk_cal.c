@@ -36,6 +36,7 @@
 #include <zephyr/irq.h>
 #include <zephyr/kernel.h>
 #include "libpower.h"
+#include <zephyr/sys/printk.h>
 
 
 char sleep_clk_timer_name[] = "clk_cal";
@@ -95,7 +96,7 @@ void pmu_ccpu_slp_cal_done_intr(void)
     slp_cal_event_msg.msg_struct.vo_data_len = 0;
     slp_cal_event_msg.msg_struct.result_function = NULL;
     HAL_REG_RD(QWLAN_PMU_CFG_ACAL_VBAT_MON_EN_REG);
-    if (NT_QUEUE_FAIL == qurt_pipe_try_send(msg_wfm_wmi_id, (void *)&slp_cal_event_msg, &timeout)) {
+    if (NT_QUEUE_FAIL == qurt_pipe_try_send((qurt_pipe_t)msg_wfm_wmi_id, (void *)&slp_cal_event_msg, &timeout)) {
         NT_LOG_PRINT(SOCPM, ERR, "Queue send failed");
         return;
     }
@@ -212,7 +213,7 @@ nt_status_t socpm_slp_clk_cal_get_hbin(void)
 void socpm_sleep_clk_cal_timer_cb(void)
 {
     socpm_sleep_clk_cal_t *p_slp_clk_cal_params = &(g_socpm_struct.slp_clk_cal_params);
-#if WIFI_POWER
+#if defined(WIFI_POWER)
     if (nt_pm_get_pre_slp_cb_complete_status() == TRUE) {
         return;
     }

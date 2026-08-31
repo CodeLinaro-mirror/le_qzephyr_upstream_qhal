@@ -35,7 +35,7 @@ void unpa_init(void)
 /*----------------------------------------------------------------------------
  * Stub resources
  * -------------------------------------------------------------------------*/
-#if unpa_stub
+#if defined(unpa_stub)
 static unpa_resource_state unpa_stub_update_fcn(unpa_resource *resource, unpa_client *client)
 {
     // peter warning ignore
@@ -92,7 +92,7 @@ unpa_resource *unpa_get_resource(const char *resource_name)
         }
         resource = resource->next;
     }
-#if unpa_stub
+#if defined(unpa_stub)
     /* If we don't see a defined resource, look among stubs */
     if (!resource) {
         int i;

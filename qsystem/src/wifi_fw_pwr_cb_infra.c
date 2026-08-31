@@ -180,7 +180,7 @@ fpci_err_t fpci_evt_cb_dereg(ps_evt_cb_t cb, uint16_t evt_reg_mask)
 fpci_err_t fpci_evt_dispatch(pwr_evt_t evt)
 {
     FPCI_ASSERT_IF_FALSE(evt < PWR_EVT_WMAC_MAX, FPCI_ERR);
-#if USE_FEATURE_FDI
+#if defined(USE_FEATURE_FDI)
     fdi_dbg_node_t dbg_node;
     if (evt == PWR_EVT_WMAC_PRE_SLEEP)
         dbg_node = FDI_DBG_PWR_EVT_WMAC_PRE_SLEEP;
@@ -207,11 +207,11 @@ fpci_err_t fpci_evt_dispatch(pwr_evt_t evt)
             } else
 #endif
             {
-#if USE_FEATURE_FDI
+#if defined(USE_FEATURE_FDI)
                 FDI_NODE_START_ID(dbg_node, (uint32_t)g_event_bin[itter_index].evt_cb);
 #endif /* USE_FEATURE_FDI */
                 g_event_bin[itter_index].evt_cb((uint8_t)evt, g_event_bin[itter_index].p_args);
-#if USE_FEATURE_FDI
+#if defined(USE_FEATURE_FDI)
                 FDI_NODE_STOP_ID(dbg_node, (uint32_t)g_event_bin[itter_index].evt_cb);
 #endif /* USE_FEATURE_FDI */
             }

@@ -138,18 +138,16 @@ int qwdt_feed_now(void)
 /**
  * @brief Feed watchdog by directly accessing registers
  */
-int qwdt_feed_now_direct(void)
+void qwdt_feed_now_direct(void)
 {
-#ifndef CONFIG_QWDT
-    return 0;
-#else
+#ifdef CONFIG_QWDT
+
     volatile uint32_t *wdog_ctl_reg = (volatile uint32_t *)QWLAN_PMU_AON_WDOG_CTL_REG;
 
     /* Toggle WDOG_RESET bit: set to 1 then clear to 0 */
     *wdog_ctl_reg |= QWLAN_PMU_AON_WDOG_CTL_WDOG_RESET_MASK;
     *wdog_ctl_reg &= ~QWLAN_PMU_AON_WDOG_CTL_WDOG_RESET_MASK;
 
-    return 0;
 #endif
 }
 

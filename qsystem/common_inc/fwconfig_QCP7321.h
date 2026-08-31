@@ -131,7 +131,7 @@
 #endif
 
 /* UART module support flag */
-#if defined(CONFIG_UART_SHELL) || (CONFIG_UART_QAPI)
+#if defined(CONFIG_UART_SHELL) || (defined(CONFIG_UART_QAPI) && (CONFIG_UART_QAPI))
 #define UART_SUPPORT
 #endif
 

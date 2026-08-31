@@ -25,28 +25,28 @@ typedef __IOM QSPI_BASE_qspi_Type qspi_hal;
 #define FERM_PMU_BOOT_STRAP_UNLOCK 0x63887466
 static inline void hal_qspi_enable_qspi(uint8_t enable, uint8_t pads_option)
 {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
 
     /* unlock the configure register */
     pmu->pmu.PMU_BOOT_STRAP_CONFIG_SECURE.reg = FERM_PMU_BOOT_STRAP_UNLOCK;
     if (enable) {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
         pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE0 = enable;
         pmu->pmu.PMU_BOOT_STRAP_CONFIG_SECURE.reg = FERM_PMU_BOOT_STRAP_UNLOCK;
         pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE1 = pads_option;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
         pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE = enable;
         pmu->pmu.PMU_BOOT_STRAP_CONFIG_SECURE.reg = FERM_PMU_BOOT_STRAP_UNLOCK;
         pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_QUAD = pads_option;
 #endif
     } else {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
         pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE0 = enable;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
         pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE = enable;
 #endif
     }
@@ -55,9 +55,9 @@ static inline void hal_qspi_enable_qspi(uint8_t enable, uint8_t pads_option)
 static inline void hal_qspi_mcu_enable_qspi()
 {
     uint8_t value;
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
 
@@ -70,9 +70,9 @@ static inline void hal_qspi_mcu_enable_qspi()
 
 static inline void hal_qspi_enable_clock_gating(uint8_t enable)
 {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_CCU_BASE_Type *ccu = QCC730V1_CCU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_CCU_BASE_Type *ccu = QCC730V2_CCU_BASE;
 #endif
 
@@ -91,23 +91,23 @@ static inline void hal_qspi_enable_clock_gating(uint8_t enable)
 
 static inline uint8_t hal_qspi_is_qspi_active()
 {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     return pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE0;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     return pmu->pmu.PMU_BOOT_STRAP_CONFIGURATION_STATUS.bit.CFG_QSPI_ENABLE;
 #endif
 }
 
 static inline void hal_qspi_set_clock(uint8_t clock)
 {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
 
@@ -117,9 +117,9 @@ static inline void hal_qspi_set_clock(uint8_t clock)
 static inline void hal_qspi_qspi_gdscr_config()
 {
     uint32_t value;
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
     value = pmu->pmu.PMU_QSPI_GDSCR.reg;
@@ -131,9 +131,9 @@ static inline void hal_qspi_qspi_gdscr_config()
 
 static inline uint32_t hal_qspi_gdscr_pwr_ready()
 {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
     return pmu->pmu.PMU_QSPI_GDSCR.bit.GDS_CTL_PWR_STATUS;
@@ -175,9 +175,9 @@ static inline void hal_qspi_master_status_reset(qspi_hal *hal)
 
 static inline void hal_qspi_pmu_qspi_bcr_reset()
 {
-#if CONFIG_SOC_QCC730V1
+#if defined(CONFIG_SOC_QCC730V1)
     QCC730V1_PMU_BASE_Type *pmu = QCC730V1_PMU_BASE;
-#elif CONFIG_SOC_QCC730V2
+#elif defined(CONFIG_SOC_QCC730V2)
     QCC730V2_PMU_BASE_Type *pmu = QCC730V2_PMU_BASE;
 #endif
 

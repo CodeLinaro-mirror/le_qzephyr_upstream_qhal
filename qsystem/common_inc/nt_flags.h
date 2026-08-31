@@ -111,7 +111,7 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 	 * Enable respective performance tools by setting the value to 0 or 1 accordingly.
 	 * if NT_TST_PERF_TOOL not defined tools will be excluded and CLI will not be the part of build.
 	 */
-#if NT_TST_PERF_TOOL
+#if defined(NT_TST_PERF_TOOL)
 		/* iperf tool flag. */
 #define NT_TST_LWIPER_TOOL 1
 		/* udp tool flag. */
@@ -381,7 +381,7 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
  * Enable respective performance tools by setting the value to 0 or 1 accordingly.
  * if NT_TST_PERF_TOOL not defined tools will be excluded and CLI will not be the part of build.
  */
-#if NT_TST_PERF_TOOL
+#if defined(NT_TST_PERF_TOOL)
 /* iperf tool flag. */
 #define NT_TST_LWIPER_TOOL 1
 /* udp tool flag. */

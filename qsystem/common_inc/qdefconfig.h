@@ -9,6 +9,9 @@
 // flags via -D can define QCOM_QDEFCONFIG_NO_DEFAULTS to skip this block.
 #ifndef QCOM_QDEFCONFIG_NO_DEFAULTS
 #define FERMION_CHIP_VERSION 2
+#ifndef FERMION_CHIP_VERSION_MINOR
+#define FERMION_CHIP_VERSION_MINOR 0   //default for V2
+#endif
 
 // only FTM app set 1
 // #define CONFIG_FTM_MODE 0

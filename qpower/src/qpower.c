@@ -67,7 +67,7 @@
 #include "nt_common.h"
 
 #ifdef CONFIG_WATCHDOG
-extern int qwdt_feed_now_direct(void);
+extern void qwdt_feed_now_direct(void);
 #endif
 extern void rram_udpart_init();
 
@@ -92,11 +92,6 @@ bool _socpm_mcu_sleep_wake = false;
 qpower_param_t gs_qpower_param;
 struct libpower_kconfig_t g_libpower_kconfig;
 extern void z_arm_reset(void);
-static void __attribute__((unused)) aon_set_alarm(uint64_t us)
-{
-    /* !!! Caution: remove it if automatic suspend is implemented. */
-    sys_clock_set_timeout(k_us_to_ticks_ceil64(us), true);
-}
 
 static void libpower_kconfig_install(void)
 {

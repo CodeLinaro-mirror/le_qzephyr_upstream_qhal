@@ -87,7 +87,7 @@ void sbl_printf(const char *fmt, ...);
 #define WINBOND_WRITE_STATUS_2_CMD 0x31
 #define WINBOND_WRITE_STATUS_3_CMD 0x11
 
-#if CONFIG_BOARD_QCC730_QSPI_V2_QUAD_MODE
+#if defined(CONFIG_BOARD_QCC730_QSPI_V2_QUAD_MODE)
 /* Quad enable mode. */
 #define ENABLE_QUAD_MODE_0 0x0
 #define ENABLE_QUAD_MODE_1 0x1
@@ -438,7 +438,7 @@ static FLASH_STATUS drv_flash_set_high_performance()
 }
 #endif
 
-#if CONFIG_BOARD_QCC730_QSPI_V2_QUAD_MODE
+#if defined(CONFIG_BOARD_QCC730_QSPI_V2_QUAD_MODE)
 /**
    @brief Quad enable mode 1, 4, 5.
 
@@ -934,7 +934,7 @@ FLASH_STATUS drv_flash_init()
         goto FLASH_INIT_END;
     }
 
-#if CONFIG_BOARD_QCC730_QSPI_V2_QUAD_MODE
+#if defined(CONFIG_BOARD_QCC730_QSPI_V2_QUAD_MODE)
     /* Set quard mode */
     if (IS_QUAD_MODE(flash_context.config->read_cmd_mode) || IS_QUAD_MODE(flash_context.config->read_addr_mode) ||
         IS_QUAD_MODE(flash_context.config->read_data_mode) || IS_QUAD_MODE(flash_context.config->write_cmd_mode) ||
