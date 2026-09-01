@@ -300,10 +300,31 @@ void smps2_init_auto_switch(void)
  * smps2_get_fsm_state
  *--------------------------------------------------------------------------*/
 
-uint32_t smps2_get_fsm_state(void)
+uint32_t RAMFUNC smps2_get_fsm_state(void)
 {
     RPMU_BASE_rpmu_Type *p_rpmu = _rpmu();
     return (uint32_t)p_rpmu->RPMU_R_RO_PMU_SMPS2R_1.bit.RO_SMPS2_FSM;
+}
+
+uint32_t smps2_get_lpm_ovr(void)
+{
+    RPMU_BASE_rpmu_Type *p_rpmu = _rpmu();
+    return (uint32_t)p_rpmu->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR;
+}
+
+void RAMFUNC smps2_force_pfm_hold(void)
+{
+    _rpmu()->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_FORCE_PFM;
+}
+
+void RAMFUNC smps2_force_pwm_hold(void)
+{
+    _rpmu()->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_FORCE_PWM;
+}
+
+void RAMFUNC smps2_enable_auto_switch(void)
+{
+    _rpmu()->RPMU_R_PMU_SMPS2_5.bit.SMPS2_LPM_OVR = SMPS2_LPM_OVR_AUTO_SWITCH;
 }
 
 /*----------------------------------------------------------------------------
@@ -616,4 +637,3 @@ bool smps2_get_log_verbose(void)
         return false;
     }
 }
-
