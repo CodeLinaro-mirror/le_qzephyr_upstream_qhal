@@ -29,7 +29,7 @@ extern uint8_t phyrf_get_process_monitor_chiptype(void);
  *  Note:
  *  The CPR functionality can be enabled/disabled by the macro CONFIG_CPR_ENABLE.
  *******************************************************************************/
-#define CPR_REENABLE_SLOW_VREF_OFFSET 3U
+#define CPR_REENABLE_SLOW_VREF_OFFSET 5U
 #define CPR_REENABLE_SLOW_CHIPTYPE 2U
 #define CPR_REENABLE_UNKNOWN_CHIPTYPE 3U
 
