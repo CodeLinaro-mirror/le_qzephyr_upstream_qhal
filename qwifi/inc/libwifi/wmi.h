@@ -271,8 +271,14 @@ typedef enum {
     WMI_P2P_STOP_FIND_CMDID,
     WMI_P2P_LISTEN_CMDID,
     WMI_P2P_CANCEL_LISTEN_CMDID,
+    WMI_TWT_EXT_WAKEUP_CMDID,
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
+
+#define WMI_TWT_WAKE_REASON_SP_START        1U
+#define WMI_TWT_WAKE_FLAG_PM_RESUME         (1U << 8)
+#define WMI_TWT_EXT_WAKE_FLAG_ENABLE        (1U << 0)
+#define WMI_TWT_EXT_WAKE_FLAG_PM_RESUME     (1U << 1)
 
 #ifdef CONFIG_WMI_EVENT
 typedef enum {
@@ -322,6 +328,8 @@ typedef enum {
     WMI_P2P_SCAN_DONE_EVTID,
     WMI_P2P_BSS_FOUND_EVTID,
     WMI_P2P_RX_ACTION_EVTID,
+    WMI_BMPS_ENABLE_FAIL_EVTID,
+    WMI_TWT_EXT_WAKEUP_EVTID,
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
 
@@ -386,6 +394,25 @@ typedef struct {
     uint32_t wmi_evt_id;
     uint32_t flag;
 } wmi_evt_struct_t;
+
+typedef enum {
+    WMI_BMPS_ENABLE_FAIL_TWT_ACTIVE = 1,
+} WMI_BMPS_ENABLE_FAIL_REASON;
+
+typedef PREPACK struct {
+    uint8_t reason;
+} POSTPACK WMI_BMPS_ENABLE_FAIL_EVT;
+
+typedef enum {
+    WMI_TWT_EXT_WAKEUP_STATUS_OK = 0,
+    WMI_TWT_EXT_WAKEUP_STATUS_NOT_READY,
+} WMI_TWT_EXT_WAKEUP_STATUS;
+
+typedef PREPACK struct {
+    uint8_t enable;
+    uint8_t status;
+    uint16_t reserved;
+} POSTPACK WMI_TWT_EXT_WAKEUP_EVT;
 
 typedef PREPACK struct {
     uint8_t reserved1;
@@ -623,6 +650,32 @@ typedef struct {
     uint16_t twt_alignment;
     uint8_t twt_dtim_enable_disable_auto;
 } WMI_TWT_CONFIG_CMD;
+
+/** Packed TWT command layouts shared with the WLAN library. */
+typedef PREPACK struct {
+    uint16_t msg_id;
+    uint8_t  network_id;
+    uint8_t  hdr_reserved;
+    uint16_t reserved_1;
+    uint8_t  dialog_id;         // unique twt session id, >0
+    uint8_t  negotiation_type;  // 0: individual, 1: broadcast
+    uint32_t wake_duration;     // TWT SP in ms
+    uint32_t wake_interval;     // TWT SI in ms
+    uint32_t twt_start_tsf_lo;  // 0 (hi+lo) => FW decides
+    uint32_t twt_start_tsf_hi;
+    uint8_t  flow_type;         // 0: announced, 1: unannounced
+    uint8_t  trigger_type;      // 0: non-triggered, 1: triggered
+    uint16_t reserved_2;
+} POSTPACK WMI_TWT_SETUP_CMD;
+
+typedef PREPACK struct {
+    uint16_t msg_id;
+    uint8_t  network_id;
+    uint8_t  hdr_reserved;
+    uint16_t reserved_1;
+    uint8_t  dialog_id;         // twt session id to tear down, >0
+    uint8_t  reserved_2;
+} POSTPACK WMI_TWT_TEARDOWN_CMD;
 
 typedef PREPACK struct {
     void *get_wur_cfg_inf;

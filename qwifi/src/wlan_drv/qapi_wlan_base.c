@@ -81,7 +81,7 @@ qapi_Status_t qapi_WLAN_Resume(void)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     WLAN_QAPI_LOCK();
-    wmi_resume();
+    ret = wmi_resume();
     WLAN_QAPI_UNLOCK();
     return ret;
 }
@@ -157,6 +157,56 @@ qapi_Status_t qapi_WLAN_Disconnect(uint8_t device_ID)
     WLAN_QAPI_UNLOCK();
     return ret;
 }
+
+#ifdef SUPPORT_TWT_STA
+qapi_Status_t qapi_WLAN_Twt_Setup(uint8_t device_ID, void *cmd)
+{
+    qapi_Status_t ret;
+    WLAN_QAPI_LOCK();
+    ret = wmi_twt_setup(device_ID, cmd);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Twt_Teardown(uint8_t device_ID, void *cmd)
+{
+    qapi_Status_t ret;
+    WLAN_QAPI_LOCK();
+    ret = wmi_twt_teardown(device_ID, cmd);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_TWT_Ext_Wakeup(uint8_t enable)
+{
+    qapi_Status_t ret;
+
+    if (enable > 1) {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_twt_ext_wakeup(enable);
+    WLAN_QAPI_UNLOCK();
+
+    return ret;
+}
+
+#include <zephyr/pm/policy.h>
+qapi_Status_t qapi_TWT_Mcu_Sleep_Enable(uint8_t enable)
+{
+    WLAN_QAPI_LOCK();
+    if (enable) {
+        if (pm_policy_state_lock_is_active(PM_STATE_SUSPEND_TO_RAM, PM_ALL_SUBSTATES)) {
+            pm_policy_state_lock_put(PM_STATE_SUSPEND_TO_RAM, PM_ALL_SUBSTATES);
+        }
+    } else {
+        pm_policy_state_lock_get(PM_STATE_SUSPEND_TO_RAM, PM_ALL_SUBSTATES);
+    }
+    WLAN_QAPI_UNLOCK();
+    return QAPI_OK;
+}
+#endif /* SUPPORT_TWT_STA */
 
 qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len)
 {

@@ -69,6 +69,29 @@ uint8_t nt_log_write(
     return NT_OK;
 }
 
+/* [TWT] hex-print variant of nt_log_write, for callers that want p1/p2/p3
+ * rendered as 0x... instead of decimal (e.g. TSF values easier to read as hex). */
+uint8_t nt_log_write_hex(
+    uint8_t mod_id,
+    uint8_t loglvl,
+    char *fn,
+    uint16_t ln,
+    const char *msg,
+    uint32_t p1, uint32_t p2, uint32_t p3
+)
+{
+    (void)mod_id;
+
+#if 1
+    if (loglvl < min_loglvl) {
+        return NT_ECANCELED;
+    }
+
+    printk("[%s %d]: %s [0x%x] [0x%x] [0x%x]\r\n", fn, ln, msg, p1, p2, p3);
+#endif
+    return NT_OK;
+}
+
 #define MSGBUF_LEN 200
 char my1pbuf[MSGBUF_LEN];
 
