@@ -9,3 +9,9 @@ zephyr_include_directories(include)
 zephyr_library_sources_ifdef(CONFIG_QLIB_EARLY_PRINTK	util/qlib_early_printk.c)
 zephyr_library_sources(util/qlib_util.c)
 zephyr_library_sources(util/safeAPI.c)
+
+zephyr_code_relocate(
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/util/qlib_util.c
+  LOCATION RAM_TEXT
+  NOKEEP
+)

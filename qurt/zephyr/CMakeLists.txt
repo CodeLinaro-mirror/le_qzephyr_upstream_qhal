@@ -19,6 +19,12 @@ zephyr_library_sources(src/qurt_timer.c)
 zephyr_library_sources(src/strlcpy.c)
 zephyr_library_sources(src/nt_osal.c)
 
+zephyr_code_relocate(
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/qurt_mutex.c
+  LOCATION RAM_TEXT
+  NOKEEP
+)
+
 zephyr_library_include_directories(
   ${ZEPHYR_BASE}/kernel/include
   ${ARCH_DIR}/${ARCH}/include
