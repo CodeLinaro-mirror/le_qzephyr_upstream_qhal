@@ -877,6 +877,8 @@ typedef struct {
     uint16_t auth_mode;
     uint32_t rssi;
     uint32_t link_mode;
+    /** RSN Capabilities used by FW for the local RSN IE. */
+    uint16_t rsn_cap;
 } qapi_WLAN_Status_t;
 
 /**

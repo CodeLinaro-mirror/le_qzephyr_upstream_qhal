@@ -2264,6 +2264,10 @@ typedef PREPACK struct {
     uint16_t auth_mode;
     uint32_t rssi;
     uint32_t link_mode;
+    /* RSN Capabilities used by FW for the local RSN IE.
+     * RSN_CAP_MFPC (0x80) means PMF capable; RSN_CAP_MFPR (0x40)
+     * means PMF required. */
+    uint16_t rsn_cap;
 } POSTPACK WMI_WIFI_STATUS;
 
 #ifdef CONFIG_WIFILIB_6GHZ

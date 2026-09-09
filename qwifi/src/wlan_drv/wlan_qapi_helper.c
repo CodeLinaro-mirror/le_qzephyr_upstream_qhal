@@ -1062,6 +1062,7 @@ qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
     status->beacon_interval = wifi_status.beacon_interval;
     status->rssi = wifi_status.rssi;
     status->dtim_period = wifi_status.dtim_period;
+    status->rsn_cap = wifi_status.rsn_cap;
 
     switch (wifi_status.auth_mode) {
     case WMI_WPA2_AUTH:
