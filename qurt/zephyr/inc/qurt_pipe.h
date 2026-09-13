@@ -27,6 +27,10 @@ void qurt_pipe_delete(qurt_pipe_t pipe);
 int qurt_pipe_send_timed(qurt_pipe_t pipe, void *data, qurt_time_t timeout);
 void qurt_pipe_send(qurt_pipe_t pipe, void *data);
 int qurt_pipe_try_send(qurt_pipe_t pipe, void *data, BaseType_t *timeout);
+/* Send to the FRONT of the pipe (message retrieved before pre-existing ones).
+ * Non-blocking, ISR-safe. Used for chop-scheduler heartbeat messages that must
+ * not be starved behind a burst of scan messages. */
+int qurt_pipe_try_send_to_front(qurt_pipe_t pipe, void *data, BaseType_t *timeout);
 int qurt_pipe_receive_timed(qurt_pipe_t pipe, void *const data, qurt_time_t timeout);
 void qurt_pipe_receive(qurt_pipe_t pipe, void *data);
 int qurt_pipe_try_receive(qurt_pipe_t pipe, void *const data, BaseType_t *timeout);

@@ -54,6 +54,11 @@ typedef TickType_t nt_osal_tick_type_t;
 
 #define nt_osal_queue_send_from_isr(queue_id, message, tasktoken) qurt_pipe_try_send(queue_id, message, tasktoken)
 
+/* Put a message at the FRONT of the queue (retrieved before pre-existing ones).
+ * Non-blocking, ISR-safe. For chop-scheduler heartbeat msgs that must not be
+ * starved behind a burst of scan messages. */
+#define nt_osal_queue_send_to_front_from_isr(queue_id, message, tasktoken) qurt_pipe_try_send_to_front(queue_id, message, tasktoken)
+
 #define nt_osal_queue_msg_receive(queue_handle, msg_buffer, block_time)                                                \
     qurt_pipe_receive_timed(queue_handle, msg_buffer, block_time)
 

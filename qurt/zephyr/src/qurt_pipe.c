@@ -132,6 +132,27 @@ int qurt_pipe_try_send(qurt_pipe_t pipe, void *data, BaseType_t *timeout)
     return ret;
 }
 
+int qurt_pipe_try_send_to_front(qurt_pipe_t pipe, void *data, BaseType_t *timeout)
+{
+    int ret;
+    struct k_msgq *msg_q = (struct k_msgq *)pipe;
+    (void)timeout;
+
+    if (!msg_q) {
+        return QURT_EINVALID;
+    }
+
+    /* k_msgq_put_front: message retrieved before any pre-existing ones,
+     * non-blocking, ISR-safe (@funcprops \isr_ok). If the queue is full it
+     * behaves like k_msgq_put (i.e. fails with -ENOMSG here). */
+    ret = k_msgq_put_front(msg_q, (const void *)data);
+    if (ret) {
+        return QURT_EFAILED_TIMEOUT;
+    }
+
+    return ret;
+}
+
 int qurt_pipe_receive_timed(qurt_pipe_t pipe, void *const data, qurt_time_t q_timeout)
 {
     int ret;

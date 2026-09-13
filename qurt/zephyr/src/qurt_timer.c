@@ -191,8 +191,18 @@ int qurt_timer_change_period(TimerHandle_t timer, TickType_t period, TickType_t 
     }
 
     if (_qtimer->qurt_timer_info.option & QURT_TIMER_ONESHOT) {
-        assert(0);
-        return QURT_EINVALID;
+        /* For one-shot timers, "change period" means re-arm with a new
+         * duration: stop any pending expiry then restart with the new value.
+         * period=0 means stop the timer (caller's intent when cancelling).
+         * The original code asserted here, causing nt_timer_change_time_period
+         * to silently fail for ONESHOT timers (channel_dwell_timer etc.). */
+        _qtimer->qurt_timer_info.duration = period;
+        if (period == 0) {
+            k_timer_stop(timer);
+        } else {
+            k_timer_start(timer, K_TICKS(period), K_NO_WAIT);
+        }
+        return QURT_EOK;
     }
 
     _qtimer->qurt_timer_info.reload = period;
