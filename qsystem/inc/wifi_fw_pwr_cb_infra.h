@@ -105,6 +105,12 @@ typedef struct sort
 
 #define GET_SORT_INSTANCE(_Name) SORT_CONCAT_3(sort_, _Name, _inst)
 
+/*
+ * Register a power-event callback.  The first registration inserts the
+ * callback and sorts the dispatch list by priority.  Re-registering an
+ * existing callback only merges evt_reg_mask and updates p_args; its original
+ * priority is preserved and the dispatch list is not reordered.
+ */
 fpci_err_t fpci_evt_cb_reg(ps_evt_cb_t cb, uint16_t evt_reg_mask, uint8_t priority, void *p_args);
 fpci_err_t fpci_evt_cb_dereg(ps_evt_cb_t cb, uint16_t evt_mask);
 fpci_err_t fpci_evt_dispatch(pwr_evt_t evt);

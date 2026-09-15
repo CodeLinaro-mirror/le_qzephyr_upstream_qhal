@@ -103,7 +103,14 @@ static void swap(char* x, char* y, char* dummy_buff, size_t element_size)
     memscpy(y, element_size, dummy_buff, element_size);
 }
 /********************************************************************************************
- * @brief  To register a callback related to events and reorder/sort callback despatch list
+ * @brief  Register a callback related to power events.
+ *
+ * A callback is inserted and the dispatch list is sorted only on its first
+ * registration.  If the callback is already registered, this API only merges
+ * the event mask and updates the callback arguments.  Its original priority
+ * is preserved and the dispatch list is not sorted again.  This is important
+ * because registration can be called by a callback while fpci_evt_dispatch()
+ * is iterating over g_event_bin.
  * @param cb                Pointer to callback registration
  * @param evt_reg_mask      Event mask flag
  * @param priority          Priority of the callback; Ranged 1-255
@@ -114,29 +121,31 @@ fpci_err_t fpci_evt_cb_reg(ps_evt_cb_t cb, uint16_t evt_reg_mask, uint8_t priori
 {
     FPCI_ASSERT_IF_FALSE(cb != NULL, FPCI_ERR);
     FPCI_ASSERT_IF_FALSE(evt_reg_mask < PWR_EVT_WMAC_MAX, FPCI_ERR);
-    FPCI_ASSERT_IF_FALSE(g_event_bin_ctr < FPCI_MAX_REG - 1, FPCI_ERR);
     FPCI_ASSERT_IF_FALSE(priority > FPCI_MIN_PRIOR, FPCI_ERR);
 
-    size_t index = g_event_bin_ctr;
-
-    /* Check if the cb is already registered */
+    /*
+     * Check for an existing callback before checking capacity.  An existing
+     * callback is allowed to extend its event mask or replace its arguments
+     * even when the registration table is full.
+     */
     for (size_t itter = FDI_RESET; itter < g_event_bin_ctr; itter++) {
         if (g_event_bin[itter].evt_cb == cb) {
-            index = itter;
-            break;
+            g_event_bin[itter].evt_mask |= evt_reg_mask;
+            g_event_bin[itter].p_args = p_args;
+            return FPCI_SUCCESS;
         }
     }
 
-    g_event_bin[index].evt_cb = cb;
-    g_event_bin[index].evt_mask |= evt_reg_mask; /* Bitwise OR with the existing cb event mask */
-    g_event_bin[index].priority = priority;
-    g_event_bin[index].p_args = p_args;
+    FPCI_ASSERT_IF_FALSE(g_event_bin_ctr < FPCI_MAX_REG - 1, FPCI_ERR);
 
-    if (index == g_event_bin_ctr) {
-        g_event_bin_ctr++;
-    }
+    /* First registration: add the callback with its requested priority. */
+    g_event_bin[g_event_bin_ctr].evt_cb = cb;
+    g_event_bin[g_event_bin_ctr].evt_mask = evt_reg_mask;
+    g_event_bin[g_event_bin_ctr].priority = priority;
+    g_event_bin[g_event_bin_ctr].p_args = p_args;
+    g_event_bin_ctr++;
 
-    /* Sort by priority */
+    /* Sort only after inserting a new callback. */
     sort_bubble(&GET_SORT_INSTANCE(FPCI), SORT_DIRECTION_DESSENDING);
 
     return FPCI_SUCCESS;
