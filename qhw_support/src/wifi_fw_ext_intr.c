@@ -57,6 +57,10 @@
  * Global Data Definitions
  * ----------------------------------------------------------------------*/
 extern SOCPM_STRUCT g_socpm_struct;
+#if defined(SUPPORT_TWT_STA) && defined(CONFIG_WIFI_QCOM)
+extern NT_BOOL nt_twt_is_rmc_ext_wakeup(void);
+extern void nt_twt_ext_wakeup_post_from_isr(void);
+#endif
 // static SemaphoreHandle_t _socpm_mutex;
 
 /*-------------------------------------------------------------------------
@@ -222,6 +226,15 @@ void aon_ext_interrupt_wake_up(void)
 #if defined(CONFIG_SPI_QCC730) && defined(CONFIG_PM_DEVICE)
     extern void spi_set_ext_wakeup_flag(void);
     spi_set_ext_wakeup_flag();
+#endif
+#if CONFIG_MATTER_LOCK_APP && CONFIG_LOCK_HOST_MODE
+    extern void lock_fw_on_ext_wakeup(void);
+    lock_fw_on_ext_wakeup();
+#endif
+#if defined(SUPPORT_TWT_STA) && defined(CONFIG_WIFI_QCOM)
+    if (!nt_twt_is_rmc_ext_wakeup()) {
+        nt_twt_ext_wakeup_post_from_isr();
+    }
 #endif
     // Clear the interrupt
     HWIO_OUTXF(SEQ_WCSS_PMU_OFFSET, NEUTRINO_PMU_PRONTO_LP_FRODO_PMU_AON_LIC_INT_CLR, EXT_WAKEUP_INTR_CLR, 1);

@@ -111,7 +111,7 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 	 * Enable respective performance tools by setting the value to 0 or 1 accordingly.
 	 * if NT_TST_PERF_TOOL not defined tools will be excluded and CLI will not be the part of build.
 	 */
-#if NT_TST_PERF_TOOL
+#if defined(NT_TST_PERF_TOOL)
 		/* iperf tool flag. */
 #define NT_TST_LWIPER_TOOL 1
 		/* udp tool flag. */
@@ -203,7 +203,10 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
 #endif
 
 	/* flag for enabling WPS */
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
+#ifdef CONFIG_WIFI_QCOM_WPS_FW
+#error "CONFIG_WIFI_QCOM_WPS_NATIVE (NT_FN_WPS) and CONFIG_WIFI_QCOM_WPS_FW are mutually exclusive. Enable only one WPS path at a time."
+#endif
 #ifndef NT_FN_WPS
 #define NT_FN_WPS
 #ifdef NT_FN_WPS
@@ -378,7 +381,7 @@ system Feature Flags,|    |System Feature Flags,|	   |  system Feature Flags,|  
  * Enable respective performance tools by setting the value to 0 or 1 accordingly.
  * if NT_TST_PERF_TOOL not defined tools will be excluded and CLI will not be the part of build.
  */
-#if NT_TST_PERF_TOOL
+#if defined(NT_TST_PERF_TOOL)
 /* iperf tool flag. */
 #define NT_TST_LWIPER_TOOL 1
 /* udp tool flag. */

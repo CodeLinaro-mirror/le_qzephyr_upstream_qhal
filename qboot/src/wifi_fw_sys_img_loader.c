@@ -27,7 +27,7 @@
 static dfu_ring_handle_t a2f_dfu_ring_handle, f2a_dfu_ring_handle;
 static wifi_fw_dfu_defaults_t shadow_fermion_defaults;
 static sys_loader_cntxt_t sys_loader_cntxt;
-static fw_desc_tbl_t *p_ferm_fdt = (fw_desc_tbl_t*)(&__fdt_reg_st_addr);
+static fw_desc_tbl_t *p_ferm_fdt = (fw_desc_tbl_t*)(uintptr_t)&__fdt_reg_st_addr;
 static wifi_fw_dfu_defaults_t *p_fermion_dfu_defaults;
 
 
@@ -739,7 +739,7 @@ sbl_func_status_t sys_loader(void)
 
 					if(bitmap & SBL_ID)
 					{
-						fw_desc_tbl_t *p_ferm_fdt = (fw_desc_tbl_t*)(&__fdt_reg_st_addr);
+						fw_desc_tbl_t *p_ferm_fdt = (fw_desc_tbl_t*)(uintptr_t)&__fdt_reg_st_addr;
 						resource_desc_t* p_sbl_desc = &(p_ferm_fdt->sbl_a);
 						sbl_printf("bitmap.sbl\r\n");
 						soft_id = SBL_ID;

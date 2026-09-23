@@ -131,7 +131,7 @@
 #endif
 
 /* UART module support flag */
-#if defined(CONFIG_UART_SHELL) || (CONFIG_UART_QAPI)
+#if defined(CONFIG_UART_SHELL) || (defined(CONFIG_UART_QAPI) && (CONFIG_UART_QAPI))
 #define UART_SUPPORT
 #endif
 
@@ -164,7 +164,7 @@
  #define NT_SOCPM_SW_MTUSR
 
 #define SUPPORT_5GHZ
-// #define SUPPORT_TWT_STA
+#define SUPPORT_TWT_STA
 // #define SUPPORT_TWT_AP
 // #define TWT_WAR // WAR Added for TWT Changes
 

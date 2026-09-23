@@ -18,7 +18,7 @@
 #define QAPI_EVENT_LARGE_PAYLOAD_LENGTH_MAX 1000
 #define QAPI_EVENT_LARGE_PAYLOAD_BUF_NUM 3
 #define QAPI_EVENT_SMALL_PAYLOAD_LENGTH_MAX 256
-#define QAPI_EVENT_SMALL_PAYLOAD_BUF_NUM 5
+#define QAPI_EVENT_SMALL_PAYLOAD_BUF_NUM 10
 #define WLAN_MAX_VDEV_NUM 2
 #define QCOM_DEV_STA_ID 1
 #define QCOM_DEV_AP_ID  0
@@ -69,11 +69,12 @@ typedef struct wlan_qapi_cxt_s {
     uint32_t wlan_get_stat_block_mode : 1;
     uint32_t wlan_set_param_block_mode : 1;
     uint32_t wlan_get_regulatory_block_mode : 1;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     uint32_t wlan_scan_stop_block_mode : 1;
     uint32_t wlan_start_wps_block_mode : 1;
 #endif
     uint32_t wlan_roaming_started : 1;
+    uint32_t wlan_roaming_disabled : 1;
     uint32_t wlan_set_rate_block_mode : 1;
     uint32_t wlan_get_rate_block_mode : 1;
     uint32_t wlan_send_raw_block_mode : 1;
@@ -85,7 +86,7 @@ typedef struct wlan_qapi_cxt_s {
     qapi_Status_t wlan_qapi_error;
     wlan_evt_payload_t event_payload_buf[EVT_PAYLOAD_MAX];
     WMI_START_SCAN_CMD scan_cmd;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     WMI_WPS_START_CMD wps_process_cmd;
 #endif
     WLAN_WMI_DISCONN_t discon_cmd;
@@ -93,7 +94,7 @@ typedef struct wlan_qapi_cxt_s {
     qapi_WLAN_Reg_Evt_t reg_result;
     uint8_t param_id;
     qbool_t scan_in_progress;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     qbool_t stop_scan_in_progress;
     qbool_t wps_in_progress;
     qbool_t wps_stage;
@@ -112,11 +113,21 @@ typedef struct wlan_qapi_cxt_s {
     WMI_SET_APPIE_CMD appie_cmd;
     WMI_SET_TX_POWER_CMD tx_power;
     qapi_WLAN_Get_Power_Evt_t get_tx_power_result;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     WMI_WPS_START_CMD wps_param;
 #endif
     uint32_t suspend_ret;
     WMI_SAP_CSA_CMD sap_csa;
+#ifdef CONFIG_WIFI_QCOM_WPS
+    qbool_t  wps_scan_in_progress;
+    uint32_t wlan_wps_scan_block_mode : 1;
+    uint8_t  wps_scan_comp[sizeof(WMI_WPS_SCAN_COMP_RESULT)];
+    uint8_t  wps_scan_ap[sizeof(WMI_WPS_SCAN_AP_RESULT)];
+#endif /* CONFIG_WIFI_QCOM_WPS */
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+    WMI_WNM_SLEEP_PARAMS wnm_sleep_param;
+    WMI_WNM_CONFIG_CMD   wnm_config_param;
+#endif
 } wlan_qapi_cxt_t;
 
 extern wlan_qapi_cxt_t *gp_wlan_qapi_cxt;
@@ -143,5 +154,7 @@ int wlan_qapi_init(void);
 qapi_Status_t wlan_drv_set_cb(qapi_WLAN_Callback_t callback, void *application_Context);
 qapi_Status_t wlan_drv_roaming_start(void);
 qapi_Status_t wlan_drv_roaming_stop(void);
+qapi_Status_t wlan_drv_roaming_disable(void);
+qapi_Status_t wlan_drv_roaming_enable(void);
 
 #endif //__WLAN_DRV_H__

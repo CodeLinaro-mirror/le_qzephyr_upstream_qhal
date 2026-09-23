@@ -30,7 +30,7 @@ bl_error_type boot_sbl_flash_init()
 {
     bl_error_type status = (bl_error_type)FLASH_DEVICE_FAIL;
 
-#if CONFIG_BOARD_QCC730_QSPI_ENABLE
+#if defined(CONFIG_BOARD_QCC730_QSPI_ENABLE)
     status = drv_flash_init();
 #endif
     if (status != BL_ERR_NONE) {
@@ -45,7 +45,7 @@ bl_error_type boot_sbl_flash_init()
 bl_error_type boot_sbl_flash_read(uint32_t address, uint32_t byte_cnt, uint8_t *buffer)
 {
 	bl_error_type status = (bl_error_type)FLASH_DEVICE_FAIL;
-#if CONFIG_BOARD_QCC730_QSPI_ENABLE
+#if defined(CONFIG_BOARD_QCC730_QSPI_ENABLE)
 	status = drv_flash_read(address, byte_cnt, buffer, NULL, NULL);
 #endif
 	return status;
@@ -56,7 +56,7 @@ bl_error_type boot_sbl_flash_read(uint32_t address, uint32_t byte_cnt, uint8_t *
 bl_error_type boot_sbl_flash_write(uint32_t address, uint32_t byte_cnt, uint8_t *buffer)
 {
 	bl_error_type status = (bl_error_type)FLASH_DEVICE_FAIL;
-#if CONFIG_BOARD_QCC730_QSPI_ENABLE
+#if defined(CONFIG_BOARD_QCC730_QSPI_ENABLE)
 	status = drv_flash_write(address, byte_cnt, buffer, NULL, NULL);
 #endif
 	return status;
@@ -69,7 +69,7 @@ bl_error_type boot_sbl_flash_xip_enable(uint32_t addr)
 	int32_t value = 0;
     bl_error_type status = (bl_error_type)FLASH_DEVICE_FAIL;
 	sbl_printf("xip config from flash add=0x%x\r\n", (unsigned int)addr);
-#if CONFIG_BOARD_QCC730_QSPI_ENABLE	
+#if defined(CONFIG_BOARD_QCC730_QSPI_ENABLE)	
     status = drv_qspi_xip_config(QSPI_XIP_FLASH_REGION_3, 0x1000/*16MB*/, addr/*FLASH_IMAGE_ADDRESS*/);
 #endif
 	value = HW_REG_RD(QWLAN_RRAM_CTRL_RRAM_CTRL_TEST_REG);   //enable all D-code read data access to be cached for dv purpose only.

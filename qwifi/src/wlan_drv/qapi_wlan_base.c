@@ -81,7 +81,7 @@ qapi_Status_t qapi_WLAN_Resume(void)
 {
     qapi_Status_t ret = QAPI_WLAN_ERROR;
     WLAN_QAPI_LOCK();
-    wmi_resume();
+    ret = wmi_resume();
     WLAN_QAPI_UNLOCK();
     return ret;
 }
@@ -157,6 +157,56 @@ qapi_Status_t qapi_WLAN_Disconnect(uint8_t device_ID)
     WLAN_QAPI_UNLOCK();
     return ret;
 }
+
+#ifdef SUPPORT_TWT_STA
+qapi_Status_t qapi_WLAN_Twt_Setup(uint8_t device_ID, void *cmd)
+{
+    qapi_Status_t ret;
+    WLAN_QAPI_LOCK();
+    ret = wmi_twt_setup(device_ID, cmd);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Twt_Teardown(uint8_t device_ID, void *cmd)
+{
+    qapi_Status_t ret;
+    WLAN_QAPI_LOCK();
+    ret = wmi_twt_teardown(device_ID, cmd);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_TWT_Ext_Wakeup(uint8_t enable)
+{
+    qapi_Status_t ret;
+
+    if (enable > 1) {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_twt_ext_wakeup(enable);
+    WLAN_QAPI_UNLOCK();
+
+    return ret;
+}
+
+#include <zephyr/pm/policy.h>
+qapi_Status_t qapi_TWT_Mcu_Sleep_Enable(uint8_t enable)
+{
+    WLAN_QAPI_LOCK();
+    if (enable) {
+        if (pm_policy_state_lock_is_active(PM_STATE_SUSPEND_TO_RAM, PM_ALL_SUBSTATES)) {
+            pm_policy_state_lock_put(PM_STATE_SUSPEND_TO_RAM, PM_ALL_SUBSTATES);
+        }
+    } else {
+        pm_policy_state_lock_get(PM_STATE_SUSPEND_TO_RAM, PM_ALL_SUBSTATES);
+    }
+    WLAN_QAPI_UNLOCK();
+    return QAPI_OK;
+}
+#endif /* SUPPORT_TWT_STA */
 
 qapi_Status_t qapi_WLAN_AP_Disconnect_Station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len)
 {
@@ -364,7 +414,7 @@ qapi_Status_t qapi_WLAN_Recv_Mgmt_Frames(uint8_t *buffer, uint32_t buffer_len, u
     return wlan_recv_mgmt_frame(buffer, buffer_len, frame_len, timeout);
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 qapi_Status_t qapi_WLAN_Start_Wps(uint8_t device_ID, qapi_WLAN_WPS_Connect_Action_e connect_Action,
                                   qapi_WLAN_WPS_Mode_e mode, const char *pin, uint8_t auth_floor)
 {
@@ -442,3 +492,58 @@ qapi_Status_t qapi_WLAN_ignore_bcmc_in_bmps(uint8_t device_ID, uint8_t enable)
 
     return ret;
 }
+
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+/* Forward declarations — propwifi functions readable from any task context. */
+extern void nt_wnm_fill_status(uint8_t *sleeping, uint8_t *ap_capable,
+                                uint32_t *interval_ms,
+                                uint16_t *enter_req_sent, uint16_t *enter_rsp_rcvd,
+                                uint16_t *exit_req_sent,  uint16_t *exit_rsp_rcvd,
+                                uint16_t *wkup_sta, uint16_t *wkup_tim,
+                                uint16_t *wkup_idle);
+extern uint32_t nt_wnm_get_enable(void);
+
+qapi_Status_t qapi_WLAN_Wnm_Sleep(uint8_t action, uint32_t interval_ms)
+{
+    qapi_Status_t ret;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wnm_sleep(action, interval_ms);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Wnm_Set_Enable(uint8_t enable)
+{
+    qapi_Status_t ret;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wnm_set_enable(enable);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+qapi_Status_t qapi_WLAN_Wnm_Set_Bss_Max_Idle(uint32_t m_seconds)
+{
+    qapi_Status_t ret;
+
+    WLAN_QAPI_LOCK();
+    ret = wmi_wnm_set_bss_max_idle(m_seconds);
+    WLAN_QAPI_UNLOCK();
+    return ret;
+}
+
+void qapi_WLAN_Wnm_Fill_Status(uint8_t *sleeping, uint8_t *ap_capable,
+                                uint32_t *interval_ms,
+                                uint16_t *enter_req_sent, uint16_t *enter_rsp_rcvd,
+                                uint16_t *exit_req_sent,  uint16_t *exit_rsp_rcvd,
+                                uint16_t *wkup_sta, uint16_t *wkup_tim,
+                                uint16_t *wkup_idle, uint32_t *enabled)
+{
+    nt_wnm_fill_status(sleeping, ap_capable, interval_ms,
+                       enter_req_sent, enter_rsp_rcvd,
+                       exit_req_sent,  exit_rsp_rcvd,
+                       wkup_sta, wkup_tim, wkup_idle);
+    *enabled = nt_wnm_get_enable();
+}
+#endif /* NT_FN_WNM_POWERSAVE_MODE */

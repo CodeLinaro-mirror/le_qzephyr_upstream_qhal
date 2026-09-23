@@ -27,3 +27,13 @@ config DP_RAM_LOCATED
     bool "Locate code of data path into RAM"
     depends on QWIFI && CODE_DATA_RELOCATION
     default y if QWIFI && CODE_DATA_RELOCATION
+
+config WIFI_PMK_BYPASS_KDF
+	bool "Accept pre-computed PMK directly, bypass PBKDF2 in wmi_set_passphrase_cmd"
+	default y if QCC730_RCP_BUS_QCSPI
+	help
+	  When enabled, if passphrase_len == WMI_PMK_LEN (32), treat the passphrase
+	  buffer as a pre-computed PMK and use it directly without PBKDF2 derivation.
+	  Enables the Linux cfg80211 4-way handshake offload path (NL80211_EXT_FEATURE_
+	  4WAY_HANDSHAKE_STA_PSK) where wpa_supplicant passes a 32-byte PMK instead of
+	  the raw passphrase.

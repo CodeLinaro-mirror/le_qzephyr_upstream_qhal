@@ -173,6 +173,20 @@ typedef struct {
     uint8_t reserved2;
 } qapi_WLAN_Chan_Switch_Evt_t;
 
+#ifdef SUPPORT_TWT_STA
+typedef enum {
+    QAPI_WLAN_TWT_EXT_WAKEUP_STATUS_OK = 0,
+    QAPI_WLAN_TWT_EXT_WAKEUP_STATUS_NOT_READY,
+} qapi_WLAN_TWT_Ext_Wakeup_Status_e;
+
+typedef struct {
+    qapi_WLAN_Evt_Hdr_t evt_hdr;
+    uint8_t enable;
+    uint8_t reason_code;
+    uint16_t reserved;
+} qapi_WLAN_TWT_Ext_Wakeup_Evt_t;
+#endif
+
 /**
 @ingroup qapi_wlan
 WLAN driver invokes an application-registered callback function to indicate various
@@ -284,6 +298,15 @@ typedef enum {
     QAPI_WLAN_IF_ADD_COMP_CB_E = 26, /**< ID to indicate WLAN interface is added. */
     QAPI_WLAN_SCAN_START_CB_E = 27,  /**< ID to indicate WLAN scan is started. */
     QAPI_WLAN_WPS_FAIL_CB_E = 28,    /**< ID to indicate WLAN WPS failed. */
+#ifdef CONFIG_WIFI_QCOM_WPS
+    QAPI_WLAN_WPS_SCAN_AP_CB_E   = 29, /**< Per-AP WPS scan result (one per WPS-capable AP found). */
+    QAPI_WLAN_WPS_SCAN_COMP_CB_E = 30, /**< WPS scan round complete. */
+#endif /* CONFIG_WIFI_QCOM_WPS */
+#ifdef SUPPORT_TWT_STA
+    QAPI_WLAN_TWT_SETUP_CB_E = 31,   /**< ID to indicate TWT setup event (802.11ax). */
+    QAPI_WLAN_TWT_TEARDOWN_CB_E = 32, /**< ID to indicate TWT teardown event. */
+    QAPI_WLAN_TWT_EXT_WAKEUP_CB_E = 33, /**< ID to indicate TWT external wake completion. */
+#endif
 } qapi_WLAN_Callback_ID_e;
 
 /**
@@ -648,8 +671,8 @@ typedef enum {
 Enumeration of supported WPS modes.
 */
 typedef enum {
-    QAPI_WLAN_WPS_PIN_MODE_E = 0, /**< WPS PIN method. */
-    QAPI_WLAN_WPS_PBC_MODE_E = 1  /**< WPS Pushbutton method. */
+    QAPI_WLAN_WPS_PIN_MODE_E = 1, /**< WPS PIN method. */
+    QAPI_WLAN_WPS_PBC_MODE_E = 2  /**< WPS Pushbutton method. */
 } qapi_WLAN_WPS_Mode_e;
 
 /**
@@ -854,6 +877,8 @@ typedef struct {
     uint16_t auth_mode;
     uint32_t rssi;
     uint32_t link_mode;
+    /** RSN Capabilities used by FW for the local RSN IE. */
+    uint16_t rsn_cap;
 } qapi_WLAN_Status_t;
 
 /**
@@ -988,6 +1013,92 @@ Scan cannot be started in SoftAP mode.
 */
 qapi_Status_t qapi_WLAN_Start_Scan(uint8_t device_ID, const qapi_WLAN_Start_Scan_Params_t *scan_Params);
 
+#ifdef CONFIG_WIFI_QCOM_WPS
+/**
+@ingroup qapi_wlan
+WPS scan result status codes — evaluated on the host side.
+*/
+#define WPS_SCAN_STATUS_FOUND      0  /**< Exactly one PBC-active AP found, no overlap. */
+#define WPS_SCAN_STATUS_NOT_FOUND  1  /**< No PBC-active AP found in this scan round.   */
+#define WPS_SCAN_STATUS_OVERLAP    2  /**< Multiple PBC-active APs found (overlap).      */
+
+/**
+@ingroup qapi_wlan
+Per-AP result delivered for each WPS-capable AP found during a WPS scan
+(QAPI_WLAN_WPS_SCAN_AP_CB_E).  The host uses these to perform PBC overlap
+detection and AP selection.
+*/
+typedef struct __attribute__((packed)) {
+    uint8_t  bssid[__QAPI_WLAN_MAC_LEN];      /**< AP BSSID. */
+    uint16_t channel;                         /**< AP channel. */
+    uint8_t  ssid[__QAPI_WLAN_MAX_SSID_LEN + 1]; /**< AP SSID (33 bytes, matches WMI_MAX_SSID_LEN+1). */
+    uint8_t  ssid_len;
+    int8_t   rssi;                            /**< Signal strength. */
+    uint8_t  auth_type;                       /**< WPS_AUTH_* flags from AP Beacon/ProbeResp. */
+    uint8_t  encr_type;                       /**< WPS_ENCR_* flags from AP Beacon/ProbeResp. */
+    uint8_t  wsc_ie_len;                      /**< Length of wsc_ie. */
+    uint8_t  wsc_ie[192];                     /**< Raw WSC IE payload (after OUI, max 192 bytes). */
+} qapi_WLAN_WPS_Scan_AP_Result_t;
+
+/**
+@ingroup qapi_wlan
+Scan-complete result delivered once per WPS scan round
+(QAPI_WLAN_WPS_SCAN_COMP_CB_E).
+All overlap detection and AP selection are performed on the host using
+the per-AP results from QAPI_WLAN_WPS_SCAN_AP_CB_E.
+*/
+typedef struct {
+    uint8_t num_ap_found; /**< Number of per-AP results delivered this round. */
+} qapi_WLAN_WPS_Scan_Comp_Evt_t;
+
+/**
+@ingroup qapi_wlan
+WPS scan operation selector for qapi_WLAN_WPS_Scan().
+*/
+typedef enum {
+    QAPI_WLAN_WPS_SCAN_START_PBC_E = 0, /**< Start WPS PBC scan. */
+    QAPI_WLAN_WPS_SCAN_START_PIN_E = 1, /**< Start WPS PIN scan. */
+    QAPI_WLAN_WPS_SCAN_STOP_E      = 2, /**< Stop in-progress WPS scan. */
+} qapi_WLAN_WPS_Scan_Op_e;
+
+/**
+@ingroup qapi_wlan
+Start or stop a WPS scan.
+
+For start operations the firmware scans all channels and reports each
+WPS-capable AP via QAPI_WLAN_WPS_SCAN_AP_CB_E, then signals completion
+via QAPI_WLAN_WPS_SCAN_COMP_CB_E.  Overlap detection and AP selection
+are performed on the host using the per-AP WSC IE data.
+
+@param[in] device_ID  Device ID.
+@param[in] op         QAPI_WLAN_WPS_SCAN_START_PBC_E,
+                      QAPI_WLAN_WPS_SCAN_START_PIN_E, or
+                      QAPI_WLAN_WPS_SCAN_STOP_E.
+
+@return
+QAPI_OK -- Request accepted. \n
+Nonzero value -- Failed.
+*/
+
+/** Maximum number of channels in a WPS scan channel list (14 x 2.4 GHz + 25 x 5 GHz). */
+#define QAPI_WLAN_WPS_SCAN_MAX_CHANNELS 39
+
+/**
+@ingroup qapi_wlan
+Parameters for qapi_WLAN_WPS_Scan().  Pass a zero-initialised struct to get
+the original full-channel scan behaviour.
+*/
+typedef struct {
+    qapi_WLAN_WPS_Scan_Op_e op;                          /**< Operation: start PBC/PIN or stop. */
+    uint8_t  bssid[__QAPI_WLAN_MAC_LEN];                 /**< Target BSSID filter; all-zero = no filter. */
+    uint16_t channels[QAPI_WLAN_WPS_SCAN_MAX_CHANNELS];  /**< Channel list (802.11 channel numbers). */
+    uint8_t  channel_count;                              /**< Number of valid entries in channels[]; 0 = full scan. */
+} qapi_WLAN_WPS_Scan_Params_t;
+
+qapi_Status_t qapi_WLAN_WPS_Scan(uint8_t device_ID,
+                                   const qapi_WLAN_WPS_Scan_Params_t *params);
+#endif /* CONFIG_WIFI_QCOM_WPS */
+
 /**
 @ingroup qapi_wlan
 Returns the scan results from the most recent wireless scan performed to find nearby access points.
@@ -1098,6 +1209,21 @@ Nonzero value -- Disconnection failed.
 None.
 */
 qapi_Status_t qapi_WLAN_Disconnect(uint8_t device_ID);
+
+#ifdef SUPPORT_TWT_STA
+/** Forward TWT setup/teardown commands to firmware. */
+qapi_Status_t qapi_WLAN_Twt_Setup(uint8_t device_ID, void *cmd);
+qapi_Status_t qapi_WLAN_Twt_Teardown(uint8_t device_ID, void *cmd);
+
+/**
+ * Queue a TWT external wake enable or disable request.
+ * Completion is reported through QAPI_WLAN_TWT_EXT_WAKEUP_CB_E.
+ */
+qapi_Status_t qapi_TWT_Ext_Wakeup(uint8_t enable);
+
+/** Enable or disable MCU sleep during TWT. */
+qapi_Status_t qapi_TWT_Mcu_Sleep_Enable(uint8_t enable);
+#endif
 
 /**
 @ingroup qapi_wlan
@@ -1311,5 +1437,19 @@ _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Scan_Start_Evt_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_BSS_Scan_Info_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Scan_Comp_Evt_t)
 _STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_Join_Comp_Evt_t)
+#ifdef SUPPORT_TWT_STA
+_STRUCT_4BYTE_ALLIGN_CHECK(qapi_WLAN_TWT_Ext_Wakeup_Evt_t)
+#endif
 
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+qapi_Status_t qapi_WLAN_Wnm_Sleep(uint8_t action, uint32_t interval_ms);
+qapi_Status_t qapi_WLAN_Wnm_Set_Enable(uint8_t enable);
+qapi_Status_t qapi_WLAN_Wnm_Set_Bss_Max_Idle(uint32_t m_seconds);
+void qapi_WLAN_Wnm_Fill_Status(uint8_t *sleeping, uint8_t *ap_capable,
+                                uint32_t *interval_ms,
+                                uint16_t *enter_req_sent, uint16_t *enter_rsp_rcvd,
+                                uint16_t *exit_req_sent,  uint16_t *exit_rsp_rcvd,
+                                uint16_t *wkup_sta, uint16_t *wkup_tim,
+                                uint16_t *wkup_idle, uint32_t *enabled);
+#endif /* NT_FN_WNM_POWERSAVE_MODE */
 #endif // __QAPI_WLAN_BASE_H__

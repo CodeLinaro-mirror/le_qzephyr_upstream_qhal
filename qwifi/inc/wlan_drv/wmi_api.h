@@ -21,7 +21,7 @@
 #define WLAN_WMI_CMD_SIG_MASK_SEND_RAW 0x2000
 #define WLAN_WMI_CMD_SIG_MASK_SET_MGMT_FILTER 0x4000
 #define WLAN_WMI_CMD_SIG_MASK_GET_TX_POWER 0x8000
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 #define WLAN_WMI_CMD_SIG_MASK_STARTED_WPS_PROCESS 0x10000
 #define WLAN_WMI_CMD_SIG_MASK_STOPPED_SCAN 0x20000
 #endif
@@ -29,6 +29,9 @@
 #define WLAN_WMI_CMD_SIG_MASK_SUSPEND 0x80000
 #define WLAN_WMI_CMD_SIG_MASK_RESUME 0x100000
 #define WLAN_WMI_CMD_SIG_MASK_SAP_CSA_STATUS 0x200000
+#ifdef CONFIG_WIFI_QCOM_WPS
+#define WLAN_WMI_CMD_SIG_MASK_WPS_SCAN_COMP  0x400000
+#endif
 
 extern qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_len);
 extern qapi_Status_t wmi_dev_cmd_send(WMI_COMMAND_ID cmd_id, uint8_t dev_id, void *p_data, uint32_t data_len);
@@ -46,6 +49,11 @@ extern qapi_Status_t wlan_get_scan_results(uint8_t __attribute__((__unused__)) d
 extern qapi_Status_t wmi_set_passphrase(uint8_t vdev_id);
 extern qapi_Status_t wmi_connect(uint8_t vdev_id);
 extern qapi_Status_t wmi_disconnect(uint8_t vdev_id);
+#ifdef SUPPORT_TWT_STA
+extern qapi_Status_t wmi_twt_setup(uint8_t vdev_id, void *cmd);
+extern qapi_Status_t wmi_twt_teardown(uint8_t vdev_id, void *cmd);
+extern qapi_Status_t wmi_twt_ext_wakeup(uint8_t enable);
+#endif
 extern qapi_Status_t wmi_ap_disconnect_station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len);
 extern qapi_Status_t wmi_set_op_mode(uint8_t device_ID);
 extern qapi_Status_t wmi_wlan_get_statistics(uint8_t device_ID);
@@ -55,7 +63,7 @@ extern qapi_Status_t wmi_get_rate(void);
 extern qapi_Status_t wmi_send_raw(void);
 extern qapi_Status_t wmi_set_mgmt_filter(void);
 extern qapi_Status_t wmi_get_tx_power(void);
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 extern qapi_Status_t wmi_stop_scan(void);
 qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_ID,
                                     qapi_WLAN_WPS_Connect_Action_e connect_Action, qapi_WLAN_WPS_Mode_e mode,
@@ -72,5 +80,18 @@ extern qapi_Status_t wmi_get_wifi_status(uint8_t dev_id, WMI_WIFI_STATUS *status
 extern qapi_Status_t wmi_wlan_sap_csa(uint8_t device_ID, uint8_t switch_mode, uint16_t channel,
                                       uint8_t is_6g, uint8_t switch_count);
 
+#ifdef CONFIG_WIFI_QCOM_WPS
+extern qapi_Status_t wmi_wps_scan(uint8_t device_ID,
+                                   const qapi_WLAN_WPS_Scan_Params_t *params);
+/* Event handlers — called from wmi_api.c event dispatch, defined in qapi_wlan_wps.c */
+extern void wmi_wps_scan_ap_result_event(void *msg);
+extern void wmi_wps_scan_comp_event(void *msg);
+#endif /* CONFIG_WIFI_QCOM_WPS */
+
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+extern qapi_Status_t wmi_wnm_sleep(uint8_t action, uint32_t interval_ms);
+extern qapi_Status_t wmi_wnm_set_enable(uint8_t enable);
+extern qapi_Status_t wmi_wnm_set_bss_max_idle(uint32_t seconds);
+#endif
 
 #endif //__WMI_API_H__

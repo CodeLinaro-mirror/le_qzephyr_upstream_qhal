@@ -83,9 +83,7 @@
 #define SMPS2_CL_ILIM_MIN_LOW_VBAT      4
 
 /** SMPS2 default register values (Vbatt >= 2.6V) */
-#define SMPS2_DEFAULT_PMIN_ON           SMPS2_PMIN_ON_VBAT_MID  /* = 5 */
-#define SMPS2_DEFAULT_NMIN_ON           SMPS2_NMIN_ON_VBAT_MID  /* = 4 */
-#define SMPS2_DEFAULT_CL_ILIM_MIN       0x7  /* SMPS2_CL_ILIM_MIN 4/ 7/ 11d for Vbatt 1.8-2.4V/ 2.4-3.0V/ 3.0-3.6 V */
+#define SMPS2_DEFAULT_CL_ILIM_MIN       0xB  /* SMPS2_CL_ILIM_MIN 4/ 7/ 11d for Vbatt 1.8-2.4V/ 2.4-3.0V/ 3.0-3.6 V */
 
 /** One-time auto-switch configuration values (from HW spec) */
 #define SMPS2_AUTO_SWITCH_EA_HOLD       0
@@ -93,6 +91,7 @@
 #define SMPS2_AUTO_SWITCH_PFM2PWM_THRES 1
 
 /** smps2_lpm_ovr values */
+#define SMPS2_LPM_OVR_FORCE_PWM        0   /* Force SMPS2 to PWM */
 #define SMPS2_LPM_OVR_AUTO_SWITCH      2   /* Enable HW auto-switch (PFM->PWM by HW) */
 #define SMPS2_LPM_OVR_FORCE_PFM        3   /* Force SMPS2 to PFM */
 
@@ -106,34 +105,34 @@
 /*-----------------------------------------------------------------------------
  * PFM Usability Lookup Table
  *
- * Based on HW characterization data.
+ * Based on bench test results (supersedes earlier HW characterization data).
  * Table indicates whether SMPS2 can operate in PFM at given Vbatt and temperature.
- * Guard-band will be added after HW provides data from skewed parts.
  *
- * Vbatt breakpoints (mV): 2000, 2200, 2400, 2600+
+ * Vbatt breakpoints (mV): 1900, 2100, 2300, 2500, 2700+
  * Temp  breakpoints (°C): 30,   50,   70,   90
  *
  * Entry = 1 means PFM is safe; 0 means must stay in PWM.
  *
- * Raw HW data (no guard-band yet):
- *   Vbatt=2.6V: Y Y Y Y  (all temps OK)
- *   Vbatt=2.4V: Y Y Y N  (fail at 90C)
- *   Vbatt=2.2V: Y Y N N  (fail at 70C+)
- *   Vbatt=2.0V: Y N N N  (fail at 50C+)
+ * Raw data (no guard-band yet):
+ *   Vbatt=2.7V: Y Y Y Y  (all temps OK)
+ *   Vbatt=2.5V: Y Y Y N  (fail at 90C)
+ *   Vbatt=2.3V: Y Y N N  (fail at 70C+)
+ *   Vbatt=2.1V: Y N N N  (fail at 50C+)
+ *   Vbatt=1.9V: Y N N N  (fail at 50C+)
  *
- * Guard-band applied (conservative, pending skewed-parts data):
+ * Guard-band applied (per bench test results):
  *   Temperature: add SMPS2_PFM_TEMP_GUARDBAND_C to measured temp before lookup
  *   Vbatt:       subtract SMPS2_PFM_VBAT_GUARDBAND_MV from measured Vbat before lookup
  *
- * Example with guard-band (temp_gb = temp + 5, vbat_gb = vbat - 50):
- *   At Vbat=2.4V, Temp=80C -> effective (2350mV, 85C) -> lookup row 2.2V, col 90C -> FAIL -> stay PWM
- *   At Vbat=2.4V, Temp=60C -> effective (2350mV, 65C) -> lookup row 2.2V, col 70C -> FAIL -> stay PWM
- *   At Vbat=2.4V, Temp=40C -> effective (2350mV, 45C) -> lookup row 2.2V, col 50C -> PASS -> can PFM
+ * Example with guard-band (temp_gb = temp + 10, vbat_gb = vbat - 100):
+ *   At Vbat=2.5V, Temp=80C -> effective (2400mV, 90C) -> lookup row 2.3V, col 90C -> FAIL -> stay PWM
+ *   At Vbat=2.5V, Temp=60C -> effective (2400mV, 70C) -> lookup row 2.3V, col 70C -> FAIL -> stay PWM
+ *   At Vbat=2.5V, Temp=40C -> effective (2400mV, 50C) -> lookup row 2.3V, col 50C -> PASS -> can PFM
  *----------------------------------------------------------------------------*/
 
-/** Guard-band values — to be tuned after HW provides skewed-parts data */
-#define SMPS2_PFM_TEMP_GUARDBAND_C      5   /* °C margin: use (actual_temp + 5C) for lookup */
-#define SMPS2_PFM_VBAT_GUARDBAND_MV     50  /* mV margin: use (actual_vbat - 50mV) for lookup */
+/** Guard-band values — tuned per bench test results */
+#define SMPS2_PFM_TEMP_GUARDBAND_C      10   /* °C margin: use (actual_temp + 10C) for lookup */
+#define SMPS2_PFM_VBAT_GUARDBAND_MV     100  /* mV margin: use (actual_vbat - 100mV) for lookup */
 
 /** Number of temperature threshold columns in the PFM lookup table */
 #define PFM_TEMP_COLS                   4
@@ -213,6 +212,26 @@ void smps2_set_low_vbat_regs(bool low_vbat);
  */
 void smps2_init_auto_switch(void);
 
+/** Force SMPS2 to PFM and leave auto-switch disabled. */
+void smps2_force_pfm_hold(void);
+
+/** Force SMPS2 to PWM and leave auto-switch disabled. */
+void smps2_force_pwm_hold(void);
+
+/** Enable HW automatic PFM-to-PWM switching without changing other settings. */
+void smps2_enable_auto_switch(void);
+
+/**
+ * @brief  Force SMPS2 to PWM
+ *
+ * Sequence:
+ *   1. Write smps2_lpm_ovr = 0 (force PWM)
+ *   2. Poll ro_smps2_fsm until == SMPS2_FSM_PWM (or SMPS2_FSM_TRANSITION_TIMEOUT_MS)
+ *
+ * @return true if transition to PWM succeeded, false on timeout
+ */
+bool smps2_force_pwm(void);
+
 /**
  * @brief  Force SMPS2 to PFM, then re-enable auto-switch.
  *
@@ -231,6 +250,9 @@ bool smps2_force_pfm_then_auto(void);
  * @return SMPS2_FSM_PWM (3), SMPS2_FSM_PFM (4), or 0 on read error
  */
 uint32_t smps2_get_fsm_state(void);
+
+/** Read current SMPS2 LPM override value. */
+uint32_t smps2_get_lpm_ovr(void);
 
 /**
  * @brief  Top-level init called after cold boot Vbatt/Temp measurement.
@@ -313,8 +335,8 @@ void smps2_get_pfm_temp_thresholds(int32_t out[PFM_TEMP_COLS]);
  * A larger guard-band makes the PFM decision more conservative (harder to enter PFM).
  * Setting both to 0 disables the guard-band entirely.
  *
- * Defaults: temp_gb_c = SMPS2_PFM_TEMP_GUARDBAND_C (5),
- *           vbat_gb_mv = SMPS2_PFM_VBAT_GUARDBAND_MV (50)
+ * Defaults: temp_gb_c = SMPS2_PFM_TEMP_GUARDBAND_C (10),
+ *           vbat_gb_mv = SMPS2_PFM_VBAT_GUARDBAND_MV (100)
  *
  * @param  temp_gb_c   Temperature guard-band in °C (added to measured temp; may be negative)
  * @param  vbat_gb_mv  Vbatt guard-band in mV (subtracted from measured Vbat; unsigned)

@@ -25,6 +25,12 @@
 #define RRAM_MAIN_ADD_CHECK(address) ((address >= (uintptr_t)(&__rram_region_start_addr)) && (address <= (uintptr_t)(&__rram_region_end_address)))
 #define RRAM_OTP_ADD_CHECK(address) ((address >= (uintptr_t)(&__OTP_region_st_addr)) && (address <= (uintptr_t)(&__OTP_region_end_addr)))
 
+static inline otp_nt_region *nt_bl_otp_region(void)
+{
+	volatile uintptr_t addr = (uintptr_t)&__OTP_region_st_addr;
+	return (otp_nt_region *)addr;
+}
+
 #define TX_DUR_WR ( (HW_REG_RD(QWLAN_RRAM_CTRL_RRAM_TX_DUR_WR_REG) & QWLAN_RRAM_CTRL_RRAM_TX_DUR_WR_STATUS_MASK) ? true : false )
 #define WR_DUR_TX ( (HW_REG_RD(QWLAN_RRAM_CTRL_RRAM_WR_DUR_TX_REG) & QWLAN_RRAM_CTRL_RRAM_WR_DUR_TX_STATUS_MASK) ? true : false )
 
@@ -217,7 +223,7 @@ inline int8_t rram_address_range_check( uintptr_t rram_add, uint32_t data_len, n
 // RRAM Software workaround
 void nt_rram_write_init( void )
 {
-	otp_nt_region *nt_otp_rram_form = (otp_nt_region *)(&__OTP_region_st_addr);
+	otp_nt_region *nt_otp_rram_form = nt_bl_otp_region();
 	uint8_t count = 0;
 	uint32_t trc_config_elems = 0;
 	addr_val_pair_t *trc_config;
@@ -478,7 +484,7 @@ int8_t nt_bl_rram_read(void *address,void *rdata,uint32_t length)
 */
 int32_t nt_otp_region_locked(nt_otp_regions region_num, nt_otp_region_per_status rd_wr_lock)
 {
-  otp_nt_region * const nt_otp_reg = (otp_nt_region *)(&__OTP_region_st_addr);
+  otp_nt_region * const nt_otp_reg = nt_bl_otp_region();
   uint32_t lock_idx;
   uint8_t lock_byte;
   uint8_t *lock_addr;
@@ -508,7 +514,7 @@ int32_t nt_otp_region_locked(nt_otp_regions region_num, nt_otp_region_per_status
 */
 int32_t nt_otp_region_lock( nt_otp_regions region_num, nt_otp_region_per_status rd_wr_lock )
 {
-  otp_nt_region * const nt_otp_reg = (otp_nt_region *)(&__OTP_region_st_addr);
+  otp_nt_region * const nt_otp_reg = nt_bl_otp_region();
   uint32_t lock_idx;
   uint8_t lock_byte;
   uint8_t *lock_addr;
@@ -542,7 +548,7 @@ int32_t nt_otp_region_lock( nt_otp_regions region_num, nt_otp_region_per_status 
 
 bool nt_otp_firware_reg_status( nt_otp_firmware_reserved fw_res_flag )
 {
-	otp_nt_region *nt_otp_reg = (otp_nt_region *)(&__OTP_region_st_addr);
+	otp_nt_region *nt_otp_reg = nt_bl_otp_region();
 	uint8_t firmware_status = 0;
 
 	if( nt_otp_region_locked( FIRMWARE_REGION, READ_LOCKED) == false )
@@ -559,7 +565,7 @@ bool nt_otp_firware_reg_status( nt_otp_firmware_reserved fw_res_flag )
 
 int8_t nt_serial_number_write( void )
 {
- otp_nt_region *nt_sn_write = (otp_nt_region *)(&__OTP_region_st_addr);
+ otp_nt_region *nt_sn_write = nt_bl_otp_region();
  uint8_t serial_num[6] = {0};
  uint8_t locsn[6] = {0};
  uint8_t err_count = 0;
@@ -651,7 +657,7 @@ int8_t nt_serial_number_check( void )
 	uint8_t serialmarker = 0;
 	uint8_t serial_num[6] = {0};
 
-	otp_nt_region *nt_serial_number = (otp_nt_region *)(&__OTP_region_st_addr);
+	otp_nt_region *nt_serial_number = nt_bl_otp_region();
 
 	// Read the serial marker
 	nt_bl_rram_read( (&nt_serial_number->pte_region.serial_updated), &serialmarker, 1 );

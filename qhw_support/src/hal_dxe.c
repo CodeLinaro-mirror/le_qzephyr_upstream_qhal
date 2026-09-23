@@ -770,6 +770,11 @@ eRet_t RAMFUNC nt_ndxe_write_frame_to_transfer(e_dxe_channel channel, const void
         return NDXE_FAIL;
     }
 
+    if (halDxe->tx_paused &&
+        (pDxeCCB->xfrType == NT_DXE_XFR_HOST_TO_BMU)) {
+        return NDXE_NO_FREE_DESC;
+    }
+
     if (halDxe->dxe_suspend) {
         NT_LOG_PRINT(DPM, ERR, "pkt queued aftr suspend - dxech:%d", channel);
         pDxeCCB->pkts_after_suspend++;
@@ -1504,6 +1509,16 @@ uint32_t hal_dxe_resume()
         }
     }
     return NDXE_SUCCESS;
+}
+
+void hal_suspend_all_wlantx_channel(void)
+{
+    halDxe->tx_paused = 1;
+}
+
+void hal_resume_all_wlantx_channel(void)
+{
+    halDxe->tx_paused = 0;
 }
 
 #ifdef SUPPORT_BMU_ERROR_RECOVERY

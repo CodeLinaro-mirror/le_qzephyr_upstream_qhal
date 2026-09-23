@@ -8,7 +8,7 @@
 #include "safeAPI.h"
 #include <stdlib.h>
 #include <zephyr/net/wifi.h>
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 #include "qapi_wlan_base.h"
 #endif
 #include "libwifi.h"
@@ -23,6 +23,18 @@
 /*11 for 2G*/
 #define SCAN_LIST_NUM_CHANNELS 11
 #endif /* CONFIG_6GHZ */
+
+/* FR203519: dc_get_chidx_from_freq() lives in libwifiqcc730 (mlm/discovery.c);
+ * its declaring header (mlm/include/discovery_api.h) is PRIVATE to that
+ * target and not on qwifi's include path. Both targets link into the same
+ * zephyr.elf (there is no separate "firmware" processor here), so a plain
+ * extern forward declaration is sufficient -- same pattern already used by
+ * qcc730_nan_de_glue.c for wmi_cmd_send(). Gated to match the declaration's
+ * own #ifdef in discovery_api.h. */
+#ifdef SUPPORT_5GHZ
+extern uint8_t dc_get_chidx_from_freq(uint16_t freq);
+#define QCC730_CHINDEX_INVALID 255 /* DC_CHANNEL_INDEX_INVALID, mlm/include/wlan_dev.h */
+#endif
 
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
@@ -40,6 +52,62 @@ void wlan_clear_privacy(uint8_t vdev_id)
 
     memset(p_passphrase_cmd->passphrase, 0, WMI_PASSPHRASE_LEN + 1);
     p_passphrase_cmd->passphrase_len = 0;
+}
+
+void wlan_set_ctrl_flags(uint8_t vdev_id, uint32_t flags)
+{
+    WLAN_VDEV_CXT(vdev_id)->connect_cmd.ctrl_flags |= flags;
+}
+
+void wlan_clear_ctrl_flags(uint8_t vdev_id, uint32_t flags)
+{
+    WLAN_VDEV_CXT(vdev_id)->connect_cmd.ctrl_flags &= ~flags;
+}
+
+void wlan_set_wps_open_connect(uint8_t vdev_id, uint16_t channel)
+{
+    ARG_UNUSED(vdev_id);
+    ARG_UNUSED(channel);
+    extern void wlan_wps_set_connect_pending(void);
+    wlan_wps_set_connect_pending();
+}
+
+void wlan_set_psk_params(uint8_t vdev_id,
+                          const uint8_t *ssid, uint8_t ssid_len,
+                          uint16_t auth_mode,    /* WMI_WPA2_PSK_AUTH etc. */
+                          uint8_t  cipher_type,  /* AES_CRYPT etc. */
+                          const uint8_t *passphrase, uint8_t passphrase_len)
+{
+    WMI_CONNECT_CMD       *p_cmd  = &WLAN_VDEV_CXT(vdev_id)->connect_cmd;
+    WMI_SET_PASSPHRASE_CMD *p_psk = &WLAN_VDEV_CXT(vdev_id)->passphrase_cmd;
+
+    /* SSID */
+    if (ssid && ssid_len > 0 && ssid_len <= WMI_MAX_SSID_LEN) {
+        p_cmd->ssidLength = ssid_len;
+        memscpy(p_cmd->ssid, ssid_len, ssid, ssid_len);
+        p_psk->ssid_len = ssid_len;
+        memscpy(p_psk->ssid, ssid_len, ssid, ssid_len);
+    }
+
+    /* Auth / cipher */
+    p_cmd->dot11AuthMode      = OPEN_AUTH;
+    p_cmd->authMode           = auth_mode;
+    p_cmd->pairwiseCryptoType = cipher_type;
+    p_cmd->groupCryptoType    = cipher_type;
+    p_cmd->pairwiseCryptoLen  = passphrase_len;
+    p_cmd->groupCryptoLen     = passphrase_len;
+
+    /* Passphrase */
+    if (passphrase && passphrase_len > 0) {
+        p_psk->passphrase_len = passphrase_len;
+        memscpy(p_psk->passphrase, passphrase_len, passphrase, passphrase_len);
+    }
+}
+
+void wlan_clear_wps_open_connect(void)
+{
+    extern void wlan_wps_clear_connect_pending(void);
+    wlan_wps_clear_connect_pending();
 }
 
 /* Should be called under protection of p_cxt->wlan_qapi_cxt_mutex */
@@ -112,10 +180,41 @@ void wlan_set_scan_param(WMI_START_SCAN_CMD *p_cmd, const qapi_WLAN_Start_Scan_P
     p_cmd->auth_mode = WMI_NONE_AUTH;
     p_cmd->crypto_type = NONE_CRYPT;
     p_cmd->probe_type = active_probe;
-    p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
-    int i;
-    for (i = 0; i < p_cmd->num_channels; i++) {
-        p_cmd->channel_list[i] = i;
+
+    /* FR203519: honor caller-provided channel hint for directed single-channel
+     * scans (e.g. WiFiPAF commissioning on 2.4 GHz CH6 or 5 GHz CH149). Fall
+     * back to full-band scan when no hint is given, when the hint doesn't
+     * resolve to a valid channel, or for 6G (not yet supported here).
+     * scan_Params->channel_List[i] is a channel *number*; WMI cmd wants
+     * chindex:
+     *   - 2.4 GHz (channel 1-14): chindex = channel - 1 (CH1->0, CH6->5, CH11->10)
+     *   - 5 GHz (channel >= 36):  freq = 5000 + channel*5 (same formula as
+     *     wlan_channel_to_freq()), then chindex = dc_get_chidx_from_freq(freq)
+     *     via the regulatory channel list (already covers 5 GHz -- see
+     *     SUPPORT_5GHZ/SUPPORT_REGULATORY in fwconfig_QCP7321.h). */
+    if (scan_Params && scan_Params->num_Channels == 1 && scan_Params->channel_List[0] >= 1 &&
+        scan_Params->channel_List[0] <= 14) {
+        p_cmd->num_channels = 1;
+        p_cmd->channel_list[0] = (uint8_t)(scan_Params->channel_List[0] - 1);
+#ifdef SUPPORT_5GHZ
+    } else if (scan_Params && scan_Params->num_Channels == 1 && scan_Params->channel_List[0] >= 36) {
+        uint16_t freq = (uint16_t)(5000 + scan_Params->channel_List[0] * 5);
+        uint8_t chindex = dc_get_chidx_from_freq(freq);
+        if (chindex != QCC730_CHINDEX_INVALID) {
+            p_cmd->num_channels = 1;
+            p_cmd->channel_list[0] = chindex;
+        } else {
+            p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
+            for (int i = 0; i < p_cmd->num_channels; i++) {
+                p_cmd->channel_list[i] = i;
+            }
+        }
+#endif /* SUPPORT_5GHZ */
+    } else {
+        p_cmd->num_channels = SCAN_LIST_NUM_CHANNELS;
+        for (int i = 0; i < p_cmd->num_channels; i++) {
+            p_cmd->channel_list[i] = i;
+        }
     }
     p_cmd->scan_only = true;
 }
@@ -620,7 +719,7 @@ qapi_Status_t wlan_set_appie(qapi_WLAN_App_Ie_Params_t *ie_params)
     /* Application IE is a hex number starting with 0xdd.
      * Hex number 0xdd of length 1 will remove the already added IE. */
     if ((ie_params->ie_Len < 1) || (ie_params->ie_Len > WMI_MAX_APP_IE_LEN) || !ie_params->ie_Info) {
-        log_printf("%s:%d: IE length %d is out of the range of 1 and 64.\n", __func__, __LINE__, ie_params->ie_Len);
+        log_printf("%s:%d: IE length %d is out of the range of 1 and %d.\n", __func__, __LINE__, ie_params->ie_Len, WMI_MAX_APP_IE_LEN);
         return QAPI_ERROR;
     }
     /* The length must be not less than 5 as a valid application information element
@@ -631,15 +730,29 @@ qapi_Status_t wlan_set_appie(qapi_WLAN_App_Ie_Params_t *ie_params)
         return QAPI_ERROR;
     }
 
-    if (ie_params->ie_Info[0] != 0xdd) {
-        log_printf("%s:%d: Application specified information element must start with 'dd'.\n", __func__, __LINE__);
-        return QAPI_ERROR;
-    }
-
-    /* The length in application information element should be the length of OUI and Vendor-specific content*/
-    if ((ie_params->ie_Len > 1) && (ie_params->ie_Info[1] != (ie_params->ie_Len - 2))) {
-        log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
-        return QAPI_ERROR;
+    /* The buffer may hold more than one concatenated vendor-specific IE
+     * (e.g. WSC IE + P2P IE in a P2P GC's Assoc Request) — each is its
+     * own "0xdd len OUI... data" element. Walk the whole blob and verify
+     * every sub-IE's length byte accounts for exactly its own content,
+     * rather than assuming the buffer is a single IE. */
+    if (ie_params->ie_Len > 1) {
+        uint16_t offset = 0;
+        while (offset < ie_params->ie_Len) {
+            if (ie_params->ie_Info[offset] != 0xdd) {
+                log_printf("%s:%d: Application specified information element must start with 'dd'.\n", __func__, __LINE__);
+                return QAPI_ERROR;
+            }
+            if (offset + 1 >= ie_params->ie_Len) {
+                log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
+                return QAPI_ERROR;
+            }
+            uint8_t sub_ie_len = ie_params->ie_Info[offset + 1];
+            if ((offset + 2 + sub_ie_len) > ie_params->ie_Len) {
+                log_printf("%s:%d: The length in application information element is not correct.\n", __func__, __LINE__);
+                return QAPI_ERROR;
+            }
+            offset += 2 + sub_ie_len;
+        }
     }
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     cmd->mgmtFrmType = ie_params->mgmt_Frame_Type;
@@ -949,6 +1062,7 @@ qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
     status->beacon_interval = wifi_status.beacon_interval;
     status->rssi = wifi_status.rssi;
     status->dtim_period = wifi_status.dtim_period;
+    status->rsn_cap = wifi_status.rsn_cap;
 
     switch (wifi_status.auth_mode) {
     case WMI_WPA2_AUTH:
@@ -968,6 +1082,12 @@ qapi_Status_t wlan_get_status(uint8_t dev_id, qapi_WLAN_Status_t *status)
         break;
     case WMI_WPA3_SHA256_AUTH:
         status->auth_mode = QAPI_WLAN_AUTH_WPA3_SAE_E;
+        break;
+    case WMI_WPA2_SHA256_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA2_E_SHA256_E;
+        break;
+    case WMI_WPA3_ENTERPRISE_ONLY_AUTH:
+        status->auth_mode = QAPI_WLAN_AUTH_WPA3_ENT_ONLY_E;
         break;
     default:
         status->auth_mode = QAPI_WLAN_AUTH_INVALID_E;
@@ -1086,7 +1206,7 @@ qapi_Status_t wlan_set_rsp_rate(uint8_t device_id, uint8_t rate_idx)
     return error;
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 qapi_WLAN_WPS_Credentials_t gWpsCredentials;
 qapi_Status_t wlan_wps_set_credentials(uint8_t device_id, qapi_WLAN_WPS_Credentials_t *pwps_prof)
 {

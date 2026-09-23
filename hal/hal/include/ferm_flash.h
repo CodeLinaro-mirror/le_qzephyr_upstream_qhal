@@ -100,7 +100,7 @@ typedef void (*flash_operation_cb_t)(int status, void *user_param);
 #define WINBOND_WRITE_STATUS_2_CMD 0x31
 #define WINBOND_WRITE_STATUS_3_CMD 0x11
 
-#if CONFIG_FLASH_QCC730_QSPI_QUAD_MODE
+#if defined(CONFIG_FLASH_QCC730_QSPI_QUAD_MODE)
 /* Quad enable mode. */
 #define ENABLE_QUAD_MODE_0 0x0
 #define ENABLE_QUAD_MODE_1 0x1

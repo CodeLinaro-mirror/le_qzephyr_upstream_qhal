@@ -21,11 +21,17 @@
 #include "fermion_hw_reg.h"
 
 extern SOCPM_STRUCT g_socpm_struct;
+#if defined(CONFIG_QWIFI)
+extern uint8_t phyrf_get_process_monitor_chiptype(void);
+#endif
 
 /*******************************************************************************
  *  Note:
  *  The CPR functionality can be enabled/disabled by the macro CONFIG_CPR_ENABLE.
  *******************************************************************************/
+#define CPR_REENABLE_SLOW_VREF_OFFSET 5U
+#define CPR_REENABLE_SLOW_CHIPTYPE 2U
+#define CPR_REENABLE_UNKNOWN_CHIPTYPE 3U
 
 /*******************************************************************************
  * Function Defination
@@ -93,6 +99,7 @@ void wifi_fw_cpr_init(void)
 #else
     g_socpm_struct.cpr_cfg.ini_enabled = 0;
 #endif
+    g_socpm_struct.cpr_cfg.corner_chip_type = CPR_REENABLE_UNKNOWN_CHIPTYPE;
 
     if (g_socpm_struct.cpr_cfg.ini_enabled == 1) {
 #if (FERMION_CHIP_VERSION == 1)
@@ -114,6 +121,9 @@ void wifi_fw_cpr_init(void)
             uint32_t cx_sleep_mv = (cx_open_loop_mv > CPR_CX_MIN_SLEEP_MV) ? cx_open_loop_mv : CPR_CX_MIN_SLEEP_MV;
             g_socpm_struct.cpr_cfg.cx_initial_mV_vref = cpr_get_vref_from_mv(cx_open_loop_mv);
             g_socpm_struct.cpr_cfg.cx_sleep_mV_vref = cpr_get_vref_from_mv(cx_sleep_mv);
+#if defined(CONFIG_QWIFI)
+            g_socpm_struct.cpr_cfg.corner_chip_type = phyrf_get_process_monitor_chiptype();
+#endif
 
             reg_val = NT_REG_RD(QWLAN_PMU_ROOT_CLK_ENABLE_REG);
             reg_val |= (QWLAN_PMU_ROOT_CLK_ENABLE_CPR_XO_ROOT_CLK_ENABLE_MASK |
@@ -241,6 +251,37 @@ void wifi_fw_cpr_reenable(void)
     if ((g_socpm_struct.cpr_cfg.ini_enabled == 1) && (g_socpm_struct.cpr_cfg.otp_tag_high > CPR_OTP_TRIM_TAG_HIGH)) {
         uint32_t reg_val;
         NT_REG_WR(QWLAN_PMU_CFG_PWFM_TRAGET_REG, g_socpm_struct.cpr_cfg.cx_initial_mV_vref);
+
+        /* Slow-silicon parts need extra warm-wake voltage margin.
+         * Raise the CPR re-enable initial VREF slightly before enabling CPR.
+         */
+        if (g_socpm_struct.cpr_cfg.corner_chip_type == CPR_REENABLE_SLOW_CHIPTYPE) {
+            uint32_t reenable_vref = g_socpm_struct.cpr_cfg.cx_initial_mV_vref + CPR_REENABLE_SLOW_VREF_OFFSET;
+            uint32_t current_vref;
+            uint32_t min_vref;
+            uint32_t max_vref;
+
+            reg_val = NT_REG_RD(QWLAN_PMU_CPR_CONFIG1_REG);
+            current_vref = (reg_val & QWLAN_PMU_CPR_CONFIG1_INTIAL_VREF_VALUE_MASK) >>
+                           QWLAN_PMU_CPR_CONFIG1_INTIAL_VREF_VALUE_OFFSET;
+            min_vref = (reg_val & QWLAN_PMU_CPR_CONFIG1_MIN_VREF_VALUE_MASK) >>
+                       QWLAN_PMU_CPR_CONFIG1_MIN_VREF_VALUE_OFFSET;
+            max_vref = (reg_val & QWLAN_PMU_CPR_CONFIG1_MAX_VREF_VALUE_MASK) >>
+                       QWLAN_PMU_CPR_CONFIG1_MAX_VREF_VALUE_OFFSET;
+
+            if (reenable_vref < min_vref) {
+                reenable_vref = min_vref;
+            } else if (reenable_vref > max_vref) {
+                reenable_vref = max_vref;
+            }
+
+            if (reenable_vref != current_vref) {
+                reg_val &= ~QWLAN_PMU_CPR_CONFIG1_INTIAL_VREF_VALUE_MASK;
+                reg_val |= (reenable_vref << QWLAN_PMU_CPR_CONFIG1_INTIAL_VREF_VALUE_OFFSET) &
+                           QWLAN_PMU_CPR_CONFIG1_INTIAL_VREF_VALUE_MASK;
+                NT_REG_WR(QWLAN_PMU_CPR_CONFIG1_REG, reg_val);
+            }
+        }
 
         reg_val = NT_REG_RD(QWLAN_PMU_CPR_CONFIG0_REG);
         reg_val |= QWLAN_PMU_CPR_CONFIG0_CPR_ENABLE_MASK;

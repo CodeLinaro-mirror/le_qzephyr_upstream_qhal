@@ -10,7 +10,7 @@
 #include <stdint.h> /*for unsigned int data types */
 #include "nt_logger.h"
 #include "nt_common.h" /*for Moduleid's fetching*/
-#if QCCSDK
+#if defined(QCCSDK)
 #include "autoconf.h"
 #endif
 #include "wifi_fw_logger.h"
@@ -197,6 +197,16 @@ uint8_t nt_log_write(uint8_t mod_id, uint8_t loglvl,
 #define NT_LOG_SME_ERR(msg, p1, p2, p3) NT_LOG_MOD_LVL(SME, ERR, msg, p1, p2, p3)
 
 #define NT_LOG_SME_CRIT(msg, p1, p2, p3) NT_LOG_MOD_LVL(SME, CRIT, msg, p1, p2, p3)
+
+/* Hex logger variant for TWT diagnostics. */
+uint8_t nt_log_write_hex(uint8_t mod_id, uint8_t loglvl,
+#if (NT_FN_FUNCTION_LINE_NUM_FLAG == 1)
+                     char *fn, uint16_t ln,
+#endif
+                     const char *msg, uint32_t p1, uint32_t p2, uint32_t p3);
+
+#define NT_LOG_TWT_ERR_HEX(msg, p1, p2, p3) \
+    nt_log_write_hex(NT_STATUS_MOD_SME, NT_LOG_LVL_ERR, NT_LOG_FILE_LOC msg, p1, p2, p3)
 
 #define NT_LOG_MLM_INFO(msg, p1, p2, p3) NT_LOG_MOD_LVL(MLM, INFO, msg, p1, p2, p3)
 

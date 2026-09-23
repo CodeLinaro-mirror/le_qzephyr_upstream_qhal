@@ -1072,8 +1072,8 @@ struct ieee80211_ie_ext_cap_filed {
     uint8_t reserved_13 : 4;      /*Position_13 to 16*/
 
     // octet 3
-    uint8_t wnm_sleep_cap_17 : 1; /*Position_17*/
-    uint8_t reserved_18 : 1;      /*Position_18*/
+    uint8_t tfs_cap_16 : 1;       /*Position_17: IEEE 802.11 spec bit B16 (TFS)*/
+    uint8_t wnm_sleep_cap_17 : 1; /*Position_18: IEEE 802.11 spec bit B17 (WNM-Sleep Mode)*/
     uint8_t reserved_19 : 1;      /*Position_19*/
     uint8_t reserved_20 : 1;      /*Position_20*/
     uint8_t reserved_21 : 1;      /*Position_21*/

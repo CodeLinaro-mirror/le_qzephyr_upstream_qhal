@@ -89,6 +89,8 @@ qapi_Status_t wlan_drv_roaming_start(void)
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
     if (!p_cxt)
         return QAPI_ERROR;
+    if (p_cxt->wlan_roaming_disabled)
+        return QAPI_OK;
     wlan_vdev_cxt_t *vdev_cxt = WLAN_STA_CXT;
 
     if ((p_cxt) && (p_cxt->wlan_roaming_started == 0) &&
@@ -114,6 +116,25 @@ qapi_Status_t wlan_drv_roaming_stop(void)
     return QAPI_OK;
 }
 
+qapi_Status_t wlan_drv_roaming_disable(void)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    if (!p_cxt)
+        return QAPI_ERROR;
+    p_cxt->wlan_roaming_disabled = 1;
+    wlan_drv_roaming_stop();
+    return QAPI_OK;
+}
+
+qapi_Status_t wlan_drv_roaming_enable(void)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    if (!p_cxt)
+        return QAPI_ERROR;
+    p_cxt->wlan_roaming_disabled = 0;
+    return QAPI_OK;
+}
+
 int wlan_qapi_init(void)
 {
     gp_wlan_qapi_cxt = &gs_wlan_qapi_cxt;
@@ -134,7 +155,7 @@ int wlan_qapi_init(void)
     p_cxt->wlan_scan_start_block_mode = true;
     p_cxt->wlan_disable_block_mode = true;
     p_cxt->wlan_if_add_block_mode = true;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     p_cxt->wlan_scan_stop_block_mode = true;
     p_cxt->wlan_start_wps_block_mode = false;
 #endif

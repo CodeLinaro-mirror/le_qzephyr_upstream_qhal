@@ -37,3 +37,9 @@ zephyr_library_sources(src/unpa.c)
 zephyr_library_sources(src/unpa_resource.c)
 zephyr_library_sources(src/unpa_client.c)
 zephyr_library_sources(src/wifi_fw_pwr_cb_infra.c)
+
+zephyr_code_relocate(
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/wifi_fw_pwr_cb_infra.c
+    LOCATION RAM_TEXT
+    NOKEEP
+)

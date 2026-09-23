@@ -190,6 +190,7 @@ typedef struct HalDxe {
     volatile DxeCCB_t DxeCCB[DXE_CHANNEL_MAX];
     uint8_t Configured;
     uint8_t dxe_suspend;
+    volatile uint8_t tx_paused;
 } HalDxe_t, *pHalDxe;
 
 #endif /* DXE_H_ */

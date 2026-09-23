@@ -35,7 +35,7 @@
 #define WMI_PMK_LEN 32
 #define WMI_GMK_LEN 32
 #define WMI_CHANNEL_NUM_MAX TOT_MAX_CHANNEL_INDEX + 1
-#define WMI_MAX_APP_IE_LEN 64
+#define WMI_MAX_APP_IE_LEN 140
 
 typedef PREPACK struct {
     uint8_t *wur_buffer;
@@ -256,8 +256,29 @@ typedef enum {
     WMI_DBG_TSF_CMDID,
     WIFI_SET_SAP_CSA,
     WMI_GET_WIFI_STATUS,
+#if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
+    WMI_WPS_SCAN_CMDID,
+#endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+    WMI_NAN_SEND_ACTION_CMDID,               /* TX NAN SDF (Public Action Frame) */
+    WMI_NAN_REMAIN_ON_CHANNEL_CMDID,         /* Stay on specified channel to listen */
+    WMI_NAN_CANCEL_REMAIN_ON_CHANNEL_CMDID,  /* Cancel remain-on-channel */
+    /* P2P find/discovery support. Appended at end so existing IDs stay
+     * stable for firmware ABI compatibility. See WMI_P2P_FW_SET_CONFIG_CMD
+     * / WMI_P2P_FW_FIND_CMD below.
+     */
+    WMI_P2P_SET_CONFIG_CMDID,
+    WMI_P2P_FIND_CMDID,
+    WMI_P2P_STOP_FIND_CMDID,
+    WMI_P2P_LISTEN_CMDID,
+    WMI_P2P_CANCEL_LISTEN_CMDID,
+    WMI_TWT_EXT_WAKEUP_CMDID,
     WMI_CMD_MAX, /* Note: This cmd should be the last in the WMI_COMMAND_ID ENUM */
 } WMI_COMMAND_ID;
+
+#define WMI_TWT_WAKE_REASON_SP_START        1U
+#define WMI_TWT_WAKE_FLAG_PM_RESUME         (1U << 8)
+#define WMI_TWT_EXT_WAKE_FLAG_ENABLE        (1U << 0)
+#define WMI_TWT_EXT_WAKE_FLAG_PM_RESUME     (1U << 1)
 
 #ifdef CONFIG_WMI_EVENT
 typedef enum {
@@ -296,8 +317,75 @@ typedef enum {
     WMI_WLAN_SAP_CSA_EVTID,
     WMI_REPORT_WIFI_STATUS,
     WMI_BMPS_DISABLE_FAIL_EVTID,
+#if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
+    WMI_WPS_SCAN_COMP_EVTID,
+    WMI_WPS_SCAN_RESULT_EVTID,
+#endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+    WMI_NAN_TX_STATUS_EVTID,             /* Action Frame TX done (ack/no-ack) */
+    WMI_NAN_REMAIN_ON_CHANNEL_EVTID,     /* Remain-on-channel started/ended */
+    WMI_NAN_RX_SDF_EVTID,                /* NAN SDF received from peer */
+    WMI_P2P_LISTEN_DONE_EVTID,
+    WMI_P2P_SCAN_DONE_EVTID,
+    WMI_P2P_BSS_FOUND_EVTID,
+    WMI_P2P_RX_ACTION_EVTID,
+    WMI_BMPS_ENABLE_FAIL_EVTID,
+    WMI_TWT_EXT_WAKEUP_EVTID,
     WMI_MAX_EVTID,
 } WMI_EVENTT_ID;
+
+/* Event payload for WMI_P2P_LISTEN_DONE_EVTID. Sent by the firmware
+ * once the listen-state timer expires (or a CANCEL_LISTEN command
+ * aborts it early). The host hostap layer treats expiry the same way
+ * either way.
+ */
+typedef PREPACK struct {
+    uint16_t freq;          /* MHz the radio was parked on */
+    uint16_t reserved;
+} POSTPACK WMI_P2P_LISTEN_DONE_EVT;
+
+/* Event payload for WMI_P2P_BSS_FOUND_EVTID. Sent by the firmware for
+ * each beacon/probe-resp received during a P2P find scan, so the host
+ * P2P glue can feed the IE blob into hostap (qcom_p2p_feed_bss →
+ * p2p_scan_res_handler) and populate g_p2p_handle->devices in real time.
+ *
+ * We use a per-BSS event instead of piggy-backing on WMI_SCAN_RESULT_EVTID
+ * (only fires when the local SCAN_RESULT buffer overflows past
+ * MAX_SCAN_SSID = 15) or WMI_SCAN_COMP_EVTID (multi-KB payload, exceeds
+ * wmi_event_relay size cap). Truncated to fit the LARGE payload slot
+ * (QAPI_EVENT_LARGE_PAYLOAD_LENGTH_MAX = 1000) — header + 256B IE blob.
+ */
+#define WMI_P2P_BSS_FOUND_IE_MAX 256
+typedef PREPACK struct {
+    uint8_t  bssid[6];
+    int8_t   rssi;          /* dBm, sign-extended from ap_info->rssi */
+    uint8_t  reserved;
+    uint16_t freq;          /* MHz */
+    uint16_t ie_len;        /* bytes of trailing IE blob */
+    uint8_t  ie[WMI_P2P_BSS_FOUND_IE_MAX];
+} POSTPACK WMI_P2P_BSS_FOUND_EVT;
+
+/* Event payload for WMI_P2P_RX_ACTION_EVTID — forwards an incoming
+ * 802.11 mgmt action frame (subtype 0xd0) from fw to the host hostap
+ * p2p layer. The frame[] contains the complete frame including the
+ * 24B 802.11 header (DA/SA/BSSID), so the host glue can extract those
+ * before calling p2p_rx_action. P2P GO neg / PD / invitation / SD all
+ * arrive via this event.
+ *
+ * Action frames are typically < 200B (GO neg req/resp ~80–150B); we
+ * cap to 512B to leave headroom for invitation w/ full WPS+P2P IE
+ * chain and stay within wmi_event_relay's LARGE payload (1000B).
+ */
+#define WMI_P2P_RX_ACTION_FRAME_MAX 512
+typedef PREPACK struct {
+    uint16_t freq;          /* MHz, channel the frame was received on */
+    int8_t   rssi;          /* dBm */
+    uint8_t  reserved;
+    uint16_t frame_len;     /* bytes of trailing 802.11 frame */
+    uint16_t reserved2;
+    uint8_t  frame[WMI_P2P_RX_ACTION_FRAME_MAX];
+} POSTPACK WMI_P2P_RX_ACTION_EVT;
+
+
 
 #define WMI_LOCAL_EVT_FLAG_HEAP 0x00000001
 
@@ -306,6 +394,25 @@ typedef struct {
     uint32_t wmi_evt_id;
     uint32_t flag;
 } wmi_evt_struct_t;
+
+typedef enum {
+    WMI_BMPS_ENABLE_FAIL_TWT_ACTIVE = 1,
+} WMI_BMPS_ENABLE_FAIL_REASON;
+
+typedef PREPACK struct {
+    uint8_t reason;
+} POSTPACK WMI_BMPS_ENABLE_FAIL_EVT;
+
+typedef enum {
+    WMI_TWT_EXT_WAKEUP_STATUS_OK = 0,
+    WMI_TWT_EXT_WAKEUP_STATUS_NOT_READY,
+} WMI_TWT_EXT_WAKEUP_STATUS;
+
+typedef PREPACK struct {
+    uint8_t enable;
+    uint8_t status;
+    uint16_t reserved;
+} POSTPACK WMI_TWT_EXT_WAKEUP_EVT;
 
 typedef PREPACK struct {
     uint8_t reserved1;
@@ -441,6 +548,7 @@ typedef enum //@Wmi generic timedout handler events
   /*Periodic traffic idle timer timeout event*/
   periodicTrafficIdleTimer_eventid,
 #endif
+  nan_remain_on_channel_timeout_evntid,    /* NAN USD remain-on-channel expiry */
   pmImpsTimeoutFunc_evntid,
   invalid_evntid = 0xff } wmi_tmdout_evnthndl_t;
 
@@ -516,10 +624,18 @@ typedef PREPACK struct {
  */
 typedef PREPACK struct {
     int8_t wnm_enable;          ///< wnm enable flag
-    uint16_t bss_max_idle_time; ///< bss idle time
+    uint32_t bss_max_idle_time; ///< bss idle time
     uint16_t sleep_interval;    ///< sleep time
     uint8_t wnm_dtim_enable_disable_auto;
 } POSTPACK WMI_WNM_CONFIG_CMD;
+
+/**
+ * WMI_WNM_SLEEP_PARAMS — payload for WMI_WNM_SLEEP_CMDID
+ */
+typedef struct {
+    uint8_t  action;      ///< 0 = enter, 1 = exit
+    uint32_t interval_ms; ///< sleep interval in ms (enter only)
+} WMI_WNM_SLEEP_PARAMS;
 
 /**
  * WMI_TWT_CONFIG_CMD
@@ -534,6 +650,32 @@ typedef struct {
     uint16_t twt_alignment;
     uint8_t twt_dtim_enable_disable_auto;
 } WMI_TWT_CONFIG_CMD;
+
+/** Packed TWT command layouts shared with the WLAN library. */
+typedef PREPACK struct {
+    uint16_t msg_id;
+    uint8_t  network_id;
+    uint8_t  hdr_reserved;
+    uint16_t reserved_1;
+    uint8_t  dialog_id;         // unique twt session id, >0
+    uint8_t  negotiation_type;  // 0: individual, 1: broadcast
+    uint32_t wake_duration;     // TWT SP in ms
+    uint32_t wake_interval;     // TWT SI in ms
+    uint32_t twt_start_tsf_lo;  // 0 (hi+lo) => FW decides
+    uint32_t twt_start_tsf_hi;
+    uint8_t  flow_type;         // 0: announced, 1: unannounced
+    uint8_t  trigger_type;      // 0: non-triggered, 1: triggered
+    uint16_t reserved_2;
+} POSTPACK WMI_TWT_SETUP_CMD;
+
+typedef PREPACK struct {
+    uint16_t msg_id;
+    uint8_t  network_id;
+    uint8_t  hdr_reserved;
+    uint16_t reserved_1;
+    uint8_t  dialog_id;         // twt session id to tear down, >0
+    uint8_t  reserved_2;
+} POSTPACK WMI_TWT_TEARDOWN_CMD;
 
 typedef PREPACK struct {
     void *get_wur_cfg_inf;
@@ -868,6 +1010,7 @@ typedef struct {
     uint16_t wnm_power_save_exit_count_due_to_TIM_from_ap; ///< count for exit from wnm mode due to tim update from ap
     uint16_t wnm_power_save_exit_count_due_to_sta_data_avail; ///< count for exit from wnm mode due to data availability
                                                               ///< from sta
+    uint16_t wnm_power_save_exit_count_due_to_bss_idle;    ///< count for exit from wnm mode due to BSS Max Idle expiry
 #endif                                                        // NT_FN_PRODUCTION_STATS
 #ifdef NT_FN_DEBUG_STATS
     uint16_t wnm_power_save_total_enter_sleep_mode_req_frame_sent;      ///< total enter sleep mode req sent
@@ -1405,6 +1548,86 @@ typedef PREPACK struct {
 /* WPS Commands AND Events DEFINITION END */
 #endif // NT_FN_WPS
 
+/* ------------------------------------------------------------------ */
+/* P2P find / discovery commands. Mirrors fermion_p2p WMI definitions  */
+/* so firmware-side handlers can be ported with minimal changes. Kept  */
+/* outside the NT_FN_WPS / ATH_KF blocks so they are always visible.   */
+/* ------------------------------------------------------------------ */
+typedef PREPACK struct {
+    uint8_t  go_intent;
+    uint8_t  reserved[3];
+    uint8_t  reg_class;
+    uint8_t  listen_channel;
+    uint8_t  op_reg_class;
+    uint8_t  op_channel;
+    uint32_t node_age_to;
+    uint8_t  max_node_count;
+} POSTPACK WMI_P2P_FW_SET_CONFIG_CMD;
+
+/* WMI_P2P_FW_FIND_CMD: variable-length command. The fixed header below is
+ * followed by a tail of:
+ *   - num_freqs * uint16_t  : per-channel frequencies in MHz (host order)
+ *                             (num_freqs == 0 means firmware does its own
+ *                              full 2.4 GHz sweep)
+ *   - extra_ies_len bytes   : opaque IE blob (WPS Probe Req IE + P2P IE)
+ *                             constructed by the host hostap layer; firmware
+ *                             may append it to outgoing Probe Req frames.
+ *   - ssid_len bytes        : SSID for the active probe (P2P wildcard
+ *                             "DIRECT-" in normal use). 0 keeps the legacy
+ *                             behaviour of letting fw inject the wildcard.
+ *
+ * Total payload size = sizeof(WMI_P2P_FW_FIND_CMD) +
+ *                      num_freqs*2 + extra_ies_len + ssid_len.
+ * The receiver must clamp these sums against the WMI buffer length
+ * supplied by the dispatcher.
+ */
+typedef PREPACK struct {
+    uint32_t timeout;
+    uint8_t  type;          /* WMI_P2P_FIND_* (legacy social/full/progressive)*/
+    uint8_t  p2p_probe;     /* 1 = mark outgoing probe req as P2P */
+    uint8_t  include_6ghz;  /* hostap include_6ghz flag (0/1) */
+    uint8_t  num_freqs;     /* entries in freqs[] tail */
+    uint16_t extra_ies_len; /* bytes of WPS+P2P IE blob in tail */
+    uint8_t  ssid_len;      /* bytes of explicit SSID (0 = use wildcard) */
+    uint8_t  reserved;
+    /* tail follows: uint16_t freqs[num_freqs];
+     *               uint8_t  extra_ies[extra_ies_len];
+     *               uint8_t  ssid[ssid_len];
+     */
+} POSTPACK WMI_P2P_FW_FIND_CMD;
+
+/* P2P discovery type values used inside WMI_P2P_FW_FIND_CMD::type.
+ * Kept as legacy hints for firmware so it can fall back to a sane sweep
+ * when num_freqs == 0; the host always sets type = WMI_P2P_FIND_START_WITH_FULL
+ * for the new freq-list-driven path.
+ */
+#define WMI_P2P_FIND_START_WITH_FULL  0
+#define WMI_P2P_FIND_ONLY_SOCIAL      1
+#define WMI_P2P_FIND_PROGRESSIVE      2
+
+/* Maximum bytes of extra_ies the fw is willing to buffer per find. Host
+ * truncates beyond this. Picked to comfortably cover WPS Probe Req IE
+ * (~60 B) + P2P IE (~120 B with 1 dev id filter) plus headroom.
+ */
+#define WMI_P2P_FIND_EXTRA_IE_MAX    256
+
+/* WMI_P2P_FW_LISTEN_CMD: parks the radio on `freq` for `duration_ms`
+ * milliseconds, listening for incoming Probe Requests. Variable-length
+ * tail carries the Probe Response template IE blob the firmware should
+ * reply with (extra_ies_len bytes immediately after the header).
+ *
+ * The firmware fires WMI_P2P_LISTEN_DONE_EVTID back to the host once
+ * the timer expires (or when WMI_P2P_CANCEL_LISTEN_CMDID arrives).
+ */
+typedef PREPACK struct {
+    uint16_t freq;          /* MHz, host order */
+    uint16_t duration_ms;   /* listen window length */
+    uint16_t extra_ies_len; /* bytes of probe-resp IE template in tail */
+    uint16_t reserved;
+} POSTPACK WMI_P2P_FW_LISTEN_CMD;
+
+#define WMI_P2P_LISTEN_EXTRA_IE_MAX  256
+
 #ifdef ATH_KF
 typedef enum { WMI_AP_APSD_DISABLED = 0, WMI_AP_APSD_ENABLED } WMI_AP_APSD_STATUS;
 
@@ -1620,6 +1843,14 @@ typedef PREPACK struct {
     uint8_t addr4[IEEE80211_ADDR_LEN];
     uint32_t data_Length;
     uint8_t *data;
+    /* P2P off-channel action-frame extension. When both p2p_freq and
+     * p2p_wait_ms are non-zero, the fw switches to p2p_freq, transmits
+     * the frame, dwells for p2p_wait_ms so the peer's response can be
+     * received on that channel, then restores the previous channel and
+     * fires WMI_SEND_RAW_FRAME_EVTID. Zero on either field keeps the
+     * legacy STA/AP path (immediate EVTID, no channel switch). */
+    uint32_t p2p_freq;
+    uint32_t p2p_wait_ms;
 } POSTPACK SEND_RAW_FRAME;
 
 #ifdef NT_FN_FTM_11V
@@ -1661,7 +1892,72 @@ typedef PREPACK struct {
     uint8_t scan_id;
 } POSTPACK WMI_SCAN_STOP_CMD;
 
+/* CONFIG_WIFI_QCOM_WPS_FW is defined in the firmware build when host-driven WPS
+ * is enabled (replaces NT_FN_WPS_HOST). CONFIG_WIFI_QCOM_WPS is defined on the
+ * host side. Both sides must include this struct definition, so the guard accepts
+ * either. The two macros are independent — the firmware is compiled once and fixed;
+ * the host Kconfig may vary per application build. */
+#if defined(CONFIG_WIFI_QCOM_WPS_FW) || defined(CONFIG_WIFI_QCOM_WPS)
+/* WMI_WPS_SCAN_CMDID: host → firmware, start or stop WPS scan */
+#define WMI_WPS_SCAN_MAX_CHANNELS 39  /* 14 (2.4 GHz) + 25 (5 GHz) */
+typedef PREPACK struct {
+    uint8_t  op;                                  /* WPS_SCAN_OP_START or WPS_SCAN_OP_STOP */
+    uint8_t  wps_mode;                            /* WPS_PBC_MODE or WPS_PIN_MODE (ignored when op=STOP) */
+    uint8_t  channel_count;                       /* number of entries in channels[]; 0 = full scan */
+    uint8_t  reserved;                            /* alignment padding */
+    uint16_t channels[WMI_WPS_SCAN_MAX_CHANNELS]; /* 802.11 channel numbers (ignored when op=STOP) */
+    uint8_t  filter_bssid[6];                     /* target BSSID filter; all-zero = no filter */
+} POSTPACK WMI_WPS_SCAN_CMD;
+
+#define WPS_SCAN_OP_START  0x01
+#define WPS_SCAN_OP_STOP   0x02
+
+/*
+ * Maximum WSC IE payload length stored per AP in WMI_WPS_SCAN_AP_RESULT.
+ * Full WSC IE payloads can reach WMI_MAX_IE_LEN (255) bytes, but typical
+ * Beacon/ProbeResp WSC IEs are 50-150 bytes.  This value is sized so that
+ * sizeof(WMI_WPS_SCAN_AP_RESULT) == QAPI_EVENT_SMALL_PAYLOAD_LENGTH_MAX (256),
+ * keeping the struct in the Small WMI event pool (5 slots) rather than the
+ * Large pool (3 slots), which avoids pool exhaustion during busy scans.
+ *   256 - 46 (fixed fields) = 210
+ */
+#define WMI_WPS_SCAN_IE_MAX_LEN  210
+
+/*
+ * WMI_WPS_SCAN_RESULT_EVTID payload.
+ * Firmware sends one instance per WPS-capable AP found during a scan pass.
+ * The host accumulates these to perform PBC overlap detection or present
+ * a PIN target list.  Mirrors the WMI_SCAN_RESULT_EVTID pattern.
+ */
+typedef PREPACK struct {
+    uint8_t  bssid[IEEE80211_ADDR_LEN];
+    uint16_t channel;
+    uint8_t  ssid[WMI_MAX_SSID_LEN + 1];
+    uint8_t  ssid_len;
+    int8_t   rssi;
+    uint8_t  auth_type;                     /* WPS_AUTH_* flags from Beacon/ProbeResp */
+    uint8_t  encr_type;                     /* WPS_ENCR_* flags from Beacon/ProbeResp */
+    uint8_t  wsc_ie_len;
+    uint8_t  wsc_ie[WMI_WPS_SCAN_IE_MAX_LEN]; /* raw WSC IE payload (after OUI) */
+} POSTPACK WMI_WPS_SCAN_AP_RESULT;
+
+/*
+ * WMI_WPS_SCAN_COMP_EVTID payload.
+ * Firmware sends one instance when a full WPS scan round completes.
+ * The firmware does NOT perform overlap detection or AP selection;
+ * those decisions are made on the host side using the per-AP results
+ * delivered via WMI_WPS_SCAN_RESULT_EVTID.
+ * num_ap_found reflects the total number of WMI_WPS_SCAN_AP_RESULT
+ * events sent in this scan round.
+ */
+typedef PREPACK struct {
+    uint8_t  num_ap_found;   /* number of WMI_WPS_SCAN_AP_RESULT events sent */
+    uint8_t  reserved[3];
+} POSTPACK WMI_WPS_SCAN_COMP_RESULT;
+#endif /* CONFIG_WIFI_QCOM_WPS_FW || CONFIG_WIFI_QCOM_WPS */
+
 #define MAX_SCAN_SSID 15
+
 
 typedef struct {
     uint16_t chan_freq; // Channel frequency in MHz
@@ -1968,6 +2264,10 @@ typedef PREPACK struct {
     uint16_t auth_mode;
     uint32_t rssi;
     uint32_t link_mode;
+    /* RSN Capabilities used by FW for the local RSN IE.
+     * RSN_CAP_MFPC (0x80) means PMF capable; RSN_CAP_MFPR (0x40)
+     * means PMF required. */
+    uint16_t rsn_cap;
 } POSTPACK WMI_WIFI_STATUS;
 
 #ifdef CONFIG_WIFILIB_6GHZ
@@ -1977,5 +2277,44 @@ typedef PREPACK struct {
 #else /* SUPPORT_5GHZ */
 #define DEV_CHANNEL_NUM_MAX 11
 #endif /* CONFIG_WIFILIB_6GHZ */
+
+/* NAN USD CMD/EVT parameter structures */
+
+typedef struct {
+    uint32_t freq;          /* TX frequency in MHz (typically 2437 for ch6) */
+    uint32_t wait_time_ms;  /* time to wait for ACK after TX, in ms */
+    uint8_t  dst_addr[6];   /* destination MAC (NAN multicast: 51:6f:9a:01:00:00) */
+    uint8_t  src_addr[6];   /* source MAC (device NMI) */
+    uint8_t  bssid[6];      /* BSSID field (wildcard ff:ff:ff:ff:ff:ff for USD) */
+    uint8_t  pad[2];        /* alignment */
+    uint32_t buf_len;       /* length of SDF frame payload */
+    uint8_t  buf[0];        /* SDF frame payload (variable length) */
+} POSTPACK WMI_NAN_SEND_ACTION_CMD;
+
+typedef struct {
+    uint32_t freq;          /* channel frequency in MHz */
+    uint32_t duration_ms;   /* duration to remain on channel, in ms */
+} POSTPACK WMI_NAN_REMAIN_ON_CHANNEL_CMD;
+
+typedef struct {
+    uint32_t freq;          /* frequency on which TX was attempted */
+    uint8_t  dst_addr[6];   /* destination MAC of the transmitted frame */
+    uint8_t  ack;           /* 1 = ACK received, 0 = no ACK */
+    uint8_t  pad;
+} POSTPACK WMI_NAN_TX_STATUS_EVT;
+
+typedef struct {
+    uint32_t freq;          /* channel frequency */
+    uint8_t  started;       /* 1 = remain-on-channel started, 0 = ended */
+    uint8_t  pad[3];
+} POSTPACK WMI_NAN_REMAIN_ON_CHANNEL_EVT;
+
+typedef struct {
+    uint32_t freq;          /* channel on which SDF was received */
+    uint8_t  src_addr[6];   /* sender MAC address */
+    uint8_t  pad[2];
+    uint32_t buf_len;       /* length of received SDF payload */
+    uint8_t  buf[0];        /* SDF frame payload (variable length) */
+} POSTPACK WMI_NAN_RX_SDF_EVT;
 
 #endif /* _WMI_H_ */

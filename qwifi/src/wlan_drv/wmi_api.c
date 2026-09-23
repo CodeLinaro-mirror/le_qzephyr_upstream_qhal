@@ -10,9 +10,66 @@
 #include "wmi.h"
 #include "qurt.h"
 #include "libwifi.h"
+#include "nt_common.h"
 #include <zephyr/autoconf.h>
 
+/* Optional P2P scan-result feed. The qcom P2P glue (in qcc730/drivers/wifi)
+ * provides the strong definitions when CONFIG_WIFI_QCOM_P2P=y; otherwise
+ * the weak fallbacks below turn the calls into no-ops.
+ */
+__attribute__((weak))
+int qcom_p2p_feed_bss(const uint8_t bssid[6], int freq, int rssi_dbm,
+                      const uint8_t *ies, size_t ies_len)
+{
+    (void)bssid; (void)freq; (void)rssi_dbm; (void)ies; (void)ies_len;
+    return -1;
+}
+__attribute__((weak))
+void qcom_p2p_scan_done(void) { }
+__attribute__((weak))
+void qcom_p2p_listen_end(unsigned int freq) { (void)freq; }
+__attribute__((weak))
+int qcom_p2p_rx_action(const uint8_t *frame, size_t frame_len,
+                       unsigned int freq)
+{
+    (void)frame; (void)frame_len; (void)freq;
+    return -1;
+}
+
 typedef void (*wlan_evt_fn_table)(void *);
+
+#ifdef SUPPORT_TWT_STA
+extern NT_BOOL nt_twt_get_pm_resume_source(NT_BOOL *ext_wakeup);
+
+/* Mirrors wlan_twt_setup_evt_t / wlan_twt_teardown_evt_t in
+ * prop/libwifiqcc730/sme/inc/nt_twt.h (not on driver include path). */
+typedef struct {
+    uint16_t msg_id;
+    uint8_t  network_id;
+    uint8_t  status;
+    uint16_t reserved_1;
+    uint8_t  dialog_id;
+    uint8_t  negotiation_type;
+    uint32_t wake_duration;
+    uint32_t wake_interval;
+    uint32_t twt_start_tsf_lo;
+    uint32_t twt_start_tsf_hi;
+    uint8_t  flow_type;
+    uint8_t  trigger_type;
+    uint8_t  reason_code;
+    uint8_t  flow_id;
+} __attribute__((packed)) qwifi_twt_setup_evt_t;
+
+typedef struct {
+    uint16_t msg_id;
+    uint8_t  network_id;
+    uint8_t  status;
+    uint8_t  reserved_1;
+    uint8_t  host_initiated;
+    uint8_t  dialog_id;
+    uint8_t  reason_code;
+} __attribute__((packed)) qwifi_twt_teardown_evt_t;
+#endif
 
 extern qurt_pipe_t msg_wfm_wmi_id;
 extern int32_t wlan_freq_to_channel(uint16_t *channel);
@@ -268,8 +325,8 @@ static void wmi_scan_comp_event(void *msg)
                 }
             }
             if (!duplicate) {
-                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx],
-                     (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i));
+                ap_info *src_ap = (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i);
+                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx], src_ap);
                 cur_idx++;
             }
         }
@@ -312,7 +369,6 @@ static void wmi_scan_result_event(void *msg)
     qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
     if (!p_cxt->scan_in_progress) {
         qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
-        warn_printf("no pending scan, ignore\n");
         return;
     }
 
@@ -331,8 +387,8 @@ static void wmi_scan_result_event(void *msg)
                 }
             }
             if (!duplicate) {
-                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx],
-                     (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i));
+                ap_info *src_ap = (ap_info *)((unsigned char *)p_scan_result + offsetof(SCAN_RESULT, scan_bss_info) + sizeof(ap_info) * i);
+                _wlan_fill_scan_info(&scan_comp_evt->scan_bss_info[cur_idx], src_ap);
                 cur_idx++;
             }
         }
@@ -347,6 +403,18 @@ static void wmi_bmps_disable_failed_event(void *msg)
     k_timer_start(&bmps_disable_timer, K_MSEC(1), K_NO_WAIT);
     return;
 }
+
+static void wmi_bmps_enable_failed_event(void *msg)
+{
+    WMI_BMPS_ENABLE_FAIL_EVT *evt = (WMI_BMPS_ENABLE_FAIL_EVT *)msg;
+
+    if (!evt) {
+        warn_printf("BMPS enable failed event has no payload\n");
+        return;
+    }
+
+    err_printf("BMPS enable rejected, reason=%d\n", evt->reason);
+}
 extern void show_net_info_by_id(uint8_t id, uint8_t ip_ver);
 static void wmi_ip_addr_ready_event(void *msg)
 {
@@ -356,7 +424,7 @@ static void wmi_ip_addr_ready_event(void *msg)
     }
 
     PRINT_LOG_FUNC_LINE_ENTRY;
-#if CONFIG_SHOW_IP_READY_EVT
+#if defined(CONFIG_SHOW_IP_READY_EVT) && (CONFIG_SHOW_IP_READY_EVT)
     WMI_IP_DDR_EVT *ip_ready_evt = (WMI_IP_DDR_EVT *)msg;
 
     show_net_info_by_id(ip_ready_evt->netif_id, ip_ready_evt->ip_ver);
@@ -547,6 +615,81 @@ static void wmi_disconnect_event(void *msg)
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 }
 
+#ifdef SUPPORT_TWT_STA
+static void wmi_twt_setup_event(void *msg)
+{
+    if (!msg) {
+        warn_printf("msg NULL\n");
+        return;
+    }
+
+    qwifi_twt_setup_evt_t *evt = (qwifi_twt_setup_evt_t *)msg;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_vdev_cxt_t *vdev = WLAN_STA_CXT;
+
+    info_printf("QAPI_WLAN_TWT_SETUP_CB_E dlg=%d flow=%d neg=%d status=%d\n",
+                evt->dialog_id, evt->flow_id, evt->negotiation_type,
+                evt->reason_code);
+
+    if (p_cxt->qapi_event_handler) {
+        p_cxt->qapi_event_handler(vdev->network_id, QAPI_WLAN_TWT_SETUP_CB_E,
+                                  p_cxt->event_application_Context,
+                                  evt, sizeof(*evt));
+    }
+}
+
+static void wmi_twt_teardown_event(void *msg)
+{
+    if (!msg) {
+        warn_printf("msg NULL\n");
+        return;
+    }
+
+    qwifi_twt_teardown_evt_t *evt = (qwifi_twt_teardown_evt_t *)msg;
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_vdev_cxt_t *vdev = WLAN_STA_CXT;
+
+    info_printf("QAPI_WLAN_TWT_TEARDOWN_CB_E dlg=%d host_init=%d status=%d\n",
+                evt->dialog_id, evt->host_initiated, evt->reason_code);
+
+    if (p_cxt->qapi_event_handler) {
+        p_cxt->qapi_event_handler(vdev->network_id, QAPI_WLAN_TWT_TEARDOWN_CB_E,
+                                  p_cxt->event_application_Context,
+                                  evt, sizeof(*evt));
+    }
+}
+
+static void wmi_twt_ext_wakeup_event(void *msg)
+{
+    WMI_TWT_EXT_WAKEUP_EVT *src = (WMI_TWT_EXT_WAKEUP_EVT *)msg;
+    qapi_WLAN_TWT_Ext_Wakeup_Evt_t evt = {0};
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+    wlan_vdev_cxt_t *vdev = WLAN_STA_CXT;
+
+    if (!src) {
+        warn_printf("msg NULL\n");
+        return;
+    }
+
+    evt.evt_hdr.status =
+            (src->status == WMI_TWT_EXT_WAKEUP_STATUS_OK) ?
+            QAPI_OK : QAPI_ERR_NO_ENTRY;
+    evt.enable = src->enable;
+    evt.reason_code = src->status;
+
+    info_printf("QAPI_WLAN_TWT_EXT_WAKEUP_CB_E enable=%d status=%d\n",
+                evt.enable, evt.reason_code);
+
+    if (p_cxt->qapi_event_handler) {
+        p_cxt->qapi_event_handler(
+                vdev->network_id,
+                QAPI_WLAN_TWT_EXT_WAKEUP_CB_E,
+                p_cxt->event_application_Context,
+                &evt, sizeof(evt));
+    }
+}
+#endif /* SUPPORT_TWT_STA */
+
 static void wmi_set_param_event(void *msg)
 {
     if (!msg) {
@@ -712,7 +855,7 @@ static void wmi_set_mgmt_filter_event(void *msg)
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 static void wmi_stop_scan_event(void *msg)
 {
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
@@ -752,12 +895,7 @@ static void wmi_wps_fail_event(void *msg)
 
 static void wmi_wlan_suspend_event(void *msg)
 {
-    qapi_Status_t err = QAPI_ERROR;
     wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    if((uint32_t)msg == 0)
-    {
-        err = QAPI_OK;
-    }
 
     set_wlan_qapi_error((uint32_t)msg);
     gp_wlan_qapi_cxt->suspend_ret = (uint32_t)msg;
@@ -844,6 +982,21 @@ static void wmi_send_raw_event(void *msg)
     }
 
     qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
+
+#ifdef CONFIG_WIFI_QCOM_P2P
+    /* If the last raw send was a P2P off-channel action frame, this
+     * EVTID fires when the fw-side dwell timer expires — that is the
+     * signal for the hostap p2p state machine to run p2p_send_action_cb
+     * (arming the retransmit timer / advancing GO neg). No-op if the
+     * last raw send was a STA probe / AP beacon.
+     *
+     * Declared as a weak forward here because the definition lives in
+     * the qcc730 P2P driver glue (qcom_wifi_p2p_glue.c) which is not
+     * on this module's include path; the linker resolves it when
+     * CONFIG_WIFI_QCOM_P2P=y pulls that translation unit in. */
+    extern void qcom_p2p_on_action_tx_done(int success);
+    qcom_p2p_on_action_tx_done((ret == 1) ? 1 : 0);
+#endif
 }
 
 static void wmi_report_wifi_status(void *msg)
@@ -949,7 +1102,7 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
     case WMI_REPORT_WIFI_STATUS:
         wmi_report_wifi_status(data);
         break;
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
     case WMI_SCAN_STOP_EVTID:
         wmi_stop_scan_event(data);
         break;
@@ -957,6 +1110,14 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
         wmi_wps_fail_event(data);
         break;
 #endif
+#ifdef CONFIG_WIFI_QCOM_WPS
+    case WMI_WPS_SCAN_RESULT_EVTID:
+        wmi_wps_scan_ap_result_event(data);
+        break;
+    case WMI_WPS_SCAN_COMP_EVTID:
+        wmi_wps_scan_comp_event(data);
+        break;
+#endif /* CONFIG_WIFI_QCOM_WPS */
     case WMI_WLAN_SUSPEND_EVTID:
         wmi_wlan_suspend_event(data);
         break;
@@ -969,6 +1130,82 @@ static void wmi_event_dispatch(uint32_t event_id, void *data)
     case WMI_BMPS_DISABLE_FAIL_EVTID:
         wmi_bmps_disable_failed_event(data);
         break;
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_NAN_USD
+    case WMI_NAN_REMAIN_ON_CHANNEL_EVTID:
+        extern void qcc730_nan_wmi_roc_evt(void *data);
+        qcc730_nan_wmi_roc_evt(data);
+        break;
+    case WMI_NAN_TX_STATUS_EVTID:
+        extern void qcc730_nan_wmi_tx_status_evt(void *data);
+        qcc730_nan_wmi_tx_status_evt(data);
+        break;
+    case WMI_NAN_RX_SDF_EVTID:
+        extern void qcc730_nan_wmi_rx_sdf_evt(void *data);
+        qcc730_nan_wmi_rx_sdf_evt(data);
+        break;
+#endif
+    case WMI_P2P_LISTEN_DONE_EVTID: {
+        /* Forward to the P2P glue. The weak fallback above turns this
+         * into a no-op when CONFIG_WIFI_QCOM_P2P=n.
+         */
+        WMI_P2P_LISTEN_DONE_EVT *evt = (WMI_P2P_LISTEN_DONE_EVT *)data;
+        qcom_p2p_listen_end(evt ? (unsigned int)evt->freq : 0);
+        break;
+    }
+    case WMI_P2P_SCAN_DONE_EVTID:
+        /* Empty payload by design — see p2p_fw_search_finished. We use
+         * a dedicated event ID instead of piggybacking on
+         * WMI_SCAN_COMP_EVTID because the latter carries a multi-KB
+         * SCAN_RESULT struct that wmi_event_relay rejects on size. */
+        qcom_p2p_scan_done();
+        break;
+    case WMI_P2P_RX_ACTION_EVTID: {
+        /* Forward to the P2P glue. The frame[] is a complete 802.11
+         * action mgmt frame including the 24B header — the glue parses
+         * DA/SA/BSSID/category before calling hostap p2p_rx_action. */
+        WMI_P2P_RX_ACTION_EVT *evt = (WMI_P2P_RX_ACTION_EVT *)data;
+        if (evt != NULL) {
+            uint16_t flen = evt->frame_len;
+            if (flen > WMI_P2P_RX_ACTION_FRAME_MAX) {
+                flen = WMI_P2P_RX_ACTION_FRAME_MAX;
+            }
+            (void)qcom_p2p_rx_action(evt->frame, (size_t)flen,
+                                     (unsigned int)evt->freq);
+        }
+        break;
+    }
+    case WMI_P2P_BSS_FOUND_EVTID: {
+        /* One per-BSS notification fired by dc_beacon_receive on each
+         * probe-resp / beacon during a P2P find. Forward the IE blob
+         * straight to the hostap p2p layer via the qcom glue (weak no-op
+         * fallback above when CONFIG_WIFI_QCOM_P2P=n). */
+        WMI_P2P_BSS_FOUND_EVT *evt = (WMI_P2P_BSS_FOUND_EVT *)data;
+        if (evt != NULL) {
+            uint16_t ie_len = evt->ie_len;
+            if (ie_len > WMI_P2P_BSS_FOUND_IE_MAX) {
+                ie_len = WMI_P2P_BSS_FOUND_IE_MAX;
+            }
+            (void)qcom_p2p_feed_bss(evt->bssid, (int)evt->freq,
+                                    (int)evt->rssi,
+                                    (ie_len > 0) ? evt->ie : NULL,
+                                    (size_t)ie_len);
+        }
+        break;
+    }
+    case WMI_BMPS_ENABLE_FAIL_EVTID:
+        wmi_bmps_enable_failed_event(data);
+        break;
+#ifdef SUPPORT_TWT_STA
+    case WMI_TWT_SETUP_EVTID:
+        wmi_twt_setup_event(data);
+        break;
+    case WMI_TWT_TEARDOWN_EVTID:
+        wmi_twt_teardown_event(data);
+        break;
+    case WMI_TWT_EXT_WAKEUP_EVTID:
+        wmi_twt_ext_wakeup_event(data);
+        break;
+#endif
     default:
         break;
     }
@@ -1045,8 +1282,38 @@ static void wmi_cmd_result(void *msg)
 
 static void wmi_event_notify(WIFIReturnCode_t return_type, uint32_t event_id, void *data)
 {
-    log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n", return_type, event_id, (unsigned int)data,
-               *(int *)data);
+    /* Verbose WMI event trace. This is a synchronous, blocking UART
+     * printk() on every single WMI event. The risk scales with event
+     * *frequency*, not event type: low-rate sources (wifi enable/disable,
+     * connect/disconnect, AP/STA state changes) can safely print
+     * unconditionally. High-rate sources (NAN RX_SDF/TX_STATUS/ROC,
+     * P2P find/listen ticks) lengthen how long each event_payload_buf
+     * slot stays "in use" per print and can starve the shared pool
+     * (wmi_event_relay: payload pool exhausted) if traced while that
+     * source is active — see FR203517 issue log. Skip the print for
+     * those event IDs whenever the owning feature is compiled in,
+     * regardless of whether that feature happens to be active right
+     * now, so the mere presence of NAN/P2P in the image can't reproduce
+     * the starvation. Everything else still traces unconditionally. */
+    switch (event_id) {
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_NAN_USD
+    case WMI_NAN_TX_STATUS_EVTID:
+    case WMI_NAN_REMAIN_ON_CHANNEL_EVTID:
+    case WMI_NAN_RX_SDF_EVTID:
+        break;
+#endif
+#ifdef CONFIG_WIFI_QCOM_P2P
+    case WMI_P2P_LISTEN_DONE_EVTID:
+    case WMI_P2P_SCAN_DONE_EVTID:
+    case WMI_P2P_BSS_FOUND_EVTID:
+    case WMI_P2P_RX_ACTION_EVTID:
+        break;
+#endif
+    default:
+        log_printf("wlan_qapi_event: return_type=%d event_id=%d data=0x%x %d\n",
+                   return_type, event_id, (unsigned int)data, *(int *)data);
+        break;
+    }
 
     wmi_msg_struct_t wlan_result = {0};
     if (event_id >= invalid_app_event_id || event_id < aws_app_event_id) {
@@ -1146,6 +1413,25 @@ qapi_Status_t wmi_cmd_send(WMI_COMMAND_ID cmd_id, void *p_data, uint32_t data_le
     if (cmd_id == WMI_WLAN_ON_CMDID || cmd_id == WMI_WLAN_OFF_CMDID) {
         wmi_msg.prot_flg = cmd_id;
     }
+
+    qurt_pipe_send(msg_wfm_wmi_id, (void *)&wmi_msg);
+
+    return QAPI_OK;
+}
+
+static qapi_Status_t wmi_cmd_send_with_flags(WMI_COMMAND_ID cmd_id,
+                                             uint32_t flags,
+                                             NT_BOOL result_required)
+{
+    wmi_msg_struct_t wmi_msg = {0};
+
+    wmi_msg.trans_wmi_message_id = cmd_id;
+    wmi_msg.msg_struct.return_status = eWiFiNotSupported;
+    if (result_required) {
+        wmi_msg.msg_struct.result_function = &wmi_cmd_result;
+        wmi_msg.msg_struct.event_notify = &wmi_event_notify;
+    }
+    wmi_msg.prot_flg = flags;
 
     qurt_pipe_send(msg_wfm_wmi_id, (void *)&wmi_msg);
 
@@ -1252,23 +1538,30 @@ qapi_Status_t  wmi_suspend(void)
 
 qapi_Status_t  wmi_resume(void)
 {
-    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
-    qapi_Status_t ret = QAPI_WLAN_ERROR;
+#ifdef SUPPORT_TWT_STA
+    NT_BOOL ext_wakeup = FALSE;
 
-
-    wmi_cmd_send(WMI_BMPS_EXIT_CMDID, NULL, 0);
-    if (p_cxt->wlan_resume_block_mode) {
-        log_printf("block mode, wait WMI_WLAN_RESUME_CMDID done\n");
-        qurt_signal_wait(p_cxt->wlan_cmd_done, WLAN_WMI_CMD_SIG_MASK_RESUME, QURT_SIGNAL_ATTR_CLEAR_MASK);
-        log_printf("Get WMI_WLAN_RESUME_CMDID done\n");
-    } else {
-
+    if (nt_twt_get_pm_resume_source(&ext_wakeup)) {
+        if (ext_wakeup) {
+            wmi_cmd_send_with_flags(
+                    WMI_TWT_EXT_WAKEUP_CMDID,
+                    WMI_TWT_EXT_WAKE_FLAG_ENABLE |
+                    WMI_TWT_EXT_WAKE_FLAG_PM_RESUME,
+                    TRUE);
+        } else {
+            wmi_cmd_send_with_flags(
+                    WMI_WAKEUP_TWT_CMDID,
+                    WMI_TWT_WAKE_REASON_SP_START |
+                    WMI_TWT_WAKE_FLAG_PM_RESUME,
+                    TRUE);
+        }
+    } else
+#endif
+    {
+        wmi_cmd_send(WMI_BMPS_EXIT_CMDID, NULL, 0);
     }
-    qurt_mutex_lock(p_cxt->wlan_qapi_cxt_mutex);
-    ret = get_wlan_qapi_error();
-    qurt_mutex_unlock(p_cxt->wlan_qapi_cxt_mutex);
 
-    return ret;
+    return QAPI_OK;
 }
 
 qapi_Status_t wmi_add_device(uint8_t device_ID)
@@ -1432,6 +1725,30 @@ qapi_Status_t wmi_disconnect(uint8_t vdev_id)
     return ret;
 }
 
+/* Forward TWT setup/teardown commands to the WLAN library. */
+qapi_Status_t wmi_twt_setup(uint8_t vdev_id, void *cmd)
+{
+    return wmi_dev_cmd_send(WMI_TWT_SETUP_CMDID, vdev_id, cmd, sizeof(WMI_TWT_SETUP_CMD));
+}
+
+qapi_Status_t wmi_twt_teardown(uint8_t vdev_id, void *cmd)
+{
+    return wmi_dev_cmd_send(WMI_TWT_TEARDOWN_CMDID, vdev_id, cmd, sizeof(WMI_TWT_TEARDOWN_CMD));
+}
+
+qapi_Status_t wmi_twt_ext_wakeup(uint8_t enable)
+{
+    uint32_t flags;
+
+    if (enable > 1) {
+        return QAPI_ERR_INVALID_PARAM;
+    }
+
+    flags = enable ? WMI_TWT_EXT_WAKE_FLAG_ENABLE : 0;
+
+    return wmi_cmd_send_with_flags(WMI_TWT_EXT_WAKEUP_CMDID, flags, FALSE);
+}
+
 qapi_Status_t wmi_ap_disconnect_station(uint8_t device_ID, const uint8_t *mac_addr, uint32_t len)
 {
     qapi_Status_t ret = QAPI_OK;
@@ -1584,7 +1901,7 @@ qapi_Status_t wmi_get_tx_power(void)
     return ret;
 }
 
-#ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_QCOM_WPS_NATIVE
 extern qapi_WLAN_WPS_Credentials_t gWpsCredentials;
 
 qapi_Status_t wmi_start_wps_process(uint8_t __attribute__((__unused__)) device_ID,
@@ -1719,3 +2036,36 @@ qapi_Status_t wmi_wlan_sap_csa(uint8_t device_ID, uint8_t switch_mode, uint16_t 
 
     return ret;
 }
+
+#ifdef NT_FN_WNM_POWERSAVE_MODE
+qapi_Status_t wmi_wnm_sleep(uint8_t action, uint32_t interval_ms)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    p_cxt->wnm_sleep_param.action      = action;
+    p_cxt->wnm_sleep_param.interval_ms = interval_ms;
+    return wmi_cmd_send(WMI_WNM_SLEEP_CMDID,
+                        &p_cxt->wnm_sleep_param,
+                        sizeof(WMI_WNM_SLEEP_PARAMS));
+}
+
+qapi_Status_t wmi_wnm_set_enable(uint8_t enable)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    p_cxt->wnm_config_param.wnm_enable = (int8_t)enable;
+    return wmi_cmd_send(WMI_SET_WNM_ENABLE_CMDID,
+                        &p_cxt->wnm_config_param,
+                        sizeof(WMI_WNM_CONFIG_CMD));
+}
+
+qapi_Status_t wmi_wnm_set_bss_max_idle(uint32_t m_seconds)
+{
+    wlan_qapi_cxt_t *p_cxt = gp_wlan_qapi_cxt;
+
+    p_cxt->wnm_config_param.bss_max_idle_time = m_seconds;
+    return wmi_cmd_send(WMI_SET_BSS_IDLE_TIME_CMDID,
+                        &p_cxt->wnm_config_param,
+                        sizeof(WMI_WNM_CONFIG_CMD));
+}
+#endif /* NT_FN_WNM_POWERSAVE_MODE */
