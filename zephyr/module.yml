@@ -15,33 +15,33 @@ blobs:
     type: img
     version: '1.0'
     license-path: zephyr/blobs/license.txt
-    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00012.1/IOT.ZE.1.0.R1/apps_proc/lib/regdb.bin
+    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00018.1/IOT.ZE.1.0.R1/apps_proc/lib/regdb.bin
     description: "WiFi Regulatory data base"
   - path: libwifiqcc730.a
-    sha256: 08e52538ac105628db70e3a4f782cee061a16cef8c84cd46a5762c365f7ff773
+    sha256: 3acfde9fd4d1087fdef8866c21622711ba1f20d9dd4ffc54381ceacc2430dd83
     type: lib
     version: '1.0'
     license-path: zephyr/blobs/license.txt
-    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00012.1/IOT.ZE.1.0.R1/apps_proc/lib/libwifiqcc730.a
+    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00018.1/IOT.ZE.1.0.R1/apps_proc/lib/libwifiqcc730.a
     description: "WiFi library for qcc730"
   - path: libsensorqcc730.a
     sha256: cdcd972fbe2ebc91bb405f4380db26df3235ba0ed82069162ae885cb56b447ab
     type: lib
     version: '1.0'
     license-path: zephyr/blobs/license.txt
-    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00012.1/IOT.ZE.1.0.R1/apps_proc/lib/libsensorqcc730.a
+    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00018.1/IOT.ZE.1.0.R1/apps_proc/lib/libsensorqcc730.a
     description: "Sensor library for qcc730"
   - path: libpowerqcc730.a
-    sha256: 3066536dd40f6c527fef9d26467fcb7a2ac86c5ef78ba3840e4511ac751aa691
+    sha256: 09d873612c450adcf31f76950426afe919229954c3e3e08e491928e9eff925fa
     type: lib
     version: '1.0'
     license-path: zephyr/blobs/license.txt
-    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00012.1/IOT.ZE.1.0.R1/apps_proc/lib/libpowerqcc730.a
+    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00018.1/IOT.ZE.1.0.R1/apps_proc/lib/libpowerqcc730.a
     description: "Power library for qcc730"
   - path: libcryptoqcc730.a
-    sha256: 96072400bdd9931591e26a98c892e89872e48ebc406cae2c26a6f813cd136a81
+    sha256: 16eb6351143501eccc5f90af0e91c944795f6ab818082cb8578f30d517022f55
     type: lib
     version: '1.0'
     license-path: zephyr/blobs/license.txt
-    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00012.1/IOT.ZE.1.0.R1/apps_proc/lib/libcryptoqcc730.a
+    url: https://softwarecenter.qualcomm.com/nexus/generic/product/chip/software-product/QCC730.ZE.1.0/qcc730.ze.1.0-qca-oem-sdk-art/r00018.1/IOT.ZE.1.0.R1/apps_proc/lib/libcryptoqcc730.a
     description: "Crypto library for qcc730"
